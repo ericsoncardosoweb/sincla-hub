@@ -1,0 +1,68 @@
+.footer {
+    background: #08080c;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 60px 0 30px;
+}
+
+.brandSection {
+    grid-column: span 2;
+}
+
+@media (min-width: 768px) {
+    .brandSection {
+        grid-column: span 1;
+    }
+}
+
+.logoIcon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.logoText {
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.columnTitle {
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.link {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.link:hover {
+    color: #0087ff;
+}
+
+.socialLink {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
+}
+
+.socialLink:hover {
+    background: #0087ff;
+    color: white;
+}

@@ -1,0 +1,111 @@
+.section {
+    padding: 100px 0;
+    background: #0f0f14;
+    position: relative;
+}
+
+.title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+}
+
+.gradient {
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--platform-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(0, 135, 255, 0.06),
+            transparent 40%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-8px);
+    box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(0, 135, 255, 0.1);
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card:hover::after {
+    opacity: 1;
+}
+
+.comingSoonBadge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.iconBox {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.description {
+    line-height: 1.6;
+    min-height: 60px;
+}
+
+.featureItem {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.cardButton {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cardButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .section {
+        padding: 60px 0;
+    }
+}

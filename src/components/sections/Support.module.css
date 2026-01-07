@@ -1,0 +1,88 @@
+.section {
+    padding: 100px 0;
+    background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
+}
+
+.title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+}
+
+.gradient {
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.channelCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.channelCard:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-5px);
+}
+
+.accordion {
+    background: transparent;
+}
+
+.accordionItem {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.accordionControl {
+    color: white;
+    font-weight: 500;
+}
+
+.accordionControl:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.accordionPanel {
+    padding-top: 0;
+}
+
+.contactCard {
+    background: rgba(0, 135, 255, 0.05);
+    border: 1px solid rgba(0, 135, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    flex: 1;
+    max-width: 400px;
+}
+
+.input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.input:focus {
+    border-color: #0087ff;
+}
+
+@media (max-width: 768px) {
+    .section {
+        padding: 60px 0;
+    }
+
+    .contactCard {
+        max-width: 100%;
+    }
+}

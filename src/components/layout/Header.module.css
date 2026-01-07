@@ -1,0 +1,84 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.scrolled {
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo {
+    cursor: pointer;
+}
+
+.logoIcon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.logoText {
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navLink {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+.navLink:hover {
+    color: #0087ff;
+}
+
+.loginBtn {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.loginBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.ctaBtn {
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ctaBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 135, 255, 0.4);
+}
+
+.mobileNavLink {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    display: block;
+}
+
+.mobileNavLink:hover {
+    color: #0087ff;
+}
