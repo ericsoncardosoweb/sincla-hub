@@ -1,42 +1,33 @@
 import { Container, Title, Text, Button, Group, Box, Stack } from '@mantine/core';
-import { IconArrowRight, IconCloud } from '@tabler/icons-react';
+import { IconArrowRight } from '@tabler/icons-react';
 import classes from './Hero.module.css';
 
-const floatingLogos = [
-    { id: 'rh', logo: '/logos/sincla-rh.svg', alt: 'Sincla RH' },
-    { id: 'ead', logo: '/logos/sincla-ead.svg', alt: 'Sincla EAD' },
-    { id: 'bolso', logo: '/logos/sincla-bolso.svg', alt: 'Sincla Bolso' },
-    { id: 'leads', logo: '/logos/sincla-leads.svg', alt: 'Sincla Leads' },
-    { id: 'agenda', logo: '/logos/sincla-agenda.svg', alt: 'Sincla Agenda' },
-];
+interface HeroProps {
+    onOpenModal: () => void;
+}
 
-export function Hero() {
+export function Hero({ onOpenModal }: HeroProps) {
     return (
-        <section className={classes.hero}>
-            {/* Background Effects */}
-            <div className={classes.bgGlow} />
-            <div className={classes.gridPattern} />
-
+        <section id="hero" className={classes.hero}>
             <Container size="xl" className={classes.container}>
                 <Stack align="center" gap="xl">
                     {/* Badge */}
                     <Box className={classes.badge}>
-                        <IconCloud size={16} />
-                        <Text size="sm" fw={500}>Hub de Tecnologias</Text>
+                        <Text size="sm" fw={500}>Ecossistema de Gestão para PMEs</Text>
                     </Box>
 
                     {/* Main Heading */}
                     <Title order={1} ta="center" className={classes.title}>
-                        Um hub.{' '}
-                        <span className={classes.gradient}>Todas as suas</span>
+                        Cadastre uma vez.{' '}
                         <br />
-                        ferramentas.
+                        <span className={classes.gradient}>Use em todo lugar.</span>
                     </Title>
 
                     {/* Subtitle */}
-                    <Text size="xl" c="dimmed" ta="center" maw={600} className={classes.subtitle}>
-                        Centralize sua experiência Sincla. Acesse suas plataformas,
-                        gerencie assinaturas e descubra novas ferramentas em um único lugar.
+                    <Text size="lg" c="dimmed" ta="center" maw={650} className={classes.subtitle}>
+                        Sua identidade pessoal e os dados da sua empresa, centralizados.
+                        Um único cadastro desbloqueia RH, EAD, Finanças, Leads e mais —
+                        sem preencher formulários repetidos, sem múltiplas senhas.
                     </Text>
 
                     {/* CTA Buttons */}
@@ -47,8 +38,9 @@ export function Hero() {
                             gradient={{ from: '#0087ff', to: '#00c6ff', deg: 90 }}
                             rightSection={<IconArrowRight size={18} />}
                             className={classes.ctaPrimary}
+                            onClick={onOpenModal}
                         >
-                            Começar Grátis
+                            Começar grátis
                         </Button>
                         <Button
                             size="lg"
@@ -56,46 +48,30 @@ export function Hero() {
                             color="gray"
                             className={classes.ctaSecondary}
                             component="a"
-                            href="#produtos"
+                            href="#como-funciona"
                         >
-                            Ver Produtos
+                            Ver como funciona
                         </Button>
                     </Group>
 
-                    {/* Floating Logos */}
-                    <Box className={classes.logosContainer}>
-                        {floatingLogos.map((item, index) => (
-                            <Box
-                                key={item.id}
-                                className={`${classes.floatingLogo} ${classes[`logo${index + 1}`]}`}
-                            >
-                                <img
-                                    src={item.logo}
-                                    alt={item.alt}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'contain',
-                                        padding: '8px'
-                                    }}
-                                />
-                            </Box>
-                        ))}
-                    </Box>
+                    {/* Microcopy */}
+                    <Text size="sm" c="dimmed" className={classes.microcopy}>
+                        Cadastro único + 1 módulo ativo. Sem cartão, sem burocracia.
+                    </Text>
 
                     {/* Stats */}
-                    <Group gap={60} mt={60} className={classes.stats}>
+                    <Group gap={60} mt={80} className={classes.stats}>
                         <Box ta="center">
-                            <Text className={classes.statNumber}>6</Text>
-                            <Text size="sm" c="dimmed">Plataformas</Text>
+                            <Text className={classes.statNumber}>500+</Text>
+                            <Text size="sm" c="dimmed">empresas cadastradas</Text>
                         </Box>
                         <Box ta="center">
-                            <Text className={classes.statNumber}>10k+</Text>
-                            <Text size="sm" c="dimmed">Usuários</Text>
+                            <Text className={classes.statNumber}>15.000+</Text>
+                            <Text size="sm" c="dimmed">usuários ativos</Text>
                         </Box>
                         <Box ta="center">
-                            <Text className={classes.statNumber}>99.9%</Text>
-                            <Text size="sm" c="dimmed">Uptime</Text>
+                            <Text className={classes.statNumber}>Zero</Text>
+                            <Text size="sm" c="dimmed">cadastros repetidos</Text>
                         </Box>
                     </Group>
                 </Stack>
@@ -103,4 +79,3 @@ export function Hero() {
         </section>
     );
 }
-

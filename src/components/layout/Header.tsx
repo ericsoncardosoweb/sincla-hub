@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Group, Button, Container, Burger, Drawer, Stack, Text } from '@mantine/core';
+import { Group, Button, Container, Burger, Drawer, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import classes from './Header.module.css';
 

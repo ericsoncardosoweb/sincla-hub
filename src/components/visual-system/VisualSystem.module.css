@@ -1,0 +1,310 @@
+/* ============================================
+   SISTEMA VISUAL UNIFICADO - SINCLA HUB
+   ============================================
+   Um sistema de animação 3D contínuo que permeia
+   toda a experiência do site.
+   ============================================ */
+
+/* Variáveis do Sistema */
+:root {
+    --vs-perspective: 1800px;
+    --vs-rotation-speed: 180s;
+    --vs-rotation-range: 6deg;
+    --vs-node-size: 56px;
+    --vs-node-size-mobile: 36px;
+    --vs-grid-size: 100px;
+    --vs-transition: 1s cubic-bezier(0.4, 0, 0.2, 1);
+    --vs-pulse-duration: 8s;
+}
+
+/* Container Principal - Fixed Full Viewport */
+.visualSystem {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+}
+
+/* ============================================
+   LAYER 0: GRADIENT BASE
+   ============================================ */
+.gradientLayer {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            ellipse 100% 80% at var(--gradient-x, 50%) var(--gradient-y, 30%),
+            rgba(0, 135, 255, 0.06) 0%,
+            transparent 50%
+        ),
+        radial-gradient(
+            ellipse 80% 60% at calc(100% - var(--gradient-x, 50%)) calc(100% - var(--gradient-y, 30%)),
+            rgba(0, 198, 255, 0.03) 0%,
+            transparent 40%
+        );
+    transition: --gradient-x var(--vs-transition), --gradient-y var(--vs-transition);
+}
+
+/* ============================================
+   LAYER 1: GRID DE PROFUNDIDADE
+   ============================================ */
+.gridLayer {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    opacity: var(--grid-opacity, 0.03);
+    transition: opacity var(--vs-transition);
+}
+
+.gridInner {
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+    background-size: var(--vs-grid-size) var(--vs-grid-size);
+    transform-style: preserve-3d;
+    transform:
+        perspective(var(--vs-perspective))
+        rotateX(65deg)
+        translateZ(-300px)
+        translateY(var(--grid-translate-y, 0px));
+    transition: transform var(--vs-transition);
+}
+
+/* ============================================
+   LAYER 2: NÓS DO ECOSSISTEMA
+   ============================================ */
+.nodesLayer {
+    position: absolute;
+    inset: 0;
+    perspective: var(--vs-perspective);
+}
+
+.nodesContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 1px;
+    transform-style: preserve-3d;
+    transform:
+        translateX(-50%)
+        translateY(-50%)
+        rotateX(var(--mouse-tilt-x, 0deg))
+        rotateY(var(--mouse-tilt-y, 0deg))
+        rotateZ(var(--rotation-offset, 0deg));
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: subtleOrbit var(--vs-rotation-speed) linear infinite;
+}
+
+@keyframes subtleOrbit {
+    0% {
+        transform:
+            translateX(-50%)
+            translateY(-50%)
+            rotateX(var(--mouse-tilt-x, 0deg))
+            rotateY(calc(var(--mouse-tilt-y, 0deg) - var(--vs-rotation-range)));
+    }
+    50% {
+        transform:
+            translateX(-50%)
+            translateY(-50%)
+            rotateX(var(--mouse-tilt-x, 0deg))
+            rotateY(calc(var(--mouse-tilt-y, 0deg) + var(--vs-rotation-range)));
+    }
+    100% {
+        transform:
+            translateX(-50%)
+            translateY(-50%)
+            rotateX(var(--mouse-tilt-x, 0deg))
+            rotateY(calc(var(--mouse-tilt-y, 0deg) - var(--vs-rotation-range)));
+    }
+}
+
+/* Nó Individual */
+.node {
+    position: absolute;
+    width: var(--vs-node-size);
+    height: var(--vs-node-size);
+    transform-style: preserve-3d;
+    transform:
+        rotateY(var(--node-angle, 0deg))
+        translateZ(calc(var(--orbit-radius, 180px) * var(--depth-scale, 1)))
+        rotateY(calc(var(--node-angle, 0deg) * -1));
+    transition:
+        transform var(--vs-transition),
+        opacity var(--vs-transition);
+}
+
+.nodeInner {
+    width: 100%;
+    height: 100%;
+    background: rgba(12, 12, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(var(--node-color-rgb), 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    opacity: var(--node-opacity, 0.5);
+    transition: opacity var(--vs-transition), box-shadow var(--vs-transition);
+    backface-visibility: hidden;
+}
+
+.nodeGlow {
+    position: absolute;
+    inset: -30%;
+    background: radial-gradient(
+        circle,
+        rgba(var(--node-color-rgb), 0.12) 0%,
+        transparent 60%
+    );
+    opacity: 0.4;
+    filter: blur(25px);
+    transition: opacity var(--vs-transition);
+}
+
+.nodeLogo {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+    opacity: 0.9;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ============================================
+   LAYER 3: CONEXÕES ENTRE NÓS
+   ============================================ */
+.connectionsLayer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.connectionsSvg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.connection {
+    stroke: rgba(255, 255, 255, var(--connection-opacity, 0.1));
+    stroke-width: 1;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.connectionPulse {
+    stroke: rgba(0, 135, 255, 0.3);
+    stroke-width: 1.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 6 30;
+    animation: connectionFlow var(--vs-pulse-duration) linear infinite;
+    opacity: var(--connection-intensity, 0.25);
+    transition: opacity var(--vs-transition);
+}
+
+@keyframes connectionFlow {
+    0% {
+        stroke-dashoffset: 32;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* ============================================
+   ESTADOS - REDUCED MOTION
+   ============================================ */
+.reducedMotion .nodesContainer {
+    animation: none;
+}
+
+.reducedMotion .connectionPulse {
+    animation: none;
+}
+
+.reducedMotion .node,
+.reducedMotion .nodeInner,
+.reducedMotion .gridInner {
+    transition: none;
+}
+
+/* ============================================
+   RESPONSIVIDADE
+   ============================================ */
+@media (max-width: 768px) {
+    :root {
+        --vs-node-size: var(--vs-node-size-mobile);
+        --vs-grid-size: 60px;
+        --vs-rotation-range: 5deg;
+    }
+
+    .gridLayer {
+        opacity: calc(var(--grid-opacity, 0.03) * 0.5);
+    }
+
+    .node {
+        --orbit-radius: 120px;
+    }
+
+    .nodeGlow {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .node {
+        --orbit-radius: 90px;
+    }
+
+    .gridLayer {
+        display: none;
+    }
+}
+
+/* ============================================
+   PERFORMANCE - GPU ACCELERATION
+   ============================================ */
+.visualSystem,
+.gradientLayer,
+.gridLayer,
+.gridInner,
+.nodesLayer,
+.nodesContainer,
+.node,
+.nodeInner,
+.connectionsLayer {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+}
+
+/* ============================================
+   ACESSIBILIDADE
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    .nodesContainer {
+        animation: none !important;
+    }
+
+    .connectionPulse {
+        animation: none !important;
+    }
+
+    .node,
+    .nodeInner,
+    .gridInner,
+    .gradientLayer {
+        transition: none !important;
+    }
+}

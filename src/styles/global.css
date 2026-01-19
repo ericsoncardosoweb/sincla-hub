@@ -15,6 +15,17 @@
   /* Timing Functions */
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Premium Glass System */
+  --glass-surface-low: rgba(255, 255, 255, 0.02);
+  --glass-surface-medium: rgba(255, 255, 255, 0.04);
+  --glass-surface-high: rgba(255, 255, 255, 0.08);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-border-highlight: rgba(255, 255, 255, 0.1);
+  --glass-shadow-deep: 0 40px 80px -20px rgba(0, 0, 0, 0.5);
+  --glass-blur-sm: blur(10px);
+  --glass-blur-md: blur(20px);
+  --glass-blur-lg: blur(40px);
 }
 
 * {
@@ -33,6 +44,13 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* Todas as seções precisam estar acima do sistema visual */
+main>section {
+  position: relative;
+  z-index: 2;
 }
 
 /* Global Typography */

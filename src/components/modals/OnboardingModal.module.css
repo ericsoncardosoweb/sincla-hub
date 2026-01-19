@@ -1,0 +1,48 @@
+.modalHeader {
+    background: transparent;
+    border-bottom: 1px solid var(--glass-border-subtle);
+}
+
+.modalBody {
+    background: transparent;
+}
+
+.modalContent {
+    background: var(--glass-surface-medium);
+    backdrop-filter: var(--glass-blur-lg);
+    border: 1px solid var(--glass-border-highlight);
+    box-shadow: var(--glass-shadow-deep);
+}
+
+.stepper {
+    margin-bottom: 32px;
+}
+
+.stepContent {
+    min-height: 300px;
+}
+
+.navigation {
+    padding-top: 24px;
+    border-top: 1px solid var(--glass-border-subtle);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .stepContent {
+        min-height: auto;
+        padding-bottom: 80px;
+    }
+
+    .navigation {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 16px 24px;
+        background: var(--bg-dark-secondary);
+        /* Fallback for mobile performance/readability */
+        border-top: 1px solid var(--glass-border-highlight);
+        backdrop-filter: blur(20px);
+    }
+}

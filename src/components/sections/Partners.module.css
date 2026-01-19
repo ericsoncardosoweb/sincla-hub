@@ -1,6 +1,6 @@
 .section {
     padding: 100px 0;
-    background: #0f0f14;
+    /* Background transparente - sistema visual visível */
 }
 
 .title {

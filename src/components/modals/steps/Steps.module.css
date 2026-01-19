@@ -1,0 +1,82 @@
+.input {
+    background: var(--glass-surface-low);
+    border-color: var(--glass-border-subtle);
+    color: white;
+    transition: all 0.2s var(--ease-smooth);
+}
+
+.input:focus {
+    border-color: var(--sincla-blue);
+    background: var(--glass-surface-medium);
+    box-shadow: 0 0 0 4px rgba(0, 135, 255, 0.1);
+}
+
+.infoBox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(0, 135, 255, 0.03);
+    border: 1px solid rgba(0, 135, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+}
+
+.noCnpjLink {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.noCnpjLink:hover {
+    color: var(--sincla-blue);
+    text-decoration: none;
+}
+
+/* Module Cards */
+.moduleCard {
+    position: relative;
+    padding: 24px;
+    background: var(--glass-surface-low);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-smooth);
+    backdrop-filter: blur(5px);
+}
+
+.moduleCard:hover:not(.moduleCardDisabled) {
+    background: var(--glass-surface-medium);
+    border-color: rgba(0, 135, 255, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.moduleCardSelected {
+    background: rgba(0, 135, 255, 0.08);
+    border-color: #0087ff;
+    box-shadow: 0 0 30px rgba(0, 135, 255, 0.15);
+}
+
+.moduleCardDisabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.moduleIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 135, 255, 0.1);
+    border-radius: 10px;
+    color: #0087ff;
+}
+
+.comingSoonBadge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}

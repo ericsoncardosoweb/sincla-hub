@@ -1,6 +1,6 @@
 .section {
     padding: 100px 0;
-    background: linear-gradient(180deg, #0a0a0f 0%, #12121a 100%);
+    /* Background transparente - sistema visual visível */
 }
 
 .title {

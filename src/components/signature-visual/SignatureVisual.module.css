@@ -1,0 +1,18 @@
+/* ============================================
+   CANVAS BACKGROUND SYSTEM (3D FLUX)
+   ============================================ */
+
+.canvasContainer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: radial-gradient(circle at center, #0a0a0a 0%, #000000 100%);
+}
+
+.canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
