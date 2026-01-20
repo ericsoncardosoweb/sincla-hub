@@ -16,16 +16,49 @@
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-  /* Premium Glass System */
+  /* Premium Glass System - Refinado para harmonia com background 3D */
+  --glass-surface-ultra: rgba(255, 255, 255, 0.01);
   --glass-surface-low: rgba(255, 255, 255, 0.02);
-  --glass-surface-medium: rgba(255, 255, 255, 0.04);
-  --glass-surface-high: rgba(255, 255, 255, 0.08);
-  --glass-border-subtle: rgba(255, 255, 255, 0.06);
-  --glass-border-highlight: rgba(255, 255, 255, 0.1);
-  --glass-shadow-deep: 0 40px 80px -20px rgba(0, 0, 0, 0.5);
-  --glass-blur-sm: blur(10px);
+  --glass-surface-medium: rgba(255, 255, 255, 0.035);
+  --glass-surface-high: rgba(255, 255, 255, 0.06);
+  --glass-border-subtle: rgba(255, 255, 255, 0.05);
+  --glass-border-medium: rgba(255, 255, 255, 0.08);
+  --glass-border-highlight: rgba(255, 255, 255, 0.12);
+  --glass-shadow-soft: 0 8px 32px -8px rgba(0, 0, 0, 0.3);
+  --glass-shadow-deep: 0 32px 64px -16px rgba(0, 0, 0, 0.4);
+  --glass-blur-xs: blur(6px);
+  --glass-blur-sm: blur(12px);
   --glass-blur-md: blur(20px);
-  --glass-blur-lg: blur(40px);
+  --glass-blur-lg: blur(32px);
+
+  /* Spacing System - Escala Atlassian-inspired */
+  --section-padding-desktop: 120px;
+  --section-padding-mobile: 80px;
+  --content-gap: 80px;
+
+  /* Typography Premium Scale */
+  --font-display: 800;
+  --font-heading: 700;
+  --font-body: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+
+  /* Line Heights - Otimizado para legibilidade */
+  --lh-tight: 1.1;
+  --lh-snug: 1.25;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.65;
+
+  /* Letter Spacing */
+  --ls-tight: -0.025em;
+  --ls-normal: 0;
+  --ls-wide: 0.025em;
+
+  /* Transition Timing - Premium feel */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
 }
 
 * {
@@ -53,27 +86,43 @@ main>section {
   z-index: 2;
 }
 
-/* Global Typography */
+/* Global Typography - Atlassian-inspired hierarchy */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-weight: 700;
-  line-height: 1.2;
+  font-weight: var(--font-heading);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
 }
 
 h1 {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-size: clamp(2.75rem, 6vw, 4.5rem);
+  font-weight: var(--font-display);
+  line-height: var(--lh-tight);
 }
 
 h2 {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: var(--font-display);
 }
 
 h3 {
   font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+/* Paragraph refinements */
+p {
+  line-height: var(--lh-relaxed);
+}
+
+/* Lead text - para subtítulos importantes */
+.lead {
+  font-size: 1.25rem;
+  line-height: var(--lh-relaxed);
+  color: var(--text-secondary);
 }
 
 /* Gradient Text */
@@ -303,6 +352,103 @@ select:focus-visible {
   border-radius: 8px;
 }
 
+/* ==========================================
+   SCROLL REVEAL ANIMATIONS
+   ========================================== */
+
+/* Base state - elementos começam invisíveis */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity var(--duration-slower) var(--ease-smooth),
+    transform var(--duration-slower) var(--ease-smooth);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Variações de direção */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition:
+    opacity var(--duration-slower) var(--ease-smooth),
+    transform var(--duration-slower) var(--ease-smooth);
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition:
+    opacity var(--duration-slower) var(--ease-smooth),
+    transform var(--duration-slower) var(--ease-smooth);
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity var(--duration-slower) var(--ease-smooth),
+    transform var(--duration-slower) var(--ease-smooth);
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Delays escalonados para grupos */
+.reveal-delay-1 { transition-delay: 100ms; }
+.reveal-delay-2 { transition-delay: 200ms; }
+.reveal-delay-3 { transition-delay: 300ms; }
+.reveal-delay-4 { transition-delay: 400ms; }
+.reveal-delay-5 { transition-delay: 500ms; }
+
+/* ==========================================
+   HOVER MICRO-INTERACTIONS
+   ========================================== */
+
+/* Lift effect - para cards */
+.hover-lift {
+  transition: transform var(--duration-normal) var(--ease-smooth),
+              box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.hover-lift:hover {
+  transform: translateY(-6px);
+}
+
+/* Glow effect - para botões primários */
+.hover-glow {
+  transition: box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 30px rgba(0, 135, 255, 0.4);
+}
+
+/* Scale subtle - para ícones e elementos pequenos */
+.hover-scale {
+  transition: transform var(--duration-fast) var(--ease-smooth);
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
 
@@ -316,5 +462,13 @@ select:focus-visible {
 
   html {
     scroll-behavior: auto;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1;
+    transform: none;
   }
 }

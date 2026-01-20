@@ -1,8 +1,6 @@
 .section {
-    padding: 80px 0;
-    /* Reduced verticall padding */
+    padding: var(--section-padding-desktop, 100px) 0;
     position: relative;
-    /* Background transparente - sistema visual visível */
 }
 
 .badge {
@@ -48,21 +46,22 @@
 .stepCard {
     position: relative;
     padding: 32px 24px;
-    background: var(--glass-surface-low);
-    border: 1px solid var(--glass-border-subtle);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     text-align: center;
     transition: all 0.4s var(--ease-smooth);
     animation: fadeInUp 0.5s var(--ease-smooth) forwards;
     opacity: 0;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 
 .stepCard:hover {
-    background: var(--glass-surface-medium);
-    border-color: var(--glass-border-highlight);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(0, 135, 255, 0.2);
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .stepNumber {
@@ -148,7 +147,7 @@
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .section {
-        padding: 60px 0;
+        padding: var(--section-padding-mobile, 64px) 0;
     }
 
     .stepCard {

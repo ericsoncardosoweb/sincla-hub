@@ -7,12 +7,13 @@
 
 .hero {
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport para mobile */
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 100px 0 60px;
-    /* Reduced vertical padding */
+    padding: 120px 0 80px;
+    /* Mais respiro vertical - Atlassian style */
 }
 
 .container {

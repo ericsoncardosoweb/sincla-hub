@@ -1,11 +1,19 @@
+/* ==========================================
+   SUPPORT SECTION - Suporte e FAQ
+   ==========================================
+   Cards de canais e accordion FAQ
+   ========================================== */
+
 .section {
-    padding: 100px 0;
-    /* Background transparente - sistema visual visível */
+    padding: var(--section-padding-desktop, 100px) 0;
+    position: relative;
 }
 
 .title {
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 800;
+    letter-spacing: -0.02em;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
 .gradient {
@@ -13,32 +21,46 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    filter: drop-shadow(0 0 16px rgba(0, 135, 255, 0.15));
 }
 
+/* Channel Cards */
 .channelCard {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
-    padding: 24px;
+    padding: 28px;
     text-align: center;
-    transition: all 0.3s ease;
+    transition: all 0.35s var(--ease-smooth);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
 }
 
 .channelCard:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(0, 135, 255, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
+/* Accordion FAQ */
 .accordion {
     background: transparent;
 }
 
 .accordionItem {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     margin-bottom: 8px;
     overflow: hidden;
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    transition: all 0.3s var(--ease-smooth);
+}
+
+.accordionItem:hover {
+    border-color: var(--glass-border-medium);
 }
 
 .accordionControl {
@@ -47,26 +69,36 @@
 }
 
 .accordionControl:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--glass-surface-ultra);
 }
 
 .accordionPanel {
     padding-top: 0;
+    color: rgba(255, 255, 255, 0.7);
 }
 
+/* Contact Card */
 .contactCard {
-    background: rgba(0, 135, 255, 0.05);
-    border: 1px solid rgba(0, 135, 255, 0.1);
+    background: linear-gradient(
+        135deg,
+        rgba(0, 135, 255, 0.05) 0%,
+        rgba(0, 135, 255, 0.02) 100%
+    );
+    border: 1px solid rgba(0, 135, 255, 0.15);
     border-radius: 20px;
-    padding: 30px;
+    padding: 32px;
     flex: 1;
     max-width: 400px;
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
 }
 
+/* Form Inputs */
 .input {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--glass-surface-medium);
+    border: 1px solid var(--glass-border-subtle);
     color: white;
+    transition: border-color 0.2s ease;
 }
 
 .input::placeholder {
@@ -75,14 +107,24 @@
 
 .input:focus {
     border-color: #0087ff;
+    outline: none;
 }
+
+/* ==========================================
+   Responsividade
+   ========================================== */
 
 @media (max-width: 768px) {
     .section {
-        padding: 60px 0;
+        padding: var(--section-padding-mobile, 64px) 0;
     }
 
     .contactCard {
         max-width: 100%;
+        padding: 24px;
+    }
+
+    .channelCard {
+        padding: 24px;
     }
 }

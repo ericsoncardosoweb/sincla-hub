@@ -1,13 +1,53 @@
+/* ==========================================
+   FOOTER - Sincla Hub
+   ==========================================
+   Footer com glassmorphism premium
+   Fundo 3D visível através do efeito glass
+   ========================================== */
+
 .footer {
-    background: rgba(8, 8, 12, 0.4);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 60px 0 30px;
+    background: rgba(5, 8, 15, 0.4);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-top: 1px solid rgba(0, 135, 255, 0.15);
+    padding: 64px 0 32px;
     position: relative;
     z-index: 10;
 }
 
+/* Efeito de brilho sutil no topo do footer */
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0, 135, 255, 0.5) 50%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+/* Gradiente sutil de profundidade */
+.footer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(0, 135, 255, 0.03) 0%,
+        transparent 30%,
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Brand Section */
 .brandSection {
     grid-column: span 2;
 }
@@ -36,37 +76,57 @@
     background-clip: text;
 }
 
+/* Column Titles */
 .columnTitle {
     color: white;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 8px;
+    font-size: 0.8rem;
+    margin-bottom: 12px;
 }
 
+/* Links */
 .link {
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.875rem;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.2s var(--ease-smooth);
 }
 
 .link:hover {
     color: #0087ff;
 }
 
+/* Social Links */
 .socialLink {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.6);
-    transition: all 0.2s ease;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.25s var(--ease-smooth);
 }
 
 .socialLink:hover {
-    background: #0087ff;
-    color: white;
+    background: rgba(0, 135, 255, 0.2);
+    border-color: rgba(0, 135, 255, 0.4);
+    color: #00c6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 135, 255, 0.2);
+}
+
+/* ==========================================
+   Responsividade
+   ========================================== */
+
+@media (max-width: 768px) {
+    .footer {
+        padding: 48px 0 24px;
+    }
 }

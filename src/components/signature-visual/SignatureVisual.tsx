@@ -1,56 +1,89 @@
 /**
- * SignatureVisual - Sincla Flux (3D Ecosystem)
- * 
- * Sistema de partículas 3D proprietário que simula a integração
- * e o fluxo contínuo do ecossistema Sincla.
- * 
- * @performance Optimized with Canvas API & RequestAnimationFrame
+ * SignatureVisual - Sincla Flux (3D Network Ecosystem)
+ *
+ * Sistema de partículas 3D que materializa o conceito Sincla:
+ * - Nós representam pontos de dados (identidade, empresas, módulos)
+ * - Conexões representam fluxo de informações
+ * - Movimento contínuo = sistema sempre operando
+ *
+ * @performance Canvas API + requestAnimationFrame
+ * @brand Azul Sincla (#0087ff) com profundidade 3D
  */
 
 import { useEffect, useRef } from 'react';
 import styles from './SignatureVisual.module.css';
 
-interface Point3D {
+interface Particle {
     x: number;
     y: number;
     z: number;
-}
-
-interface Particle extends Point3D {
     vx: number;
     vy: number;
     vz: number;
     size: number;
+    baseAlpha: number;
 }
 
-const PARTICLE_COUNT_DESKTOP = 100;
-const PARTICLE_COUNT_MOBILE = 40;
-const CONNECTION_DISTANCE = 150;
-const ROTATION_SPEED = 0.001;
-const FOCAL_LENGTH = 800;
-const COLOR_PRIMARY = { r: 0, g: 135, b: 255 }; // Sincla Blue #0087ff
+// Configurações premium - mais partículas e mais visível
+const CONFIG = {
+    // Contagem de partículas (aumentado significativamente)
+    PARTICLE_COUNT_DESKTOP: 180,
+    PARTICLE_COUNT_MOBILE: 80,
+
+    // Distâncias e velocidades
+    CONNECTION_DISTANCE: 120,
+    ROTATION_SPEED: 0.0003,
+    DRIFT_SPEED: 0.12,
+    FOCAL_LENGTH: 900,
+    BOUNDS: 800,
+
+    // Opacidades - mais visível
+    PARTICLE_ALPHA_MIN: 0.15,
+    PARTICLE_ALPHA_MAX: 0.55,
+    CONNECTION_ALPHA_MAX: 0.18,
+
+    // Cores Sincla
+    COLOR_PRIMARY: { r: 0, g: 135, b: 255 },
+    COLOR_SECONDARY: { r: 0, g: 198, b: 255 },
+    COLOR_ACCENT: { r: 100, g: 180, b: 255 },
+} as const;
 
 export function SignatureVisual() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const particles = useRef<Particle[]>([]);
     const animationFrameId = useRef<number>(0);
+    const mouseRef = useRef({ x: 0.5, y: 0.5 });
 
-    // Inicialização das partículas
     const initParticles = (width: number, height: number, count: number) => {
         const newParticles: Particle[] = [];
-        // Spread particles in a 3D cohesive cloud
-        const spread = Math.min(width, height) * 1.5;
+        const spread = Math.max(width, height) * 1.4;
 
         for (let i = 0; i < count; i++) {
+            // Distribuição em 5 camadas de profundidade para maior densidade
+            const layerCount = 5;
+            const layer = Math.floor(i / (count / layerCount));
+            const zRanges = [
+                [-400, -200],  // Camada muito distante
+                [-200, 0],     // Camada distante
+                [0, 200],      // Camada média
+                [200, 400],    // Camada próxima
+                [400, 600],    // Camada muito próxima
+            ];
+            const zRange = zRanges[Math.min(layer, layerCount - 1)];
+
+            // Variação de tamanho baseada na camada
+            const sizeMultiplier = 1 + (layer / layerCount) * 0.5;
+
             newParticles.push({
                 x: (Math.random() - 0.5) * spread,
                 y: (Math.random() - 0.5) * spread,
-                z: (Math.random() - 0.5) * spread,
-                vx: (Math.random() - 0.5) * 0.2, // Slow drift
-                vy: (Math.random() - 0.5) * 0.2,
-                vz: (Math.random() - 0.5) * 0.2,
-                size: Math.random() * 2 + 1, // 1px to 3px
+                z: zRange[0] + Math.random() * (zRange[1] - zRange[0]),
+                vx: (Math.random() - 0.5) * CONFIG.DRIFT_SPEED,
+                vy: (Math.random() - 0.5) * CONFIG.DRIFT_SPEED,
+                vz: (Math.random() - 0.5) * CONFIG.DRIFT_SPEED * 0.3,
+                size: (1.5 + Math.random() * 2.5) * sizeMultiplier,
+                baseAlpha: 0.5 + Math.random() * 0.5,
             });
         }
         particles.current = newParticles;
@@ -61,7 +94,7 @@ export function SignatureVisual() {
         const container = containerRef.current;
         if (!canvas || !container) return;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: true });
         if (!ctx) return;
 
         let width = 0;
@@ -69,13 +102,11 @@ export function SignatureVisual() {
         let cx = 0;
         let cy = 0;
 
-        // Resize Helper
         const handleResize = () => {
             width = container.clientWidth;
             height = container.clientHeight;
 
-            // Handle HiDPI displays
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
             canvas.width = width * dpr;
             canvas.height = height * dpr;
             ctx.scale(dpr, dpr);
@@ -86,35 +117,48 @@ export function SignatureVisual() {
             cy = height / 2;
 
             const isMobile = width < 768;
-            initParticles(width, height, isMobile ? PARTICLE_COUNT_MOBILE : PARTICLE_COUNT_DESKTOP);
+            initParticles(
+                width,
+                height,
+                isMobile ? CONFIG.PARTICLE_COUNT_MOBILE : CONFIG.PARTICLE_COUNT_DESKTOP
+            );
         };
 
-        // Render Loop
+        const handleMouseMove = (e: MouseEvent) => {
+            mouseRef.current = {
+                x: e.clientX / width,
+                y: e.clientY / height,
+            };
+        };
+
         const render = () => {
-            // Clear canvas but keep context opacity clean
             ctx.clearRect(0, 0, width, height);
 
-            // Opacity Logic: we want 3D sorted drawing or distinct passes?
-            // Simple depth-sorting usually looks better for opacity blending
+            // Ordenar por profundidade (mais distantes primeiro)
             particles.current.sort((a, b) => b.z - a.z);
 
-            // Update & Rotate Logic
-            const cosRot = Math.cos(ROTATION_SPEED);
-            const sinRot = Math.sin(ROTATION_SPEED);
+            const cosRot = Math.cos(CONFIG.ROTATION_SPEED);
+            const sinRot = Math.sin(CONFIG.ROTATION_SPEED);
+
+            // Influência sutil do mouse no centro de rotação
+            const mouseInfluence = 0.1;
+            const offsetX = (mouseRef.current.x - 0.5) * 100 * mouseInfluence;
+            const offsetY = (mouseRef.current.y - 0.5) * 100 * mouseInfluence;
 
             particles.current.forEach((p, i) => {
-                // Rotation around Y axis
-                const x = p.x * cosRot - p.z * sinRot;
-                const z = p.z * cosRot + p.x * sinRot;
-                p.x = x;
-                p.z = z;
+                // Rotação em torno do eixo Y
+                const newX = p.x * cosRot - p.z * sinRot;
+                const newZ = p.z * cosRot + p.x * sinRot;
+                p.x = newX;
+                p.z = newZ;
 
-                // Drift
+                // Drift lento
                 p.x += p.vx;
                 p.y += p.vy;
+                p.z += p.vz;
 
-                // Bounds loop (keep them inside the volume)
-                const bounds = 800;
+                // Loop nos limites
+                const bounds = CONFIG.BOUNDS;
                 if (p.x > bounds) p.x = -bounds;
                 if (p.x < -bounds) p.x = bounds;
                 if (p.y > bounds) p.y = -bounds;
@@ -122,69 +166,101 @@ export function SignatureVisual() {
                 if (p.z > bounds) p.z = -bounds;
                 if (p.z < -bounds) p.z = bounds;
 
-                // Projection
-                const perspective = FOCAL_LENGTH / (FOCAL_LENGTH + p.z);
+                // Projeção 3D -> 2D
+                const perspective = CONFIG.FOCAL_LENGTH / (CONFIG.FOCAL_LENGTH + p.z);
+                if (perspective <= 0 || perspective > 3) return;
 
-                // Don't draw if behind camera or too close
-                if (perspective < 0) return;
+                const screenX = cx + (p.x + offsetX) * perspective;
+                const screenY = cy + (p.y + offsetY) * perspective;
 
-                const screenX = cx + p.x * perspective;
-                const screenY = cy + p.y * perspective;
+                // Alpha baseado em profundidade (mais perto = mais visível)
+                const depthNormalized = (p.z + bounds) / (bounds * 2);
+                const depthAlpha = CONFIG.PARTICLE_ALPHA_MIN +
+                    (CONFIG.PARTICLE_ALPHA_MAX - CONFIG.PARTICLE_ALPHA_MIN) * (1 - depthNormalized);
+                const alpha = depthAlpha * p.baseAlpha;
 
-                // Depth Opacity (Fog)
-                // Normalize Z: -800 to 800 -> alpha 1 to 0
-                // We want distant things to be invisible
-                const alpha = Math.max(0.05, Math.min(0.4, (p.z + 1000) / 2000));
-
-                // Draw Connections
-                // We verify connections against unsorted active subset to save some perf?
-                // For simplified visual, we just check neighbours in the array or spatial grid.
-                // Simple version: Check all vs all? N^2 is fine for N=100.
+                // Desenhar conexões
                 for (let j = i + 1; j < particles.current.length; j++) {
                     const p2 = particles.current[j];
                     const dx = p.x - p2.x;
                     const dy = p.y - p2.y;
                     const dz = p.z - p2.z;
                     const distSq = dx * dx + dy * dy + dz * dz;
+                    const maxDistSq = CONFIG.CONNECTION_DISTANCE * CONFIG.CONNECTION_DISTANCE;
 
-                    // 3D Distance check
-                    if (distSq < CONNECTION_DISTANCE * CONNECTION_DISTANCE) {
+                    if (distSq < maxDistSq) {
                         const dist = Math.sqrt(distSq);
-                        const perspective2 = FOCAL_LENGTH / (FOCAL_LENGTH + p2.z);
-                        if (perspective2 < 0) continue;
+                        const perspective2 = CONFIG.FOCAL_LENGTH / (CONFIG.FOCAL_LENGTH + p2.z);
+                        if (perspective2 <= 0) continue;
 
-                        const screenX2 = cx + p2.x * perspective2;
-                        const screenY2 = cy + p2.y * perspective2;
+                        const screenX2 = cx + (p2.x + offsetX) * perspective2;
+                        const screenY2 = cy + (p2.y + offsetY) * perspective2;
 
-                        // Connection opacity based on distance between points
-                        const linkAlpha = (1 - dist / CONNECTION_DISTANCE) * 0.15 * alpha; // VERY subtle lines
+                        // Opacidade da conexão baseada em distância e profundidade
+                        const distanceFactor = 1 - (dist / CONFIG.CONNECTION_DISTANCE);
+                        const avgDepth = (depthNormalized + (p2.z + bounds) / (bounds * 2)) / 2;
+                        const linkAlpha = distanceFactor * CONFIG.CONNECTION_ALPHA_MAX * (1 - avgDepth * 0.5);
+
+                        // Gradiente de cor baseado em profundidade
+                        const colorMix = avgDepth;
+                        const r = Math.round(CONFIG.COLOR_PRIMARY.r + (CONFIG.COLOR_SECONDARY.r - CONFIG.COLOR_PRIMARY.r) * colorMix);
+                        const g = Math.round(CONFIG.COLOR_PRIMARY.g + (CONFIG.COLOR_SECONDARY.g - CONFIG.COLOR_PRIMARY.g) * colorMix);
+                        const b = Math.round(CONFIG.COLOR_PRIMARY.b + (CONFIG.COLOR_SECONDARY.b - CONFIG.COLOR_PRIMARY.b) * colorMix);
 
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(${COLOR_PRIMARY.r}, ${COLOR_PRIMARY.g}, ${COLOR_PRIMARY.b}, ${linkAlpha})`;
-                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${linkAlpha})`;
+                        ctx.lineWidth = Math.max(0.5, 1.5 * Math.min(perspective, perspective2));
                         ctx.moveTo(screenX, screenY);
                         ctx.lineTo(screenX2, screenY2);
                         ctx.stroke();
                     }
                 }
 
-                // Draw Particle
+                // Desenhar partícula
+                const particleSize = p.size * perspective;
+
+                // Glow com efeito glassmorphism (blur visual)
+                if (alpha > 0.1) {
+                    // Glow externo difuso (simula blur)
+                    const glowSize = particleSize * 5;
+                    const gradient = ctx.createRadialGradient(
+                        screenX, screenY, 0,
+                        screenX, screenY, glowSize
+                    );
+                    gradient.addColorStop(0, `rgba(${CONFIG.COLOR_PRIMARY.r}, ${CONFIG.COLOR_PRIMARY.g}, ${CONFIG.COLOR_PRIMARY.b}, ${alpha * 0.4})`);
+                    gradient.addColorStop(0.3, `rgba(${CONFIG.COLOR_SECONDARY.r}, ${CONFIG.COLOR_SECONDARY.g}, ${CONFIG.COLOR_SECONDARY.b}, ${alpha * 0.2})`);
+                    gradient.addColorStop(0.6, `rgba(${CONFIG.COLOR_ACCENT.r}, ${CONFIG.COLOR_ACCENT.g}, ${CONFIG.COLOR_ACCENT.b}, ${alpha * 0.08})`);
+                    gradient.addColorStop(1, 'transparent');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(screenX - glowSize, screenY - glowSize, glowSize * 2, glowSize * 2);
+                }
+
+                // Núcleo brilhante da partícula
+                const coreGradient = ctx.createRadialGradient(
+                    screenX, screenY, 0,
+                    screenX, screenY, particleSize
+                );
+                coreGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.9})`);
+                coreGradient.addColorStop(0.3, `rgba(${CONFIG.COLOR_SECONDARY.r}, ${CONFIG.COLOR_SECONDARY.g}, ${CONFIG.COLOR_SECONDARY.b}, ${alpha})`);
+                coreGradient.addColorStop(1, `rgba(${CONFIG.COLOR_PRIMARY.r}, ${CONFIG.COLOR_PRIMARY.g}, ${CONFIG.COLOR_PRIMARY.b}, ${alpha * 0.5})`);
+
                 ctx.beginPath();
-                ctx.fillStyle = `rgba(${COLOR_PRIMARY.r}, ${COLOR_PRIMARY.g}, ${COLOR_PRIMARY.b}, ${alpha})`;
-                ctx.arc(screenX, screenY, p.size * perspective, 0, Math.PI * 2);
+                ctx.fillStyle = coreGradient;
+                ctx.arc(screenX, screenY, particleSize, 0, Math.PI * 2);
                 ctx.fill();
             });
 
             animationFrameId.current = requestAnimationFrame(render);
         };
 
-        // Bootstrap
         handleResize();
         window.addEventListener('resize', handleResize);
+        window.addEventListener('mousemove', handleMouseMove);
         render();
 
         return () => {
             window.removeEventListener('resize', handleResize);
+            window.removeEventListener('mousemove', handleMouseMove);
             cancelAnimationFrame(animationFrameId.current);
         };
     }, []);
