@@ -2,18 +2,33 @@
    PARTNERS SECTION - Programa de Parceiros
    ==========================================
    Cards de níveis com tema dourado
+   Atlassian-level polish
    ========================================== */
 
 .section {
-    padding: var(--section-padding-desktop, 100px) 0;
+    padding: var(--section-padding-desktop, 120px) 0;
     position: relative;
+}
+
+/* Badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 100px;
+    color: #FFD700;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .title {
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 800;
-    letter-spacing: -0.02em;
-    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    color: white;
 }
 
 .gradient {
@@ -21,24 +36,31 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    filter: drop-shadow(0 0 16px rgba(255, 215, 0, 0.15));
+    filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.25));
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.125rem;
+    line-height: 1.6;
 }
 
 /* Level Cards */
 .levelCard {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.035);
     border: 1px solid rgba(255, 215, 0, 0.1);
+    border-top: 1px solid rgba(255, 215, 0, 0.15);
     border-radius: 24px;
     padding: 32px;
     text-align: center;
-    transition: all 0.35s var(--ease-smooth);
+    transition: all 300ms var(--ease-smooth);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
 }
 
-/* Barra de cor no topo */
+/* Color bar on top */
 .levelCard::before {
     content: '';
     position: absolute;
@@ -51,14 +73,26 @@
 
 .levelCard:hover {
     background: rgba(255, 215, 0, 0.06);
-    border-color: rgba(255, 215, 0, 0.2);
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 215, 0, 0.08);
+    border-color: rgba(255, 215, 0, 0.25);
+    transform: translateY(-6px);
+    box-shadow:
+        0 24px 48px -12px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(255, 215, 0, 0.1);
 }
 
 .levelIcon {
     margin: 0 auto;
     color: white;
+    transition: transform 300ms var(--ease-smooth);
+}
+
+.levelCard:hover .levelIcon {
+    transform: scale(1.1);
+}
+
+.levelName {
+    color: white;
+    letter-spacing: -0.01em;
 }
 
 .commission {
@@ -70,6 +104,15 @@
     background-clip: text;
     line-height: 1;
     letter-spacing: -0.03em;
+}
+
+.commissionLabel {
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 16px;
+}
+
+.requirement {
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .checkIcon {
@@ -85,6 +128,10 @@
     flex-shrink: 0;
 }
 
+.benefitText {
+    color: rgba(255, 255, 255, 0.6);
+}
+
 /* CTA Card */
 .ctaCard {
     background: linear-gradient(
@@ -93,21 +140,41 @@
         rgba(255, 165, 0, 0.03) 100%
     );
     border: 1px solid rgba(255, 215, 0, 0.15);
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
     border-radius: 24px;
     padding: 40px;
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+}
+
+.ctaTitle {
+    color: white;
+}
+
+.ctaDescription {
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.6;
 }
 
 .ctaButton {
     font-weight: 600;
+    padding: 0 32px;
+    height: 52px;
+    font-size: 1rem;
+    border-radius: 10px;
     color: #0a0a0f !important;
-    transition: transform 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth);
+    transition: transform 250ms var(--ease-smooth),
+                box-shadow 250ms var(--ease-smooth);
+    box-shadow:
+        0 4px 20px rgba(255, 215, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .ctaButton:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(255, 215, 0, 0.35);
+    box-shadow:
+        0 12px 40px rgba(255, 215, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* ==========================================
@@ -116,12 +183,21 @@
 
 @media (max-width: 768px) {
     .section {
-        padding: var(--section-padding-mobile, 64px) 0;
+        padding: var(--section-padding-mobile, 80px) 0;
     }
 
     .ctaCard {
         padding: 28px;
         text-align: center;
+    }
+
+    .ctaCard > div {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .ctaButton {
+        width: 100%;
     }
 
     .commission {

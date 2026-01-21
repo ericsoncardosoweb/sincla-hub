@@ -1,4 +1,4 @@
-import { Container, Title, Text, Stack, SimpleGrid, Card, Group, Box, Button, Accordion, TextInput, Textarea, ThemeIcon, Badge } from '@mantine/core';
+import { Container, Title, Text, Stack, SimpleGrid, Card, Group, Box, Button, Accordion, TextInput, Textarea, ThemeIcon } from '@mantine/core';
 import { IconHeadset, IconBook, IconUsers, IconMessageCircle, IconMail, IconArrowRight, IconChevronDown } from '@tabler/icons-react';
 import classes from './Support.module.css';
 
@@ -6,25 +6,25 @@ const supportChannels = [
     {
         icon: IconBook,
         title: 'Base de Conhecimento',
-        description: 'Tutoriais, guias e FAQs organizados por plataforma.',
+        description: 'Tutoriais e guias organizados.',
         action: 'Acessar',
     },
     {
         icon: IconMessageCircle,
         title: 'Chat com Suporte',
-        description: 'Atendimento em tempo real para dúvidas rápidas.',
+        description: 'Atendimento em tempo real.',
         action: 'Iniciar Chat',
     },
     {
         icon: IconUsers,
-        title: 'Consultores Parceiros',
-        description: 'Conecte-se com profissionais certificados.',
+        title: 'Consultores',
+        description: 'Profissionais certificados.',
         action: 'Encontrar',
     },
     {
         icon: IconHeadset,
         title: 'Suporte Premium',
-        description: 'Atendimento prioritário para clientes enterprise.',
+        description: 'Atendimento prioritário.',
         action: 'Agendar',
     },
 ];
@@ -32,23 +32,19 @@ const supportChannels = [
 const faqs = [
     {
         question: 'Como funciona o cadastro unificado?',
-        answer: 'Ao se cadastrar no Sincla Hub, você tem acesso a todas as plataformas com um único login. Seus dados são sincronizados automaticamente entre os produtos que você utiliza.',
+        answer: 'Ao se cadastrar no Sincla Hub, você tem acesso a todas as plataformas com um único login. Seus dados são sincronizados automaticamente.',
     },
     {
         question: 'Posso testar as plataformas gratuitamente?',
-        answer: 'Sim! Todas as plataformas oferecem período de teste gratuito. Basta acessar o produto desejado e começar a usar. Sem cartão de crédito.',
+        answer: 'Sim! Todas as plataformas oferecem período de teste gratuito. Sem cartão de crédito.',
     },
     {
         question: 'Como funcionam os descontos para assinantes?',
-        answer: 'Assinantes de qualquer produto Sincla têm 15% de desconto em outras plataformas. Para empresas, colaboradores ganham 50% de desconto em ferramentas pessoais como Bolso e Agenda.',
+        answer: 'Assinantes de qualquer produto Sincla têm 15% de desconto em outras plataformas. Colaboradores ganham 50% em ferramentas pessoais.',
     },
     {
         question: 'As plataformas são integradas entre si?',
-        answer: 'Sim! O Sincla RH se integra com EAD para treinamentos e com Intranet para comunicação. Todas as plataformas compartilham o mesmo ecossistema de autenticação.',
-    },
-    {
-        question: 'Como me torno um consultor parceiro?',
-        answer: 'Basta se cadastrar no programa de parceiros, completar a certificação básica e começar a indicar clientes. Você ganha comissões de 10% a 20% dependendo do seu nível.',
+        answer: 'Sim! O Sincla RH se integra com EAD para treinamentos e todas compartilham o mesmo ecossistema de autenticação.',
     },
 ];
 
@@ -56,40 +52,54 @@ export function Support() {
     return (
         <section className={classes.section} id="suporte">
             <Container size="xl">
-                <Stack align="center" gap="lg" mb={60}>
-                    <Badge size="lg" variant="light" color="cyan">
-                        Central de Suporte
-                    </Badge>
+                <Stack align="center" gap="md" mb={60}>
+                    <Box className={classes.badge}>
+                        <Text size="xs" fw={600} tt="uppercase" lts={0.5}>
+                            Central de Suporte
+                        </Text>
+                    </Box>
                     <Title order={2} ta="center" className={classes.title}>
                         Estamos aqui para{' '}
                         <span className={classes.gradient}>ajudar</span>
                     </Title>
-                    <Text size="lg" c="dimmed" ta="center" maw={600}>
-                        Múltiplos canais de atendimento para garantir que você
-                        sempre tenha suporte quando precisar.
+                    <Text className={classes.subtitle} ta="center" maw={500}>
+                        Múltiplos canais de atendimento para garantir suporte quando precisar.
                     </Text>
                 </Stack>
 
                 {/* Support Channels */}
-                <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg" mb={80}>
+                <SimpleGrid
+                    cols={{ base: 1, sm: 2, lg: 4 }}
+                    spacing="lg"
+                    mb={80}
+                >
                     {supportChannels.map((channel) => (
-                        <Card key={channel.title} className={classes.channelCard}>
+                        <Card
+                            key={channel.title}
+                            className={classes.channelCard}
+                        >
                             <ThemeIcon
                                 size={50}
                                 radius="xl"
                                 variant="gradient"
                                 gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
                                 mb="md"
+                                className={classes.channelIcon}
                             >
                                 <channel.icon size={24} />
                             </ThemeIcon>
-                            <Text fw={700} size="lg" mb="xs">{channel.title}</Text>
-                            <Text size="sm" c="dimmed" mb="lg">{channel.description}</Text>
+                            <Text fw={700} size="lg" mb="xs" className={classes.channelTitle}>
+                                {channel.title}
+                            </Text>
+                            <Text size="sm" className={classes.channelDescription} mb="lg">
+                                {channel.description}
+                            </Text>
                             <Button
                                 variant="light"
                                 color="blue"
                                 fullWidth
                                 rightSection={<IconArrowRight size={14} />}
+                                className={classes.channelButton}
                             >
                                 {channel.action}
                             </Button>
@@ -100,7 +110,9 @@ export function Support() {
                 {/* FAQ Section */}
                 <Group wrap="wrap" align="flex-start" gap={60}>
                     <Box flex={1} miw={300}>
-                        <Title order={3} mb="lg">Perguntas Frequentes</Title>
+                        <Title order={3} mb="lg" className={classes.faqTitle}>
+                            Perguntas Frequentes
+                        </Title>
                         <Accordion
                             variant="separated"
                             className={classes.accordion}
@@ -112,7 +124,9 @@ export function Support() {
                                         {faq.question}
                                     </Accordion.Control>
                                     <Accordion.Panel className={classes.accordionPanel}>
-                                        <Text size="sm" c="dimmed">{faq.answer}</Text>
+                                        <Text size="sm" className={classes.accordionAnswer}>
+                                            {faq.answer}
+                                        </Text>
                                     </Accordion.Panel>
                                 </Accordion.Item>
                             ))}
@@ -123,30 +137,33 @@ export function Support() {
                     <Card className={classes.contactCard} miw={350}>
                         <Group gap="sm" mb="lg">
                             <IconMail size={24} color="#0087ff" />
-                            <Text fw={700} size="lg">Envie uma mensagem</Text>
+                            <Text fw={700} size="lg" className={classes.contactTitle}>
+                                Envie uma mensagem
+                            </Text>
                         </Group>
                         <Stack gap="md">
                             <TextInput
                                 label="Nome"
                                 placeholder="Seu nome"
-                                classNames={{ input: classes.input }}
+                                classNames={{ input: classes.input, label: classes.inputLabel }}
                             />
                             <TextInput
                                 label="E-mail"
                                 placeholder="seu@email.com"
-                                classNames={{ input: classes.input }}
+                                classNames={{ input: classes.input, label: classes.inputLabel }}
                             />
                             <Textarea
                                 label="Mensagem"
                                 placeholder="Como podemos ajudar?"
                                 minRows={4}
-                                classNames={{ input: classes.input }}
+                                classNames={{ input: classes.input, label: classes.inputLabel }}
                             />
                             <Button
                                 variant="gradient"
-                                gradient={{ from: '#0087ff', to: '#00c6ff', deg: 90 }}
+                                gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
                                 fullWidth
                                 mt="sm"
+                                className={classes.submitButton}
                             >
                                 Enviar Mensagem
                             </Button>

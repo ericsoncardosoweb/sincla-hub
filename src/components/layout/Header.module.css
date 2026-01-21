@@ -1,3 +1,9 @@
+/* ==========================================
+   HEADER - Sincla Hub
+   ==========================================
+   Mega menus estilo Atlassian com glassmorphism
+   ========================================== */
+
 .header {
     position: fixed;
     top: 0;
@@ -11,59 +17,71 @@
     background: transparent;
 }
 
-.scrolled {
-    background: rgba(10, 10, 15, 0.75);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+.scrolled,
+.menuOpen {
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
 }
 
 .logo {
     cursor: pointer;
-}
-
-.logoIcon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
-    border-radius: 10px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: white;
 }
 
-.logoText {
-    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+/* Navigation Items */
+.navItem {
+    position: relative;
+    padding: 0 16px;
+    height: 70px;
+    display: flex;
+    align-items: center;
 }
 
 .navLink {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
     font-weight: 500;
     transition: color 0.2s ease;
     text-decoration: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.navLink:hover {
-    color: #0087ff;
+.navLink:hover,
+.navItem.active .navLink {
+    color: #00c6ff;
 }
 
+.chevron {
+    transition: transform 0.2s ease;
+    margin-left: 2px;
+}
+
+.navItem.active .chevron {
+    transform: rotate(180deg);
+}
+
+/* CTA Buttons */
 .loginBtn {
     color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
 }
 
 .loginBtn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
 }
 
 .ctaBtn {
     font-weight: 600;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 8px;
 }
 
 .ctaBtn:hover {
@@ -71,16 +89,300 @@
     box-shadow: 0 8px 25px rgba(0, 135, 255, 0.4);
 }
 
+/* ==========================================
+   MEGA MENU WRAPPER
+   ========================================== */
+
+.megaMenuWrapper {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.25s ease;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.megaMenuWrapper.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.megaMenu {
+    display: flex;
+    gap: 40px;
+    padding: 32px 0;
+}
+
+.megaMenuContent {
+    flex: 1;
+}
+
+.megaMenuSidebar {
+    width: 280px;
+    padding-left: 40px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Menu Labels */
+.menuLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* ==========================================
+   PRODUTOS MENU
+   ========================================== */
+
+.productCard {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.productCard:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.productIcon {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.productCard:hover .productIcon {
+    transform: scale(1.05);
+}
+
+.productName {
+    color: white;
+    font-size: 0.95rem;
+}
+
+.productDesc {
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+}
+
+.comingSoonTag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.menuFooter {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.menuFooterLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0087ff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.menuFooterLink:hover {
+    color: #00c6ff;
+}
+
+/* ==========================================
+   SOLUÇÕES MENU
+   ========================================== */
+
+.solutionsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    flex: 1;
+}
+
+.solutionLink {
+    display: block;
+    padding: 8px 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.solutionLink:hover {
+    color: #00c6ff;
+    padding-left: 8px;
+}
+
+/* ==========================================
+   POR QUE SINCLA MENU
+   ========================================== */
+
+.whySinclaGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    flex: 1;
+}
+
+.whyCard {
+    padding: 20px;
+    border-radius: 16px;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.whyCard:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.whyIcon {
+    margin: 0 auto;
+    transition: transform 0.2s ease;
+}
+
+.whyCard:hover .whyIcon {
+    transform: scale(1.1);
+}
+
+.whyTitle {
+    color: white;
+    font-size: 0.95rem;
+}
+
+.whyDesc {
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+}
+
+/* ==========================================
+   RECURSOS MENU
+   ========================================== */
+
+.resourcesGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    flex: 1;
+}
+
+.resourceLink {
+    display: block;
+    padding: 8px 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.resourceLink:hover {
+    color: #00c6ff;
+    padding-left: 8px;
+}
+
+/* ==========================================
+   HIGHLIGHT CARD (Sidebar)
+   ========================================== */
+
+.highlightCard {
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    margin-top: 16px;
+}
+
+.highlightTitle {
+    color: white;
+    font-size: 1rem;
+}
+
+.highlightDesc {
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.5;
+    margin-top: 4px;
+}
+
+/* ==========================================
+   MOBILE STYLES
+   ========================================== */
+
+.mobileMenuLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: -8px;
+}
+
 .mobileNavLink {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 500;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     text-decoration: none;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .mobileNavLink:hover {
-    color: #0087ff;
+    color: #00c6ff;
+}
+
+/* ==========================================
+   RESPONSIVIDADE
+   ========================================== */
+
+@media (max-width: 1200px) {
+    .megaMenuSidebar {
+        width: 240px;
+        padding-left: 32px;
+    }
+
+    .solutionsGrid,
+    .resourcesGrid {
+        gap: 24px;
+    }
+
+    .whySinclaGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .megaMenuWrapper {
+        display: none;
+    }
+
+    .navItem {
+        display: none;
+    }
 }

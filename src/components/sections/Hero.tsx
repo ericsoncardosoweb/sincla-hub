@@ -1,5 +1,6 @@
 import { Container, Title, Text, Button, Group, Box, Stack } from '@mantine/core';
-import { IconArrowRight } from '@tabler/icons-react';
+import { IconArrowRight, IconPlayerPlay } from '@tabler/icons-react';
+import { useScrollReveal } from '../../hooks/useScrollReveal';
 import classes from './Hero.module.css';
 
 interface HeroProps {
@@ -7,35 +8,45 @@ interface HeroProps {
 }
 
 export function Hero({ onOpenModal }: HeroProps) {
+    const heroRef = useScrollReveal(0.1);
+
     return (
         <section id="hero" className={classes.hero}>
             <Container size="xl" className={classes.container}>
-                <Stack align="center" gap="xl">
-                    {/* Badge */}
+                <Stack
+                    align="center"
+                    gap={0}
+                    ref={heroRef as React.RefObject<HTMLDivElement>}
+                    className="reveal"
+                >
+                    {/* Badge - Atlassian style chip */}
                     <Box className={classes.badge}>
-                        <Text size="sm" fw={500}>Ecossistema de Gestão para PMEs</Text>
+                        <span className={classes.badgeDot} />
+                        <Text size="sm" fw={600} tt="uppercase" lts={0.5}>
+                            Ecossistema Unificado
+                        </Text>
                     </Box>
 
-                    {/* Main Heading */}
-                    <Title order={1} ta="center" className={classes.title}>
-                        Cadastre uma vez.{' '}
+                    {/* Main Heading - Strong, clear hierarchy */}
+                    <Title order={1} ta="center" className={classes.title} mt={24}>
+                        <span className={classes.titleLine}>Cadastre uma vez.</span>
                         <br />
                         <span className={classes.gradient}>Use em todo lugar.</span>
                     </Title>
 
-                    {/* Subtitle */}
-                    <Text size="lg" c="dimmed" ta="center" maw={650} className={classes.subtitle}>
-                        Sua identidade pessoal e os dados da sua empresa, centralizados.
-                        Um único cadastro desbloqueia RH, EAD, Finanças, Leads e mais —
-                        sem preencher formulários repetidos, sem múltiplas senhas.
+                    {/* Subtitle - Clear value proposition */}
+                    <Text ta="center" className={classes.subtitle} mt={24}>
+                        Sua identidade pessoal e os dados da sua empresa, centralizados em um único hub.
+                        <br className={classes.subtitleBreak} />
+                        Acesse RH, EAD, Finanças, Leads e mais — sem formulários repetidos.
                     </Text>
 
-                    {/* CTA Buttons */}
-                    <Group gap="md" mt="md">
+                    {/* CTA Buttons - Primary action prominent */}
+                    <Group gap="md" mt={40} className={classes.ctaGroup}>
                         <Button
                             size="lg"
                             variant="gradient"
-                            gradient={{ from: '#0087ff', to: '#00c6ff', deg: 90 }}
+                            gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
                             rightSection={<IconArrowRight size={18} />}
                             className={classes.ctaPrimary}
                             onClick={onOpenModal}
@@ -44,36 +55,41 @@ export function Hero({ onOpenModal }: HeroProps) {
                         </Button>
                         <Button
                             size="lg"
-                            variant="outline"
+                            variant="subtle"
                             color="gray"
+                            leftSection={<IconPlayerPlay size={16} />}
                             className={classes.ctaSecondary}
                             component="a"
                             href="#como-funciona"
                         >
-                            Ver como funciona
+                            Ver demonstração
                         </Button>
                     </Group>
 
-                    {/* Microcopy */}
-                    <Text size="sm" c="dimmed" className={classes.microcopy}>
-                        Cadastro único + 1 módulo ativo. Sem cartão, sem burocracia.
+                    {/* Trust signal - Minimal, Atlassian style */}
+                    <Text size="sm" className={classes.trustSignal} mt={16}>
+                        Gratuito para começar • Sem cartão de crédito
                     </Text>
 
-                    {/* Stats */}
-                    <Group gap={60} mt={80} className={classes.stats}>
-                        <Box ta="center">
-                            <Text className={classes.statNumber}>500+</Text>
-                            <Text size="sm" c="dimmed">empresas cadastradas</Text>
-                        </Box>
-                        <Box ta="center">
-                            <Text className={classes.statNumber}>15.000+</Text>
-                            <Text size="sm" c="dimmed">usuários ativos</Text>
-                        </Box>
-                        <Box ta="center">
-                            <Text className={classes.statNumber}>Zero</Text>
-                            <Text size="sm" c="dimmed">cadastros repetidos</Text>
-                        </Box>
-                    </Group>
+                    {/* Stats - Social proof with glassmorphism */}
+                    <Box className={classes.statsContainer} mt={80}>
+                        <Group gap={0} className={classes.stats}>
+                            <Box className={classes.statItem}>
+                                <Text className={classes.statNumber}>500+</Text>
+                                <Text className={classes.statLabel}>Empresas ativas</Text>
+                            </Box>
+                            <Box className={classes.statDivider} />
+                            <Box className={classes.statItem}>
+                                <Text className={classes.statNumber}>15k+</Text>
+                                <Text className={classes.statLabel}>Usuários</Text>
+                            </Box>
+                            <Box className={classes.statDivider} />
+                            <Box className={classes.statItem}>
+                                <Text className={classes.statNumber}>Zero</Text>
+                                <Text className={classes.statLabel}>Retrabalho</Text>
+                            </Box>
+                        </Group>
+                    </Box>
                 </Stack>
             </Container>
         </section>

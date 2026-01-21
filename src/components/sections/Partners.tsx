@@ -1,4 +1,4 @@
-import { Container, Title, Text, Stack, Card, Group, Box, Button, Badge, SimpleGrid, ThemeIcon } from '@mantine/core';
+import { Container, Title, Text, Stack, Card, Group, Box, Button, SimpleGrid, ThemeIcon } from '@mantine/core';
 import { IconMedal, IconArrowRight, IconStar, IconUsers, IconChartLine } from '@tabler/icons-react';
 import { partnerLevels } from '../../data/platforms';
 import classes from './Partners.module.css';
@@ -19,22 +19,27 @@ export function Partners() {
     return (
         <section className={classes.section} id="parceiros">
             <Container size="xl">
-                <Stack align="center" gap="lg" mb={60}>
-                    <Badge size="lg" variant="light" color="yellow">
-                        Programa de Parceiros
-                    </Badge>
+                <Stack align="center" gap="md" mb={60}>
+                    <Box className={classes.badge}>
+                        <Text size="xs" fw={600} tt="uppercase" lts={0.5}>
+                            Programa de Parceiros
+                        </Text>
+                    </Box>
                     <Title order={2} ta="center" className={classes.title}>
                         Seja um{' '}
                         <span className={classes.gradient}>Consultor Sincla</span>
                     </Title>
-                    <Text size="lg" c="dimmed" ta="center" maw={600}>
-                        Ajude empresas a transformarem seus negócios com nossas soluções
-                        e ganhe comissões atrativas a cada cliente indicado.
+                    <Text className={classes.subtitle} ta="center" maw={550}>
+                        Ajude empresas a transformarem seus negócios e ganhe comissões atrativas.
                     </Text>
                 </Stack>
 
                 {/* Partner Levels */}
-                <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg" mb={60}>
+                <SimpleGrid
+                    cols={{ base: 1, md: 3 }}
+                    spacing="lg"
+                    mb={60}
+                >
                     {partnerLevels.map((level) => {
                         const Icon = levelIcons[level.id] || IconMedal;
                         const color = levelColors[level.id];
@@ -54,14 +59,16 @@ export function Partners() {
                                     <Icon size={30} stroke={1.5} />
                                 </ThemeIcon>
 
-                                <Text fw={700} size="xl" mt="md" mb="xs">{level.name}</Text>
+                                <Text fw={700} size="xl" mt="md" mb="xs" className={classes.levelName}>
+                                    {level.name}
+                                </Text>
 
                                 <Text className={classes.commission}>
                                     {level.commission}%
                                 </Text>
-                                <Text size="sm" c="dimmed" mb="md">de comissão</Text>
+                                <Text size="sm" className={classes.commissionLabel}>de comissão</Text>
 
-                                <Text size="sm" c="dimmed" mb="lg">
+                                <Text size="sm" className={classes.requirement} mb="lg">
                                     <strong>Requisito:</strong> {level.requirements}
                                 </Text>
 
@@ -69,7 +76,7 @@ export function Partners() {
                                     {level.benefits.map((benefit, idx) => (
                                         <Group key={idx} gap="xs">
                                             <Box className={classes.checkIcon} style={{ background: color }}>✓</Box>
-                                            <Text size="sm" c="dimmed">{benefit}</Text>
+                                            <Text size="sm" className={classes.benefitText}>{benefit}</Text>
                                         </Group>
                                     ))}
                                 </Stack>
@@ -84,20 +91,19 @@ export function Partners() {
                         <Box>
                             <Group gap="sm" mb="xs">
                                 <IconUsers size={24} color="#FFD700" />
-                                <Text fw={700} size="lg">Junte-se à nossa rede</Text>
+                                <Text fw={700} size="lg" className={classes.ctaTitle}>Junte-se à nossa rede</Text>
                             </Group>
-                            <Text c="dimmed" maw={500}>
+                            <Text className={classes.ctaDescription} maw={500}>
                                 Mais de 100 consultores já fazem parte do programa.
-                                Receba treinamento, materiais exclusivos e comece a indicar.
+                                Receba treinamento e materiais exclusivos.
                             </Text>
                         </Box>
                         <Button
                             size="lg"
                             variant="gradient"
-                            gradient={{ from: '#FFD700', to: '#FFA500', deg: 90 }}
+                            gradient={{ from: '#FFD700', to: '#FFA500', deg: 135 }}
                             rightSection={<IconArrowRight size={18} />}
                             className={classes.ctaButton}
-                            color="dark"
                         >
                             Quero ser Parceiro
                         </Button>

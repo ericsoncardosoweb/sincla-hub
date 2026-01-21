@@ -1,4 +1,4 @@
-import { Container, Title, Text, SimpleGrid, Card, Badge, Group, Box, Stack, Button, List, ThemeIcon } from '@mantine/core';
+import { Container, Title, Text, SimpleGrid, Card, Group, Box, Stack, Button, List, ThemeIcon } from '@mantine/core';
 import { IconCheck, IconArrowRight } from '@tabler/icons-react';
 import { platforms } from '../../data/platforms';
 import { iconMap } from '../common/Icons';
@@ -8,22 +8,25 @@ export function Platforms() {
     return (
         <section className={classes.section} id="produtos">
             <Container size="xl">
-                <Stack align="center" gap="lg" mb={60}>
-                    <Badge size="lg" variant="light" color="blue">
-                        Nosso Ecossistema
-                    </Badge>
+                <Stack align="center" gap="md" mb={60}>
+                    <Box className={classes.badge}>
+                        <Text size="xs" fw={600} tt="uppercase" lts={0.5}>
+                            Nosso Ecossistema
+                        </Text>
+                    </Box>
                     <Title order={2} ta="center" className={classes.title}>
                         Ferramentas que{' '}
                         <span className={classes.gradient}>transformam</span>
-                        <br />seu negócio
                     </Title>
-                    <Text size="lg" c="dimmed" ta="center" maw={600}>
-                        Cada plataforma foi desenvolvida para resolver problemas reais,
-                        com inteligência artificial integrada e experiência premium.
+                    <Text className={classes.subtitle} ta="center" maw={550}>
+                        Cada plataforma resolve problemas reais com IA integrada e experiência premium.
                     </Text>
                 </Stack>
 
-                <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+                <SimpleGrid
+                    cols={{ base: 1, sm: 2, lg: 3 }}
+                    spacing="lg"
+                >
                     {platforms.map((platform) => {
                         const IconComponent = iconMap[platform.icon];
 
@@ -34,9 +37,9 @@ export function Platforms() {
                                 style={{ '--platform-color': platform.color } as React.CSSProperties}
                             >
                                 {platform.isComingSoon && (
-                                    <Badge className={classes.comingSoonBadge}>
+                                    <Box className={classes.comingSoonBadge}>
                                         Em Breve
-                                    </Badge>
+                                    </Box>
                                 )}
 
                                 <Group gap="md" mb="md">
@@ -55,12 +58,16 @@ export function Platforms() {
                                         )}
                                     </Box>
                                     <Box>
-                                        <Text fw={700} size="lg">{platform.name}</Text>
-                                        <Text size="sm" c="dimmed">{platform.tagline}</Text>
+                                        <Text fw={700} size="lg" className={classes.cardTitle}>
+                                            {platform.name}
+                                        </Text>
+                                        <Text size="sm" className={classes.cardTagline}>
+                                            {platform.tagline}
+                                        </Text>
                                     </Box>
                                 </Group>
 
-                                <Text size="sm" c="dimmed" mb="md" className={classes.description}>
+                                <Text className={classes.description} mb="md">
                                     {platform.description}
                                 </Text>
 
@@ -74,7 +81,7 @@ export function Platforms() {
                                         </ThemeIcon>
                                     }
                                 >
-                                    {platform.features.slice(0, 4).map((feature, idx) => (
+                                    {platform.features.slice(0, 3).map((feature, idx) => (
                                         <List.Item key={idx} className={classes.featureItem}>
                                             {feature}
                                         </List.Item>
