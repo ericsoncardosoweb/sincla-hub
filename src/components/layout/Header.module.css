@@ -329,6 +329,155 @@
 }
 
 /* ==========================================
+   HEADER ACTIONS (Search, Apps, Notifications, Profile)
+   ========================================== */
+
+.actionIcon {
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+}
+
+.actionIcon:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+
+/* Search Dropdown */
+.searchWrapper {
+    position: relative;
+}
+
+.searchDropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 320px;
+    padding: 16px;
+    background: rgba(15, 15, 20, 0.98);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.searchInput {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 0.9rem;
+}
+
+.searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.searchInput:focus {
+    border-color: #0087ff;
+    box-shadow: 0 0 0 2px rgba(0, 135, 255, 0.15);
+}
+
+/* Apps Dropdown */
+.appsWrapper {
+    position: relative;
+}
+
+.appsDropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 240px;
+    padding: 16px;
+    background: rgba(15, 15, 20, 0.98);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+.appItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.appItem:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.appName {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* User Profile */
+.userProfile {
+    cursor: pointer;
+    padding: 6px 12px 6px 6px;
+    border-radius: 100px;
+    transition: all 0.2s ease;
+}
+
+.userProfile:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.userName {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* User Dropdown Menu */
+.userDropdown {
+    background: rgba(15, 15, 20, 0.98) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.userDropdownHeader {
+    padding: 12px 16px;
+}
+
+.userEmail {
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.switchAccount {
+    display: block;
+    margin-top: 8px;
+    color: #0087ff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.switchAccount:hover {
+    color: #00c6ff;
+}
+
+/* ==========================================
    MOBILE STYLES
    ========================================== */
 

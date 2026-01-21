@@ -1,41 +1,54 @@
-import { Container, Group, Text, Stack, Anchor, Divider, SimpleGrid } from '@mantine/core';
-import { IconBrandLinkedin, IconBrandInstagram, IconBrandYoutube, IconBrandWhatsapp } from '@tabler/icons-react';
+import { Container, Group, Text, Stack, Anchor, SimpleGrid, Select } from '@mantine/core';
+import { IconWorld, IconArrowRight } from '@tabler/icons-react';
 import classes from './Footer.module.css';
 
-const footerLinks = {
-    produtos: [
-        { label: 'Sincla RH', href: '#' },
-        { label: 'Sincla EAD', href: '#' },
-        { label: 'Sincla Bolso', href: '#' },
-        { label: 'Sincla Leads', href: '#' },
-        { label: 'Sincla Agenda', href: '#' },
-    ],
-    empresa: [
-        { label: 'Sobre nós', href: '#' },
-        { label: 'Blog', href: '#' },
-        { label: 'Carreiras', href: '#' },
-        { label: 'Parceiros', href: '#parceiros' },
-        { label: 'Imprensa', href: '#' },
-    ],
-    suporte: [
-        { label: 'Central de Ajuda', href: '#suporte' },
-        { label: 'Documentação', href: '#' },
-        { label: 'Status do Sistema', href: '#' },
-        { label: 'Fale Conosco', href: '#' },
-    ],
-    legal: [
-        { label: 'Termos de Uso', href: '#' },
-        { label: 'Privacidade', href: '#' },
-        { label: 'Cookies', href: '#' },
-        { label: 'LGPD', href: '#' },
-    ],
-};
+// Links da coluna Empresa (sobre a Sincla)
+const empresaLinks = [
+    { label: 'Empresa', href: '#' },
+    { label: 'Carreiras', href: '#' },
+    { label: 'Eventos', href: '#' },
+    { label: 'Blogs', href: '#' },
+    { label: 'Relações com Investidores', href: '#' },
+    { label: 'Fundação Sincla', href: '#' },
+    { label: 'Kit de Imprensa', href: '#' },
+    { label: 'Fale com a gente', href: '#' },
+];
 
-const socialLinks = [
-    { icon: IconBrandLinkedin, href: '#', label: 'LinkedIn' },
-    { icon: IconBrandInstagram, href: '#', label: 'Instagram' },
-    { icon: IconBrandYoutube, href: '#', label: 'YouTube' },
-    { icon: IconBrandWhatsapp, href: '#', label: 'WhatsApp' },
+// Links da coluna Produtos
+const produtosLinks = [
+    { label: 'Sincla RH', href: '#' },
+    { label: 'Sincla EAD', href: '#' },
+    { label: 'Sincla Bolso', href: '#' },
+    { label: 'Sincla Leads', href: '#' },
+    { label: 'Sincla Agenda', href: '#' },
+    { label: 'Sincla Intranet', href: '#' },
+];
+
+// Links da coluna Recursos
+const recursosLinks = [
+    { label: 'Suporte técnico', href: '#suporte' },
+    { label: 'Compras e licenciamento', href: '#' },
+    { label: 'Comunidade Sincla', href: '#' },
+    { label: 'Base de conhecimento', href: '#' },
+    { label: 'Marketplace', href: '#' },
+    { label: 'Minha conta', href: '#' },
+];
+
+// Links da coluna Saiba Mais
+const saibaMaisLinks = [
+    { label: 'Parceiros', href: '#parceiros' },
+    { label: 'Treinamento e certificação', href: '#' },
+    { label: 'Documentação', href: '#' },
+    { label: 'Recursos de desenvolvedores', href: '#' },
+    { label: 'Serviços corporativos', href: '#' },
+];
+
+// Links do rodapé inferior (legal)
+const legalLinks = [
+    { label: 'Política de privacidade', href: '#' },
+    { label: 'Your Privacy Choices', href: '#' },
+    { label: 'Termos', href: '#' },
+    { label: 'Aviso legal', href: '#' },
 ];
 
 export function Footer() {
@@ -43,88 +56,112 @@ export function Footer() {
         <footer className={classes.footer}>
             <Container size="xl">
                 {/* Main Footer Content */}
-                <SimpleGrid cols={{ base: 2, sm: 3, md: 5 }} spacing="xl" mb={60}>
-                    {/* Logo & Description */}
-                    <Stack gap="md" className={classes.brandSection}>
-                        <a href="/">
+                <SimpleGrid cols={{ base: 2, sm: 2, md: 4 }} spacing={{ base: 'xl', md: 60 }} mb={48}>
+                    {/* Coluna 1: Logo + Empresa */}
+                    <Stack gap="md">
+                        <a href="/" className={classes.logoLink}>
                             <img
                                 src="/logos/sincla.svg"
                                 alt="Sincla"
-                                height={32}
+                                height={28}
                                 style={{ display: 'block' }}
                             />
                         </a>
-                        <Text size="sm" c="dimmed" maw={200}>
-                            Hub de tecnologias para transformar pessoas e negócios.
-                        </Text>
-                        <Group gap="sm" mt="xs">
-                            {socialLinks.map((social) => (
-                                <Anchor
-                                    key={social.label}
-                                    href={social.href}
-                                    className={classes.socialLink}
-                                    aria-label={social.label}
-                                >
-                                    <social.icon size={20} stroke={1.5} />
+                        <Stack gap="xs" mt="md">
+                            {empresaLinks.map((link) => (
+                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                    {link.label}
                                 </Anchor>
                             ))}
-                        </Group>
+                        </Stack>
                     </Stack>
 
-                    {/* Products */}
-                    <Stack gap="sm">
-                        <Text fw={600} size="sm" className={classes.columnTitle}>Produtos</Text>
-                        {footerLinks.produtos.map((link) => (
-                            <Anchor key={link.label} href={link.href} className={classes.link}>
-                                {link.label}
-                            </Anchor>
-                        ))}
+                    {/* Coluna 2: Produtos */}
+                    <Stack gap="md">
+                        <Text className={classes.columnTitle}>PRODUTOS</Text>
+                        <Stack gap="xs">
+                            {produtosLinks.map((link) => (
+                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                    {link.label}
+                                </Anchor>
+                            ))}
+                        </Stack>
+                        <Anchor href="#produtos" className={classes.viewAllLink}>
+                            Ver todos os produtos <IconArrowRight size={14} />
+                        </Anchor>
                     </Stack>
 
-                    {/* Company */}
-                    <Stack gap="sm">
-                        <Text fw={600} size="sm" className={classes.columnTitle}>Empresa</Text>
-                        {footerLinks.empresa.map((link) => (
-                            <Anchor key={link.label} href={link.href} className={classes.link}>
-                                {link.label}
-                            </Anchor>
-                        ))}
+                    {/* Coluna 3: Recursos */}
+                    <Stack gap="md">
+                        <Text className={classes.columnTitle}>RECURSOS</Text>
+                        <Stack gap="xs">
+                            {recursosLinks.map((link) => (
+                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                    {link.label}
+                                </Anchor>
+                            ))}
+                        </Stack>
+                        <Anchor href="#suporte" className={classes.viewAllLink}>
+                            Criar ticket de suporte <IconArrowRight size={14} />
+                        </Anchor>
                     </Stack>
 
-                    {/* Support */}
-                    <Stack gap="sm">
-                        <Text fw={600} size="sm" className={classes.columnTitle}>Suporte</Text>
-                        {footerLinks.suporte.map((link) => (
-                            <Anchor key={link.label} href={link.href} className={classes.link}>
-                                {link.label}
-                            </Anchor>
-                        ))}
-                    </Stack>
-
-                    {/* Legal */}
-                    <Stack gap="sm">
-                        <Text fw={600} size="sm" className={classes.columnTitle}>Legal</Text>
-                        {footerLinks.legal.map((link) => (
-                            <Anchor key={link.label} href={link.href} className={classes.link}>
-                                {link.label}
-                            </Anchor>
-                        ))}
+                    {/* Coluna 4: Saiba Mais */}
+                    <Stack gap="md">
+                        <Text className={classes.columnTitle}>SAIBA MAIS</Text>
+                        <Stack gap="xs">
+                            {saibaMaisLinks.map((link) => (
+                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                    {link.label}
+                                </Anchor>
+                            ))}
+                        </Stack>
+                        <Anchor href="#" className={classes.viewAllLink}>
+                            Ver todos os recursos <IconArrowRight size={14} />
+                        </Anchor>
                     </Stack>
                 </SimpleGrid>
 
-                <Divider color="dark.5" mb="lg" />
-
                 {/* Bottom Bar */}
-                <Group justify="space-between" wrap="wrap" gap="md">
-                    <Text size="xs" c="dimmed">
-                        © {new Date().getFullYear()} Sincla. Todos os direitos reservados.
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                        Feito com 💙 no Brasil
-                    </Text>
-                </Group>
+                <div className={classes.bottomBar}>
+                    <Group justify="space-between" wrap="wrap" gap="md">
+                        {/* Copyright */}
+                        <Text size="sm" className={classes.copyright}>
+                            Copyright © {new Date().getFullYear()} Sincla
+                        </Text>
+
+                        {/* Legal Links */}
+                        <Group gap="lg" wrap="wrap" className={classes.legalLinks}>
+                            {legalLinks.map((link) => (
+                                <Anchor key={link.label} href={link.href} className={classes.legalLink}>
+                                    {link.label}
+                                </Anchor>
+                            ))}
+                        </Group>
+
+                        {/* Language Selector */}
+                        <Group gap="xs" className={classes.languageSelector}>
+                            <IconWorld size={16} className={classes.languageIcon} />
+                            <Select
+                                data={[
+                                    { value: 'pt-BR', label: 'Português' },
+                                    { value: 'en', label: 'English' },
+                                    { value: 'es', label: 'Español' },
+                                ]}
+                                defaultValue="pt-BR"
+                                variant="unstyled"
+                                size="sm"
+                                classNames={{
+                                    input: classes.languageInput,
+                                    dropdown: classes.languageDropdown,
+                                }}
+                                rightSection={null}
+                                comboboxProps={{ withinPortal: false }}
+                            />
+                        </Group>
+                    </Group>
+                </div>
             </Container>
         </footer>
     );
 }
-

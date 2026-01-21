@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import { Hero } from '../components/sections/Hero';
+import { ProductShowcase } from '../components/sections/ProductShowcase';
 import { HowItWorks } from '../components/sections/HowItWorks';
 import { Platforms } from '../components/sections/Platforms';
 import { Enterprise } from '../components/sections/Enterprise';
@@ -26,6 +27,7 @@ export function Landing() {
             <Header />
             <main id="main-content">
                 <Hero onOpenModal={openModal} />
+                <ProductShowcase onOpenModal={openModal} />
                 <HowItWorks onOpenModal={openModal} />
                 <Platforms />
                 <Enterprise />

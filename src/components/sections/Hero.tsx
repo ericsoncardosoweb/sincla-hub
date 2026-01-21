@@ -1,6 +1,5 @@
 import { Container, Title, Text, Button, Group, Box, Stack } from '@mantine/core';
-import { IconArrowRight, IconPlayerPlay } from '@tabler/icons-react';
-import { useScrollReveal } from '../../hooks/useScrollReveal';
+import { IconArrowRight } from '@tabler/icons-react';
 import classes from './Hero.module.css';
 
 interface HeroProps {
@@ -8,90 +7,82 @@ interface HeroProps {
 }
 
 export function Hero({ onOpenModal }: HeroProps) {
-    const heroRef = useScrollReveal(0.1);
-
     return (
         <section id="hero" className={classes.hero}>
             <Container size="xl" className={classes.container}>
-                <Stack
-                    align="center"
-                    gap={0}
-                    ref={heroRef as React.RefObject<HTMLDivElement>}
-                    className="reveal"
-                >
-                    {/* Badge - Atlassian style chip */}
+                {/* Main Content */}
+                <Stack align="center" gap={0} className={classes.heroContent}>
+                    {/* Badge */}
                     <Box className={classes.badge}>
-                        <span className={classes.badgeDot} />
-                        <Text size="sm" fw={600} tt="uppercase" lts={0.5}>
-                            Ecossistema Unificado
+                        <Text size="sm" fw={600}>
+                            Plataforma unificada de gestão
                         </Text>
                     </Box>
 
-                    {/* Main Heading - Strong, clear hierarchy */}
-                    <Title order={1} ta="center" className={classes.title} mt={24}>
-                        <span className={classes.titleLine}>Cadastre uma vez.</span>
+                    {/* Main Headline */}
+                    <Title order={1} ta="center" className={classes.mainTitle}>
+                        Tudo que sua empresa precisa
                         <br />
-                        <span className={classes.gradient}>Use em todo lugar.</span>
+                        <span className={classes.gradientText}>em um só lugar</span>
                     </Title>
 
-                    {/* Subtitle - Clear value proposition */}
-                    <Text ta="center" className={classes.subtitle} mt={24}>
-                        Sua identidade pessoal e os dados da sua empresa, centralizados em um único hub.
-                        <br className={classes.subtitleBreak} />
-                        Acesse RH, EAD, Finanças, Leads e mais — sem formulários repetidos.
+                    {/* Subtitle */}
+                    <Text className={classes.subtitle}>
+                        RH, Treinamentos, Finanças, CRM e Agendamentos integrados em uma única
+                        plataforma. Simplifique processos, economize tempo e impulsione resultados.
                     </Text>
 
-                    {/* CTA Buttons - Primary action prominent */}
+                    {/* CTAs */}
                     <Group gap="md" mt={40} className={classes.ctaGroup}>
                         <Button
                             size="lg"
-                            variant="gradient"
-                            gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
-                            rightSection={<IconArrowRight size={18} />}
-                            className={classes.ctaPrimary}
+                            variant="filled"
+                            color="blue"
+                            radius="xl"
+                            className={classes.primaryCta}
                             onClick={onOpenModal}
                         >
-                            Começar grátis
+                            Começar gratuitamente
                         </Button>
                         <Button
                             size="lg"
                             variant="subtle"
                             color="gray"
-                            leftSection={<IconPlayerPlay size={16} />}
-                            className={classes.ctaSecondary}
-                            component="a"
-                            href="#como-funciona"
+                            radius="xl"
+                            rightSection={<IconArrowRight size={18} />}
+                            className={classes.secondaryCta}
                         >
                             Ver demonstração
                         </Button>
                     </Group>
 
-                    {/* Trust signal - Minimal, Atlassian style */}
-                    <Text size="sm" className={classes.trustSignal} mt={16}>
-                        Gratuito para começar • Sem cartão de crédito
-                    </Text>
-
-                    {/* Stats - Social proof with glassmorphism */}
-                    <Box className={classes.statsContainer} mt={80}>
-                        <Group gap={0} className={classes.stats}>
-                            <Box className={classes.statItem}>
-                                <Text className={classes.statNumber}>500+</Text>
-                                <Text className={classes.statLabel}>Empresas ativas</Text>
-                            </Box>
-                            <Box className={classes.statDivider} />
-                            <Box className={classes.statItem}>
-                                <Text className={classes.statNumber}>15k+</Text>
-                                <Text className={classes.statLabel}>Usuários</Text>
-                            </Box>
-                            <Box className={classes.statDivider} />
-                            <Box className={classes.statItem}>
-                                <Text className={classes.statNumber}>Zero</Text>
-                                <Text className={classes.statLabel}>Retrabalho</Text>
-                            </Box>
-                        </Group>
-                    </Box>
+                    {/* Trust Indicators */}
+                    <Group gap="xl" mt={48} className={classes.trustIndicators}>
+                        <Box className={classes.trustItem}>
+                            <Text className={classes.trustNumber}>5.000+</Text>
+                            <Text className={classes.trustLabel}>Empresas ativas</Text>
+                        </Box>
+                        <Box className={classes.trustDivider} />
+                        <Box className={classes.trustItem}>
+                            <Text className={classes.trustNumber}>50.000+</Text>
+                            <Text className={classes.trustLabel}>Usuários</Text>
+                        </Box>
+                        <Box className={classes.trustDivider} />
+                        <Box className={classes.trustItem}>
+                            <Text className={classes.trustNumber}>99.9%</Text>
+                            <Text className={classes.trustLabel}>Uptime</Text>
+                        </Box>
+                    </Group>
                 </Stack>
             </Container>
+
+            {/* Scroll Indicator */}
+            <Box className={classes.scrollIndicator}>
+                <Box className={classes.scrollMouse}>
+                    <Box className={classes.scrollWheel} />
+                </Box>
+                <Text size="xs" c="dimmed" mt={8}>Role para explorar</Text>
+            </Box>
         </section>
     );
 }

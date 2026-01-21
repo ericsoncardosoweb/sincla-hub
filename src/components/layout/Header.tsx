@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Group, Button, Container, Burger, Drawer, Stack, Text, Box, SimpleGrid, ThemeIcon } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { Group, Button, Container, Burger, Drawer, Stack, Text, Box, SimpleGrid, ThemeIcon, TextInput, Avatar, Menu, ActionIcon, Indicator } from '@mantine/core';
+import { useDisclosure, useClickOutside } from '@mantine/hooks';
 import {
     IconChevronDown,
     IconUsers,
@@ -22,6 +22,13 @@ import {
     IconCloud,
     IconLock,
     IconArrowRight,
+    IconSearch,
+    IconGridDots,
+    IconBell,
+    IconUser,
+    IconSettings,
+    IconLogout,
+    IconX,
 } from '@tabler/icons-react';
 import classes from './Header.module.css';
 
@@ -89,10 +96,29 @@ const communityItems = [
 
 type MenuKey = 'produtos' | 'solucoes' | 'porque' | 'recursos' | null;
 
+// Simulação de estado de autenticação (em produção viria de um contexto/store)
+interface User {
+    name: string;
+    email: string;
+    avatar?: string;
+    initials: string;
+}
+
 export function Header() {
     const [opened, { toggle, close }] = useDisclosure(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [appsMenuOpen, setAppsMenuOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Simulação: mudar para null para ver estado deslogado, ou objeto para logado
+    const [user] = useState<User | null>(null);
+    // Exemplo de usuário logado:
+    // const [user] = useState<User | null>({ name: 'Henrique Santos', email: 'henrique.santos@email.com', initials: 'HS' });
+
+    const searchRef = useClickOutside(() => setSearchOpen(false));
+    const appsRef = useClickOutside(() => setAppsMenuOpen(false));
 
     useEffect(() => {
         const handleScroll = () => {
@@ -108,6 +134,16 @@ export function Header() {
 
     const handleMenuLeave = () => {
         setActiveMenu(null);
+    };
+
+    const handleSearchToggle = () => {
+        setSearchOpen(!searchOpen);
+        setAppsMenuOpen(false);
+    };
+
+    const handleAppsToggle = () => {
+        setAppsMenuOpen(!appsMenuOpen);
+        setSearchOpen(false);
     };
 
     return (
@@ -181,18 +217,157 @@ export function Header() {
                         </Box>
                     </Group>
 
-                    {/* CTA Buttons */}
-                    <Group gap="sm" visibleFrom="md">
-                        <Button variant="subtle" color="gray" className={classes.loginBtn}>
-                            Entrar
-                        </Button>
-                        <Button
-                            variant="gradient"
-                            gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
-                            className={classes.ctaBtn}
-                        >
-                            Começar Grátis
-                        </Button>
+                    {/* Header Actions: Search, Apps, Notifications, Profile */}
+                    <Group gap="xs" visibleFrom="md">
+                        {/* Search */}
+                        <Box className={classes.searchWrapper} ref={searchRef}>
+                            <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="lg"
+                                onClick={handleSearchToggle}
+                                className={classes.actionIcon}
+                            >
+                                <IconSearch size={20} />
+                            </ActionIcon>
+                            {searchOpen && (
+                                <Box className={classes.searchDropdown}>
+                                    <TextInput
+                                        placeholder="Palavras-chave de pesquisa"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        autoFocus
+                                        classNames={{
+                                            input: classes.searchInput,
+                                        }}
+                                        rightSection={
+                                            searchQuery ? (
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    color="gray"
+                                                    size="sm"
+                                                    onClick={() => setSearchQuery('')}
+                                                >
+                                                    <IconX size={14} />
+                                                </ActionIcon>
+                                            ) : (
+                                                <IconSearch size={16} color="rgba(255,255,255,0.4)" />
+                                            )
+                                        }
+                                    />
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* Apps Grid */}
+                        <Box className={classes.appsWrapper} ref={appsRef}>
+                            <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="lg"
+                                onClick={handleAppsToggle}
+                                className={classes.actionIcon}
+                            >
+                                <IconGridDots size={20} />
+                            </ActionIcon>
+                            {appsMenuOpen && (
+                                <Box className={classes.appsDropdown}>
+                                    <Stack gap="md">
+                                        {products.map((product) => (
+                                            <a
+                                                key={product.name}
+                                                href={product.href}
+                                                className={classes.appItem}
+                                                onClick={() => setAppsMenuOpen(false)}
+                                            >
+                                                <ThemeIcon
+                                                    size={32}
+                                                    radius="md"
+                                                    style={{ background: product.color }}
+                                                >
+                                                    <product.icon size={18} stroke={1.5} />
+                                                </ThemeIcon>
+                                                <Text size="sm" fw={500} className={classes.appName}>
+                                                    {product.name}
+                                                </Text>
+                                            </a>
+                                        ))}
+                                    </Stack>
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* Notifications - só aparece se logado */}
+                        {user && (
+                            <ActionIcon
+                                variant="subtle"
+                                color="gray"
+                                size="lg"
+                                className={classes.actionIcon}
+                            >
+                                <Indicator color="red" size={8} offset={2}>
+                                    <IconBell size={20} />
+                                </Indicator>
+                            </ActionIcon>
+                        )}
+
+                        {/* User Profile / Login */}
+                        {user ? (
+                            <Menu shadow="lg" width={220} position="bottom-end">
+                                <Menu.Target>
+                                    <Group gap="xs" className={classes.userProfile}>
+                                        <Avatar
+                                            src={user.avatar}
+                                            size={32}
+                                            radius="xl"
+                                            color="blue"
+                                        >
+                                            {user.initials}
+                                        </Avatar>
+                                        <Text size="sm" fw={500} className={classes.userName}>
+                                            {user.name}
+                                        </Text>
+                                    </Group>
+                                </Menu.Target>
+                                <Menu.Dropdown className={classes.userDropdown}>
+                                    <Box className={classes.userDropdownHeader}>
+                                        <Text size="xs" tt="uppercase" className={classes.userEmail}>
+                                            {user.email}
+                                        </Text>
+                                        <a href="#" className={classes.switchAccount}>
+                                            Trocar de conta
+                                        </a>
+                                    </Box>
+                                    <Menu.Divider />
+                                    <Menu.Item leftSection={<IconUser size={16} />}>
+                                        Perfil
+                                    </Menu.Item>
+                                    <Menu.Item leftSection={<IconSettings size={16} />}>
+                                        Licenças
+                                    </Menu.Item>
+                                    <Menu.Divider />
+                                    <Menu.Item
+                                        leftSection={<IconLogout size={16} />}
+                                        color="red"
+                                    >
+                                        Sair
+                                    </Menu.Item>
+                                </Menu.Dropdown>
+                            </Menu>
+                        ) : (
+                            <Group gap="sm">
+                                <Button variant="subtle" color="gray" className={classes.loginBtn}>
+                                    Entrar
+                                </Button>
+                                <Button
+                                    variant="gradient"
+                                    gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
+                                    className={classes.ctaBtn}
+                                >
+                                    Inscrever-se
+                                </Button>
+                            </Group>
+                        )}
                     </Group>
 
                     {/* Mobile Burger */}
