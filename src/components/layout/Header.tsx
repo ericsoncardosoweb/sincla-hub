@@ -4,11 +4,6 @@ import { useDisclosure, useClickOutside } from '@mantine/hooks';
 import {
     IconChevronDown,
     IconUsers,
-    IconSchool,
-    IconCash,
-    IconBriefcase,
-    IconCalendar,
-    IconSpeakerphone,
     IconBuilding,
     IconRocket,
     IconTargetArrow,
@@ -32,14 +27,14 @@ import {
 } from '@tabler/icons-react';
 import classes from './Header.module.css';
 
-// Dados dos Produtos
+// Dados dos Produtos com logos SVG
 const products = [
-    { icon: IconUsers, name: 'Sincla RH', description: 'Gestão de pessoas completa', color: '#0087ff', href: '#' },
-    { icon: IconSchool, name: 'Sincla EAD', description: 'Treinamentos e cursos', color: '#00c6ff', href: '#' },
-    { icon: IconCash, name: 'Sincla Bolso', description: 'Finanças pessoais', color: '#10b981', href: '#' },
-    { icon: IconBriefcase, name: 'Sincla Leads', description: 'Captação de clientes', color: '#8b5cf6', href: '#' },
-    { icon: IconCalendar, name: 'Sincla Agenda', description: 'Agendamentos inteligentes', color: '#f59e0b', href: '#' },
-    { icon: IconSpeakerphone, name: 'Sincla Intranet', description: 'Comunicação interna', color: '#ef4444', href: '#', comingSoon: true },
+    { logo: '/logos/sincla-rh.svg', name: 'Sincla RH', description: 'Gestão de pessoas completa', color: '#0066CC', href: '#' },
+    { logo: '/logos/sincla-ead.svg', name: 'Sincla EAD', description: 'Treinamentos e cursos', color: '#FF6600', href: '#' },
+    { logo: '/logos/sincla-bolso.svg', name: 'Sincla Bolso', description: 'Finanças pessoais', color: '#10b981', href: '#' },
+    { logo: '/logos/sincla-leads.svg', name: 'Sincla Leads', description: 'Captação de clientes', color: '#DC2626', href: '#' },
+    { logo: '/logos/sincla-agenda.svg', name: 'Sincla Agenda', description: 'Agendamentos inteligentes', color: '#f59e0b', href: '#' },
+    { logo: '/logos/sincla-intranet.svg', name: 'Sincla Intranet', description: 'Comunicação interna', color: '#ef4444', href: '#', comingSoon: true },
 ];
 
 // Dados das Soluções
@@ -280,13 +275,28 @@ export function Header() {
                                                 className={classes.appItem}
                                                 onClick={() => setAppsMenuOpen(false)}
                                             >
-                                                <ThemeIcon
-                                                    size={32}
-                                                    radius="md"
-                                                    style={{ background: product.color }}
+                                                <Box
+                                                    style={{
+                                                        width: 32,
+                                                        height: 32,
+                                                        borderRadius: 8,
+                                                        background: product.color,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                    }}
                                                 >
-                                                    <product.icon size={18} stroke={1.5} />
-                                                </ThemeIcon>
+                                                    <img
+                                                        src={product.logo}
+                                                        alt={product.name}
+                                                        style={{
+                                                            width: 18,
+                                                            height: 18,
+                                                            objectFit: 'contain',
+                                                            filter: 'brightness(0) invert(1)',
+                                                        }}
+                                                    />
+                                                </Box>
                                                 <Text size="sm" fw={500} className={classes.appName}>
                                                     {product.name}
                                                 </Text>
@@ -386,14 +396,29 @@ export function Header() {
                                 <SimpleGrid cols={2} spacing="md" mt="md">
                                     {products.map((product) => (
                                         <a key={product.name} href={product.href} className={classes.productCard}>
-                                            <ThemeIcon
-                                                size={44}
-                                                radius="md"
-                                                style={{ background: product.color }}
+                                            <Box
                                                 className={classes.productIcon}
+                                                style={{
+                                                    background: product.color,
+                                                    width: 44,
+                                                    height: 44,
+                                                    borderRadius: 10,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                }}
                                             >
-                                                <product.icon size={22} stroke={1.5} />
-                                            </ThemeIcon>
+                                                <img
+                                                    src={product.logo}
+                                                    alt={product.name}
+                                                    style={{
+                                                        width: 24,
+                                                        height: 24,
+                                                        objectFit: 'contain',
+                                                        filter: 'brightness(0) invert(1)',
+                                                    }}
+                                                />
+                                            </Box>
                                             <Box>
                                                 <Group gap="xs">
                                                     <Text fw={600} className={classes.productName}>{product.name}</Text>
@@ -637,7 +662,28 @@ export function Header() {
                             className={classes.mobileNavLink}
                             onClick={close}
                         >
-                            <product.icon size={20} color={product.color} />
+                            <Box
+                                style={{
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: 6,
+                                    background: product.color,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <img
+                                    src={product.logo}
+                                    alt={product.name}
+                                    style={{
+                                        width: 14,
+                                        height: 14,
+                                        objectFit: 'contain',
+                                        filter: 'brightness(0) invert(1)',
+                                    }}
+                                />
+                            </Box>
                             {product.name}
                         </a>
                     ))}

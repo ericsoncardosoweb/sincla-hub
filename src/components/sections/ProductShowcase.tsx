@@ -1,25 +1,25 @@
 import { useRef, useEffect, useState } from 'react';
-import { Container, Title, Text, Button, Group, Box, ThemeIcon } from '@mantine/core';
-import { IconArrowRight, IconUsers, IconCalendar, IconSchool, IconCash, IconBriefcase } from '@tabler/icons-react';
+import { Container, Title, Text, Button, Group, Box } from '@mantine/core';
+import { IconArrowRight } from '@tabler/icons-react';
 import classes from './ProductShowcase.module.css';
 
 interface ProductShowcaseProps {
     onOpenModal: () => void;
 }
 
-// Dados dos produtos para showcase
+// Dados dos produtos para showcase com logos SVG
 const showcaseProducts = [
     {
         id: 'rh',
-        icon: IconUsers,
+        logo: '/logos/sincla-rh.svg',
         name: 'Sincla RH',
         headline: 'Gerencie sua equipe',
         subheadline: 'com inteligência',
         description: 'Controle ponto, férias, folha de pagamento e toda a jornada do colaborador em uma única plataforma com automação inteligente.',
         ctaText: 'Obtenha grátis',
         exploreText: 'Conheça o Sincla RH',
-        color: '#0087ff',
-        bgColor: 'rgba(0, 135, 255, 0.08)',
+        color: '#0066CC',
+        bgColor: 'rgba(0, 102, 204, 0.08)',
         testimonial: {
             logo: '🏢',
             company: 'TechCorp',
@@ -29,7 +29,7 @@ const showcaseProducts = [
     },
     {
         id: 'agenda',
-        icon: IconCalendar,
+        logo: '/logos/sincla-agenda.svg',
         name: 'Sincla Agenda',
         headline: 'Agendamentos',
         subheadline: 'que funcionam sozinhos',
@@ -47,15 +47,15 @@ const showcaseProducts = [
     },
     {
         id: 'ead',
-        icon: IconSchool,
+        logo: '/logos/sincla-ead.svg',
         name: 'Sincla EAD',
         headline: 'Treine sua equipe',
         subheadline: 'de forma escalável',
         description: 'Crie cursos, trilhas de aprendizado e acompanhe o desenvolvimento da sua equipe em tempo real com certificados automáticos.',
         ctaText: 'Obtenha grátis',
         exploreText: 'Conheça o Sincla EAD',
-        color: '#8b5cf6',
-        bgColor: 'rgba(139, 92, 246, 0.08)',
+        color: '#FF6600',
+        bgColor: 'rgba(255, 102, 0, 0.08)',
         testimonial: {
             logo: '🎓',
             company: 'Educorp',
@@ -65,7 +65,7 @@ const showcaseProducts = [
     },
     {
         id: 'bolso',
-        icon: IconCash,
+        logo: '/logos/sincla-bolso.svg',
         name: 'Sincla Bolso',
         headline: 'Finanças pessoais',
         subheadline: 'sem complicação',
@@ -83,15 +83,15 @@ const showcaseProducts = [
     },
     {
         id: 'leads',
-        icon: IconBriefcase,
+        logo: '/logos/sincla-leads.svg',
         name: 'Sincla Leads',
         headline: 'Capture clientes',
         subheadline: 'com IA integrada',
         description: 'Capture, qualifique e converta leads automaticamente com funis inteligentes, automação de follow-up e qualificação por IA.',
         ctaText: 'Obtenha grátis',
         exploreText: 'Conheça o Sincla Leads',
-        color: '#ec4899',
-        bgColor: 'rgba(236, 72, 153, 0.08)',
+        color: '#DC2626',
+        bgColor: 'rgba(220, 38, 38, 0.08)',
         testimonial: {
             logo: '🚀',
             company: 'StartupXYZ',
@@ -142,13 +142,28 @@ function ProductSection({ product, index, onOpenModal }: { product: typeof showc
                     <Box className={classes.contentSide}>
                         {/* Product Badge */}
                         <Group gap="sm" mb="md">
-                            <ThemeIcon
-                                size={36}
-                                radius="md"
-                                style={{ background: product.color }}
+                            <Box
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 8,
+                                    background: product.color,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
                             >
-                                <product.icon size={20} stroke={1.5} />
-                            </ThemeIcon>
+                                <img
+                                    src={product.logo}
+                                    alt={product.name}
+                                    style={{
+                                        width: 20,
+                                        height: 20,
+                                        objectFit: 'contain',
+                                        filter: 'brightness(0) invert(1)',
+                                    }}
+                                />
+                            </Box>
                             <Text fw={600} size="lg" c="dark">
                                 {product.name}
                             </Text>
@@ -246,14 +261,29 @@ function ProductSection({ product, index, onOpenModal }: { product: typeof showc
 
                                 {/* Mockup Content Placeholder */}
                                 <Box className={classes.mockupContent}>
-                                    <ThemeIcon
-                                        size={60}
-                                        radius="xl"
-                                        style={{ background: product.color }}
+                                    <Box
                                         className={classes.mockupIcon}
+                                        style={{
+                                            width: 60,
+                                            height: 60,
+                                            borderRadius: '50%',
+                                            background: product.color,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
                                     >
-                                        <product.icon size={32} stroke={1.5} />
-                                    </ThemeIcon>
+                                        <img
+                                            src={product.logo}
+                                            alt={product.name}
+                                            style={{
+                                                width: 32,
+                                                height: 32,
+                                                objectFit: 'contain',
+                                                filter: 'brightness(0) invert(1)',
+                                            }}
+                                        />
+                                    </Box>
                                     <Text size="lg" fw={600} mt="md" c="dark.7">
                                         {product.name}
                                     </Text>

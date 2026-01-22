@@ -1,0 +1,136 @@
+/* ==========================================
+   CTA BANNER - Sincla Hub
+   ==========================================
+   Banner de call-to-action com glassmorphism
+   ========================================== */
+
+.ctaBanner {
+    position: relative;
+    z-index: 2;
+    padding: 100px 0;
+}
+
+/* ==========================================
+   Glass Card
+   ========================================== */
+
+.glassCard {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 40px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================
+   Content
+   ========================================== */
+
+.container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.highlight {
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    max-width: 500px;
+}
+
+/* ==========================================
+   CTA Button
+   ========================================== */
+
+.ctaButton {
+    margin-top: 8px;
+    padding: 14px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 135, 255, 0.3);
+}
+
+.ctaButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 135, 255, 0.4);
+}
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+
+@media (max-width: 768px) {
+    .ctaBanner {
+        padding: 80px 16px;
+    }
+
+    .glassCard {
+        padding: 60px 24px;
+        border-radius: 20px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .ctaButton {
+        padding: 12px 28px;
+    }
+}
+
+@media (max-width: 576px) {
+    .ctaBanner {
+        padding: 60px 16px;
+    }
+
+    .glassCard {
+        padding: 48px 20px;
+        border-radius: 16px;
+    }
+
+    .container {
+        gap: 20px;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .subtitle {
+        font-size: 0.9375rem;
+    }
+
+    .ctaButton {
+        width: 100%;
+        max-width: 280px;
+    }
+}

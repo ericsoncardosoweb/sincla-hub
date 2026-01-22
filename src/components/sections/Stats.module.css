@@ -1,0 +1,662 @@
+/* ==========================================
+   STATS SECTION - Sincla Hub
+   ==========================================
+   Seção de estatísticas com planeta
+   glassmorphism e anéis orbitais
+   ========================================== */
+
+.stats {
+    position: relative;
+    z-index: 2;
+    padding: 100px 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.content {
+    position: relative;
+}
+
+/* ==========================================
+   Main Stats (Left Side)
+   ========================================== */
+
+.mainStats {
+    flex: 1;
+    min-width: 280px;
+    max-width: 420px;
+}
+
+.mainTitle {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+}
+
+.bigStat {
+    margin-top: 8px;
+}
+
+.bigNumber {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 700;
+    color: var(--stat-color, #0087ff);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+}
+
+.bigLabel {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
+    max-width: 320px;
+}
+
+/* ==========================================
+   Additional Stats (Middle)
+   ========================================== */
+
+.additionalStats {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-left: 40px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 240px;
+    max-width: 320px;
+}
+
+.additionalStatItem {
+    position: relative;
+}
+
+.statDivider {
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.statNumber {
+    font-size: clamp(2rem, 5vw, 2.5rem);
+    font-weight: 700;
+    color: var(--stat-color, #0087ff);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.statLabel {
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
+    max-width: 260px;
+}
+
+/* ==========================================
+   Planet Glassmorphism Visual
+   ========================================== */
+
+.visualSide {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.planetContainer {
+    position: relative;
+    width: 240px;
+    height: 240px;
+}
+
+/* Outer glow effect */
+.outerGlow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(0, 135, 255, 0.15) 0%,
+        rgba(0, 198, 255, 0.08) 40%,
+        transparent 70%
+    );
+    filter: blur(20px);
+    animation: outerPulse 4s ease-in-out infinite;
+}
+
+@keyframes outerPulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+}
+
+/* ==========================================
+   Orbital Rings
+   ========================================== */
+
+.orbitalRing1,
+.orbitalRing2,
+.orbitalRing3 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    border: 1px solid;
+    transform-style: preserve-3d;
+}
+
+.orbitalRing1 {
+    width: 180px;
+    height: 180px;
+    margin-left: -90px;
+    margin-top: -90px;
+    border-color: rgba(0, 135, 255, 0.2);
+    transform: rotateX(70deg) rotateZ(0deg);
+    animation: orbitRotate1 20s linear infinite;
+}
+
+.orbitalRing2 {
+    width: 200px;
+    height: 200px;
+    margin-left: -100px;
+    margin-top: -100px;
+    border-color: rgba(0, 198, 255, 0.15);
+    transform: rotateX(70deg) rotateZ(60deg);
+    animation: orbitRotate2 25s linear infinite reverse;
+}
+
+.orbitalRing3 {
+    width: 220px;
+    height: 220px;
+    margin-left: -110px;
+    margin-top: -110px;
+    border-color: rgba(139, 92, 246, 0.1);
+    transform: rotateX(70deg) rotateZ(120deg);
+    animation: orbitRotate3 30s linear infinite;
+}
+
+@keyframes orbitRotate1 {
+    from { transform: rotateX(70deg) rotateZ(0deg); }
+    to { transform: rotateX(70deg) rotateZ(360deg); }
+}
+
+@keyframes orbitRotate2 {
+    from { transform: rotateX(70deg) rotateZ(60deg); }
+    to { transform: rotateX(70deg) rotateZ(420deg); }
+}
+
+@keyframes orbitRotate3 {
+    from { transform: rotateX(70deg) rotateZ(120deg); }
+    to { transform: rotateX(70deg) rotateZ(480deg); }
+}
+
+/* ==========================================
+   Orbital Dots
+   ========================================== */
+
+.orbitalDot1,
+.orbitalDot2,
+.orbitalDot3 {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.orbitalDot1 {
+    background: #0087ff;
+    color: #0087ff;
+    top: 50%;
+    left: 50%;
+    animation: orbitDot1 8s linear infinite;
+}
+
+.orbitalDot2 {
+    background: #00c6ff;
+    color: #00c6ff;
+    top: 50%;
+    left: 50%;
+    animation: orbitDot2 12s linear infinite;
+}
+
+.orbitalDot3 {
+    background: #8b5cf6;
+    color: #8b5cf6;
+    top: 50%;
+    left: 50%;
+    animation: orbitDot3 16s linear infinite;
+}
+
+@keyframes orbitDot1 {
+    0% { transform: rotate(0deg) translateX(90px) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(90px) rotate(-360deg); }
+}
+
+@keyframes orbitDot2 {
+    0% { transform: rotate(120deg) translateX(100px) rotate(-120deg); }
+    100% { transform: rotate(480deg) translateX(100px) rotate(-480deg); }
+}
+
+@keyframes orbitDot3 {
+    0% { transform: rotate(240deg) translateX(110px) rotate(-240deg); }
+    100% { transform: rotate(600deg) translateX(110px) rotate(-600deg); }
+}
+
+/* ==========================================
+   Main Planet - Glassmorphism
+   ========================================== */
+
+.planet {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    animation: planetFloat 6s ease-in-out infinite;
+}
+
+@keyframes planetFloat {
+    0%, 100% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+    50% {
+        transform: translate(-50%, -50%) translateY(-5px);
+    }
+}
+
+/* Planet core - gradient background */
+.planetCore {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 135, 255, 0.4) 0%,
+        rgba(0, 80, 150, 0.6) 50%,
+        rgba(0, 50, 100, 0.8) 100%
+    );
+}
+
+/* Glassmorphism layer */
+.planetGlass {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        inset 0 0 30px rgba(0, 135, 255, 0.2),
+        inset 0 -20px 40px rgba(0, 0, 0, 0.3),
+        0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Top reflection / highlight */
+.planetReflection {
+    position: absolute;
+    top: 8%;
+    left: 15%;
+    width: 45%;
+    height: 35%;
+    border-radius: 50%;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    filter: blur(2px);
+}
+
+/* Rim light */
+.planetRim {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================
+   Moon
+   ========================================== */
+
+.moon {
+    position: absolute;
+    top: 15%;
+    right: 10%;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 200, 150, 0.9) 0%,
+        rgba(255, 160, 100, 0.8) 50%,
+        rgba(200, 120, 80, 0.7) 100%
+    );
+    box-shadow:
+        0 0 20px rgba(255, 180, 120, 0.4),
+        0 0 40px rgba(255, 180, 120, 0.2),
+        inset -5px -5px 10px rgba(0, 0, 0, 0.2),
+        inset 3px 3px 8px rgba(255, 255, 255, 0.3);
+    animation: moonOrbit 10s ease-in-out infinite;
+}
+
+.moonGlow {
+    position: absolute;
+    inset: -50%;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 180, 120, 0.3) 0%,
+        transparent 70%
+    );
+    animation: moonPulse 3s ease-in-out infinite;
+}
+
+@keyframes moonOrbit {
+    0%, 100% {
+        transform: translateY(0) translateX(0);
+    }
+    25% {
+        transform: translateY(-5px) translateX(3px);
+    }
+    50% {
+        transform: translateY(-3px) translateX(5px);
+    }
+    75% {
+        transform: translateY(2px) translateX(2px);
+    }
+}
+
+@keyframes moonPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+/* ==========================================
+   Floating Particles
+   ========================================== */
+
+.particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #0087ff;
+    box-shadow: 0 0 6px #0087ff;
+    animation: particleFloat 8s ease-in-out infinite;
+}
+
+.particle:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+    background: #0087ff;
+    box-shadow: 0 0 6px #0087ff;
+}
+
+.particle:nth-child(2) {
+    top: 70%;
+    left: 5%;
+    animation-delay: 1s;
+    background: #00c6ff;
+    box-shadow: 0 0 6px #00c6ff;
+    width: 3px;
+    height: 3px;
+}
+
+.particle:nth-child(3) {
+    top: 30%;
+    right: 5%;
+    animation-delay: 2s;
+    background: #8b5cf6;
+    box-shadow: 0 0 6px #8b5cf6;
+}
+
+.particle:nth-child(4) {
+    bottom: 25%;
+    right: 10%;
+    animation-delay: 3s;
+    background: #0087ff;
+    box-shadow: 0 0 6px #0087ff;
+    width: 3px;
+    height: 3px;
+}
+
+.particle:nth-child(5) {
+    top: 10%;
+    left: 40%;
+    animation-delay: 4s;
+    background: #00c6ff;
+    box-shadow: 0 0 6px #00c6ff;
+    width: 2px;
+    height: 2px;
+}
+
+.particle:nth-child(6) {
+    bottom: 15%;
+    left: 25%;
+    animation-delay: 5s;
+    background: #8b5cf6;
+    box-shadow: 0 0 6px #8b5cf6;
+    width: 3px;
+    height: 3px;
+}
+
+@keyframes particleFloat {
+    0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.5;
+    }
+    25% {
+        transform: translateY(-10px) translateX(5px);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-5px) translateX(-5px);
+        opacity: 0.7;
+    }
+    75% {
+        transform: translateY(5px) translateX(3px);
+        opacity: 0.9;
+    }
+}
+
+/* ==========================================
+   Light Flare
+   ========================================== */
+
+.lightFlare {
+    position: absolute;
+    top: 35%;
+    left: 25%;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.4) 0%,
+        rgba(0, 135, 255, 0.2) 30%,
+        transparent 70%
+    );
+    filter: blur(4px);
+    animation: flareShimmer 5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes flareShimmer {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+
+@media (max-width: 1100px) {
+    .content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 48px !important;
+    }
+
+    .mainStats,
+    .additionalStats {
+        max-width: 100%;
+    }
+
+    .additionalStats {
+        flex-direction: row;
+        border-left: none;
+        padding-left: 0;
+        padding-top: 32px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .statDivider {
+        width: 1px;
+        height: auto;
+        min-height: 80px;
+    }
+
+    .visualSide {
+        position: absolute;
+        top: 0;
+        right: 0;
+        opacity: 0.4;
+    }
+
+    .planetContainer {
+        width: 180px;
+        height: 180px;
+    }
+
+    .planet {
+        width: 90px;
+        height: 90px;
+    }
+
+    .moon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .orbitalRing1 {
+        width: 140px;
+        height: 140px;
+        margin-left: -70px;
+        margin-top: -70px;
+    }
+
+    .orbitalRing2 {
+        width: 155px;
+        height: 155px;
+        margin-left: -77.5px;
+        margin-top: -77.5px;
+    }
+
+    .orbitalRing3 {
+        width: 170px;
+        height: 170px;
+        margin-left: -85px;
+        margin-top: -85px;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats {
+        padding: 60px 0;
+    }
+
+    .mainTitle {
+        font-size: 1.5rem;
+    }
+
+    .bigNumber {
+        font-size: 3rem;
+    }
+
+    .additionalStats {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .statDivider {
+        width: 100%;
+        height: 1px;
+        min-height: auto;
+    }
+
+    .statNumber {
+        font-size: 2rem;
+    }
+
+    .visualSide {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .stats {
+        padding: 48px 0;
+    }
+
+    .mainTitle {
+        font-size: 1.25rem;
+    }
+
+    .bigNumber {
+        font-size: 2.5rem;
+    }
+
+    .bigLabel,
+    .statLabel {
+        font-size: 0.875rem;
+    }
+}

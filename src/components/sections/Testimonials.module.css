@@ -1,0 +1,458 @@
+/* ==========================================
+   TESTIMONIALS - Sincla Hub
+   ==========================================
+   Seção de depoimentos estilo Atlassian com
+   avatar decorado e logos de empresas
+   ========================================== */
+
+.testimonials {
+    position: relative;
+    z-index: 2;
+    padding: 100px 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ==========================================
+   Content Layout
+   ========================================== */
+
+.content {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+    margin-bottom: 80px;
+}
+
+/* ==========================================
+   Avatar Side
+   ========================================== */
+
+.avatarSide {
+    flex: 0 0 auto;
+    width: 380px;
+}
+
+.avatarWrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Decorative shapes */
+.decorShape1 {
+    position: absolute;
+    top: 10%;
+    left: 5%;
+    width: 45%;
+    height: 55%;
+    border-radius: 20px;
+    opacity: 0.9;
+    transform: rotate(-10deg);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.decorShape2 {
+    position: absolute;
+    top: 5%;
+    right: 10%;
+    width: 50%;
+    height: 60%;
+    border-radius: 50%;
+    opacity: 0.8;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+.decorShape3 {
+    position: absolute;
+    bottom: 5%;
+    left: 15%;
+    width: 0;
+    height: 0;
+    border-left: 60px solid transparent;
+    border-right: 60px solid transparent;
+    border-bottom: 100px solid currentColor;
+    opacity: 0.7;
+    transform: rotate(15deg);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    background: transparent !important;
+    border-bottom-color: inherit;
+}
+
+/* Sparkles */
+.sparkles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.sparkle {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.9);
+    animation: twinkle 2s ease-in-out infinite;
+}
+
+.sparkle:nth-child(1) {
+    top: 5%;
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.sparkle:nth-child(2) {
+    top: 15%;
+    left: 35%;
+    animation-delay: 0.5s;
+}
+
+.sparkle:nth-child(3) {
+    top: 8%;
+    left: 50%;
+    animation-delay: 1s;
+}
+
+.sparkle:nth-child(4) {
+    top: 20%;
+    left: 25%;
+    animation-delay: 1.5s;
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* Connection line */
+.connectionLine {
+    position: absolute;
+    top: 10%;
+    right: 5%;
+    width: 60%;
+    height: 40%;
+    z-index: 5;
+    opacity: 0.8;
+}
+
+/* Avatar */
+.avatar {
+    position: relative;
+    z-index: 4;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        inset 0 -10px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.avatar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        transparent 50%
+    );
+    border-radius: 50%;
+}
+
+.avatarAnimating {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.avatarText {
+    font-size: 4rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================
+   Quote Side
+   ========================================== */
+
+.quoteSide {
+    flex: 1;
+    max-width: 600px;
+}
+
+.category {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 24px;
+}
+
+.quote {
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 500;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.95);
+    font-style: italic;
+    margin-bottom: 32px;
+    transition: all 0.3s ease;
+}
+
+.quoteAnimating {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.authorInfo {
+    margin-bottom: 24px;
+}
+
+.authorName {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.authorRole {
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 4px;
+}
+
+.caseStudyLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+}
+
+.caseStudyLink:hover {
+    color: #00c6ff;
+}
+
+.caseStudyLink svg {
+    transition: transform 0.2s ease;
+}
+
+.caseStudyLink:hover svg {
+    transform: translateX(4px);
+}
+
+/* ==========================================
+   Company Logos
+   ========================================== */
+
+.logosSection {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 40px;
+}
+
+.logosGrid {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.logoItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 32px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    opacity: 0.5;
+}
+
+.logoItem:hover {
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.logoActive {
+    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.logoBox {
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.logoName {
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+}
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+
+@media (max-width: 1100px) {
+    .content {
+        gap: 60px;
+    }
+
+    .avatarSide {
+        width: 320px;
+    }
+
+    .avatar {
+        width: 160px;
+        height: 160px;
+    }
+
+    .avatarText {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .testimonials {
+        padding: 80px 0;
+    }
+
+    .content {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+        margin-bottom: 60px;
+    }
+
+    .avatarSide {
+        width: 280px;
+    }
+
+    .quoteSide {
+        max-width: 100%;
+    }
+
+    .caseStudyLink {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .testimonials {
+        padding: 60px 0;
+    }
+
+    .content {
+        gap: 32px;
+        margin-bottom: 48px;
+    }
+
+    .avatarSide {
+        width: 240px;
+    }
+
+    .avatar {
+        width: 140px;
+        height: 140px;
+    }
+
+    .avatarText {
+        font-size: 2.5rem;
+    }
+
+    .decorShape1 {
+        width: 40%;
+        height: 50%;
+    }
+
+    .decorShape2 {
+        width: 45%;
+        height: 55%;
+    }
+
+    .quote {
+        font-size: 1.125rem;
+    }
+
+    .logoItem {
+        padding: 16px 20px;
+    }
+
+    .logoBox {
+        width: 50px;
+        height: 32px;
+    }
+}
+
+@media (max-width: 576px) {
+    .avatarSide {
+        width: 200px;
+    }
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatarText {
+        font-size: 2rem;
+    }
+
+    .connectionLine {
+        display: none;
+    }
+
+    .sparkles {
+        display: none;
+    }
+
+    .quote {
+        font-size: 1rem;
+    }
+
+    .authorName,
+    .authorRole {
+        font-size: 0.875rem;
+    }
+
+    .logoItem {
+        padding: 12px 16px;
+    }
+
+    .logoBox {
+        width: 40px;
+        height: 28px;
+    }
+
+    .logoBox span {
+        font-size: 0.875rem !important;
+    }
+
+    .logoName {
+        font-size: 0.6875rem;
+    }
+}
