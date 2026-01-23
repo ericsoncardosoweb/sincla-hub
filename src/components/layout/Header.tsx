@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Group, Button, Container, Burger, Drawer, Stack, Text, Box, SimpleGrid, ThemeIcon, TextInput, Avatar, Menu, ActionIcon, Indicator } from '@mantine/core';
 import { useDisclosure, useClickOutside } from '@mantine/hooks';
 import {
@@ -366,10 +367,18 @@ export function Header() {
                             </Menu>
                         ) : (
                             <Group gap="sm">
-                                <Button variant="subtle" color="gray" className={classes.loginBtn}>
+                                <Button
+                                    component={Link}
+                                    to="/login"
+                                    variant="subtle"
+                                    color="gray"
+                                    className={classes.loginBtn}
+                                >
                                     Entrar
                                 </Button>
                                 <Button
+                                    component={Link}
+                                    to="/cadastro"
                                     variant="gradient"
                                     gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
                                     className={classes.ctaBtn}
@@ -702,15 +711,26 @@ export function Header() {
                         Suporte
                     </a>
 
-                    <Button variant="subtle" color="gray" fullWidth mt="xl">
+                    <Button
+                        component={Link}
+                        to="/login"
+                        variant="subtle"
+                        color="gray"
+                        fullWidth
+                        mt="xl"
+                        onClick={close}
+                    >
                         Entrar
                     </Button>
                     <Button
+                        component={Link}
+                        to="/cadastro"
                         variant="gradient"
                         gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
                         fullWidth
+                        onClick={close}
                     >
-                        Começar Grátis
+                        Inscrever-se
                     </Button>
                 </Stack>
             </Drawer>

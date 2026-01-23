@@ -149,19 +149,10 @@ export function Stats() {
                             {/* Outer glow */}
                             <Box className={classes.outerGlow} />
 
-                            {/* Orbital rings */}
-                            <Box className={classes.orbitalRing1} />
-                            <Box className={classes.orbitalRing2} />
-                            <Box className={classes.orbitalRing3} />
-
-                            {/* Orbital dots */}
-                            <Box className={classes.orbitalDot1} />
-                            <Box className={classes.orbitalDot2} />
-                            <Box className={classes.orbitalDot3} />
-
-                            {/* Main planet */}
+                            {/* Main planet - Earth */}
                             <Box className={classes.planet}>
                                 <Box className={classes.planetCore} />
+                                <Box className={classes.atmosphere} />
                                 <Box className={classes.planetGlass} />
                                 <Box className={classes.planetReflection} />
                                 <Box className={classes.planetRim} />

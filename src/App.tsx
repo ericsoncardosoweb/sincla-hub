@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { theme } from './styles/theme';
 import { Landing } from './pages/Landing';
+import { Login, Register, ForgotPassword } from './pages/auth';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,8 +27,10 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/cadastro" element={<Register />} />
+            <Route path="/esqueci-senha" element={<ForgotPassword />} />
             {/* Future routes */}
-            {/* <Route path="/login" element={<Login />} /> */}
             {/* <Route path="/dashboard" element={<Dashboard />} /> */}
           </Routes>
         </BrowserRouter>
