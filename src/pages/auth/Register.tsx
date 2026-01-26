@@ -24,6 +24,7 @@ import {
     IconBrandGithub,
     IconCheck,
     IconX,
+    IconArrowLeft,
 } from '@tabler/icons-react';
 import { SignatureVisual } from '../../components/signature-visual';
 import classes from './Auth.module.css';
@@ -75,12 +76,13 @@ export function Register() {
 
     const strength = useMemo(() => getStrength(password), [password]);
 
+    const strengthLabel = useMemo(() => getStrengthLabel(strength), [strength]);
+
     const requirements = [
-        { re: /.{8,}/, label: 'Mínimo de 8 caracteres' },
-        { re: /[a-z]/, label: 'Inclui letra minúscula' },
-        { re: /[A-Z]/, label: 'Inclui letra maiúscula' },
-        { re: /[0-9]/, label: 'Inclui número' },
-        { re: /[$&+,:;=?@#|'<>.^*()%!-]/, label: 'Inclui caractere especial' },
+        { re: /.{6,}/, label: 'Mínimo de 6 caracteres' },
+        { re: /[A-Z]/, label: 'Letra maiúscula (A-Z)' },
+        { re: /[0-9]/, label: 'Número (0-9)' },
+        { re: /[$&+,:;=?@#|'<>.^*()%!-]/, label: 'Símbolo (!@#$%...)' },
     ];
 
     const checks = requirements.map((requirement, index) => (
@@ -105,6 +107,12 @@ export function Register() {
         <div className={classes.wrapper}>
             {/* 3D Animated Background */}
             <SignatureVisual />
+
+            {/* Back Button - Top Left */}
+            <Link to="/" className={classes.backLinkTop}>
+                <IconArrowLeft size={16} />
+                Voltar para o início
+            </Link>
 
             <Container size={480} className={classes.container}>
                 {/* Logo */}
@@ -182,17 +190,34 @@ export function Register() {
                                     classNames={{ input: classes.input }}
                                 />
                                 {password.length > 0 && (
-                                    <>
+                                    <Box className={classes.strengthContainer}>
+                                        <Group justify="space-between" mb={5}>
+                                            <Text size="xs" c="dimmed">
+                                                Força da senha:
+                                            </Text>
+                                            <Text
+                                                size="xs"
+                                                fw={600}
+                                                c={strengthLabel.color}
+                                                className={classes.strengthLabel}
+                                            >
+                                                {strengthLabel.text}
+                                            </Text>
+                                        </Group>
                                         <Progress
                                             value={strength}
                                             color={getStrengthColor(strength)}
-                                            size="xs"
-                                            mt="xs"
+                                            size="sm"
+                                            radius="xl"
+                                            className={classes.strengthBar}
                                         />
-                                        <Stack gap={4} mt="xs">
+                                        <Text size="xs" c="dimmed" mt="sm" mb={8}>
+                                            Sua senha deve conter:
+                                        </Text>
+                                        <Stack gap={6}>
                                             {checks}
                                         </Stack>
-                                    </>
+                                    </Box>
                                 )}
                             </div>
 

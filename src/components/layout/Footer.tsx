@@ -1,20 +1,21 @@
+import { Link } from 'react-router-dom';
 import { Container, Group, Text, Stack, Anchor, SimpleGrid, Select } from '@mantine/core';
-import { IconWorld, IconArrowRight } from '@tabler/icons-react';
+import { IconWorld, IconArrowRight, IconBrandFacebook, IconBrandX, IconBrandLinkedin, IconBrandYoutube, IconBrandInstagram } from '@tabler/icons-react';
 import classes from './Footer.module.css';
 
 // Links da coluna Empresa (sobre a Sincla)
 const empresaLinks = [
-    { label: 'Empresa', href: '#' },
-    { label: 'Carreiras', href: '#' },
-    { label: 'Eventos', href: '#' },
-    { label: 'Blogs', href: '#' },
-    { label: 'Relações com Investidores', href: '#' },
-    { label: 'Fundação Sincla', href: '#' },
-    { label: 'Kit de Imprensa', href: '#' },
-    { label: 'Fale com a gente', href: '#' },
+    { label: 'Empresa', href: '/empresa' },
+    { label: 'Carreiras', href: '/carreiras' },
+    { label: 'Eventos', href: '/eventos' },
+    { label: 'Blogs', href: '/blog' },
+    { label: 'Relações com Investidores', href: '/investidores' },
+    { label: 'Fundação Sincla', href: '/fundacao' },
+    { label: 'Kit de Imprensa', href: '/imprensa' },
+    { label: 'Fale com a gente', href: '/contato' },
 ];
 
-// Links da coluna Produtos
+// Links da coluna Produtos (não tem páginas, ficam como #)
 const produtosLinks = [
     { label: 'Sincla RH', href: '#' },
     { label: 'Sincla EAD', href: '#' },
@@ -26,21 +27,21 @@ const produtosLinks = [
 
 // Links da coluna Recursos
 const recursosLinks = [
-    { label: 'Suporte técnico', href: '#suporte' },
-    { label: 'Compras e licenciamento', href: '#' },
-    { label: 'Comunidade Sincla', href: '#' },
-    { label: 'Base de conhecimento', href: '#' },
-    { label: 'Marketplace', href: '#' },
-    { label: 'Minha conta', href: '#' },
+    { label: 'Suporte técnico', href: '/suporte' },
+    { label: 'Compras e licenciamento', href: '/compras' },
+    { label: 'Comunidade Sincla', href: '/comunidade' },
+    { label: 'Base de conhecimento', href: '/base-conhecimento' },
+    { label: 'Marketplace', href: '/marketplace' },
+    { label: 'Minha conta', href: '/minha-conta' },
 ];
 
 // Links da coluna Saiba Mais
 const saibaMaisLinks = [
-    { label: 'Parceiros', href: '#parceiros' },
-    { label: 'Treinamento e certificação', href: '#' },
-    { label: 'Documentação', href: '#' },
-    { label: 'Recursos de desenvolvedores', href: '#' },
-    { label: 'Serviços corporativos', href: '#' },
+    { label: 'Parceiros', href: '/parceiros' },
+    { label: 'Treinamento e certificação', href: '/treinamento' },
+    { label: 'Documentação', href: '/documentacao' },
+    { label: 'Recursos de desenvolvedores', href: '/desenvolvedores' },
+    { label: 'Serviços corporativos', href: '/servicos-corporativos' },
 ];
 
 // Links do rodapé inferior (legal)
@@ -51,6 +52,15 @@ const legalLinks = [
     { label: 'Aviso legal', href: '#' },
 ];
 
+// Redes sociais
+const socialLinks = [
+    { icon: IconBrandFacebook, href: '#', label: 'Facebook' },
+    { icon: IconBrandX, href: '#', label: 'X (Twitter)' },
+    { icon: IconBrandLinkedin, href: '#', label: 'LinkedIn' },
+    { icon: IconBrandYoutube, href: '#', label: 'YouTube' },
+    { icon: IconBrandInstagram, href: '#', label: 'Instagram' },
+];
+
 export function Footer() {
     return (
         <footer className={classes.footer}>
@@ -59,17 +69,17 @@ export function Footer() {
                 <SimpleGrid cols={{ base: 2, sm: 2, md: 4 }} spacing={{ base: 'xl', md: 60 }} mb={48}>
                     {/* Coluna 1: Logo + Empresa */}
                     <Stack gap="md">
-                        <a href="/" className={classes.logoLink}>
+                        <Link to="/" className={classes.logoLink}>
                             <img
                                 src="/logos/sincla.svg"
                                 alt="Sincla"
                                 height={28}
                                 style={{ display: 'block' }}
                             />
-                        </a>
+                        </Link>
                         <Stack gap="xs" mt="md">
                             {empresaLinks.map((link) => (
-                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                <Anchor key={link.label} component={Link} to={link.href} className={classes.link}>
                                     {link.label}
                                 </Anchor>
                             ))}
@@ -96,12 +106,12 @@ export function Footer() {
                         <Text className={classes.columnTitle}>RECURSOS</Text>
                         <Stack gap="xs">
                             {recursosLinks.map((link) => (
-                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                <Anchor key={link.label} component={Link} to={link.href} className={classes.link}>
                                     {link.label}
                                 </Anchor>
                             ))}
                         </Stack>
-                        <Anchor href="#suporte" className={classes.viewAllLink}>
+                        <Anchor component={Link} to="/ticket-suporte" className={classes.viewAllLink}>
                             Criar ticket de suporte <IconArrowRight size={14} />
                         </Anchor>
                     </Stack>
@@ -111,12 +121,12 @@ export function Footer() {
                         <Text className={classes.columnTitle}>SAIBA MAIS</Text>
                         <Stack gap="xs">
                             {saibaMaisLinks.map((link) => (
-                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                <Anchor key={link.label} component={Link} to={link.href} className={classes.link}>
                                     {link.label}
                                 </Anchor>
                             ))}
                         </Stack>
-                        <Anchor href="#" className={classes.viewAllLink}>
+                        <Anchor component={Link} to="/recursos" className={classes.viewAllLink}>
                             Ver todos os recursos <IconArrowRight size={14} />
                         </Anchor>
                     </Stack>
@@ -158,6 +168,22 @@ export function Footer() {
                                 rightSection={null}
                                 comboboxProps={{ withinPortal: false }}
                             />
+                        </Group>
+
+                        {/* Social Media Icons */}
+                        <Group gap="sm" className={classes.socialLinks}>
+                            {socialLinks.map((social) => (
+                                <a
+                                    key={social.label}
+                                    href={social.href}
+                                    className={classes.socialIcon}
+                                    aria-label={social.label}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <social.icon size={22} />
+                                </a>
+                            ))}
                         </Group>
                     </Group>
                 </div>

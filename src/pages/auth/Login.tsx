@@ -15,7 +15,7 @@ import {
     Divider,
     Box,
 } from '@mantine/core';
-import { IconMail, IconLock, IconBrandGoogle, IconBrandGithub } from '@tabler/icons-react';
+import { IconMail, IconLock, IconBrandGoogle, IconBrandGithub, IconArrowLeft } from '@tabler/icons-react';
 import { SignatureVisual } from '../../components/signature-visual';
 import classes from './Auth.module.css';
 
@@ -36,6 +36,12 @@ export function Login() {
         <div className={classes.wrapper}>
             {/* 3D Animated Background */}
             <SignatureVisual />
+
+            {/* Back Button - Top Left */}
+            <Link to="/" className={classes.backLinkTop}>
+                <IconArrowLeft size={16} />
+                Voltar para o início
+            </Link>
 
             <Container size={480} className={classes.container}>
                 {/* Logo */}

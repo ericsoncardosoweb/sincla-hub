@@ -1,0 +1,910 @@
+/* ==========================================
+   Empresa Page - Inspired by Atlassian
+   ========================================== */
+
+/* Page Wrapper */
+.pageWrapper {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Back Link */
+.backLink {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.backLink:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(-2px);
+}
+
+/* ==========================================
+   HERO SECTION
+   ========================================== */
+.heroSection {
+    position: relative;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 20px 80px;
+    overflow: hidden;
+}
+
+.heroContainer {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.heroContent {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.heroTagline {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.heroTitle {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #0087ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.heroText {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+    margin-bottom: 16px;
+}
+
+.heroHighlight {
+    color: #0087ff;
+    font-weight: 500;
+}
+
+.heroVisual {
+    flex: 0 0 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.heroIllustration {
+    width: 350px;
+    height: 350px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.heroCircle {
+    position: absolute;
+    border-radius: 50%;
+    animation: float 6s ease-in-out infinite;
+}
+
+.heroCircle1 {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    top: 0;
+    right: 0;
+    animation-delay: 0s;
+}
+
+.heroCircle2 {
+    width: 150px;
+    height: 150px;
+    background: linear-gradient(135deg, #00c6ff 0%, #64b4ff 100%);
+    bottom: 20px;
+    left: 0;
+    animation-delay: -2s;
+}
+
+.heroCircle3 {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #64b4ff 0%, #0087ff 100%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: -4s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+/* ==========================================
+   STATS SECTION
+   ========================================== */
+.statsSection {
+    position: relative;
+    z-index: 1;
+    padding: 60px 20px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.statItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.statIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 135, 255, 0.2), rgba(0, 198, 255, 0.1));
+    border-radius: 12px;
+    color: #0087ff;
+    flex-shrink: 0;
+}
+
+.statContent {
+    flex: 1;
+}
+
+.statNumber {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+/* ==========================================
+   SECTION BASE STYLES
+   ========================================== */
+.section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 20px;
+}
+
+.sectionDark {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.sectionHeader {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 60px;
+}
+
+.sectionTagline {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.sectionTitle {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+}
+
+/* ==========================================
+   HISTORY SECTION
+   ========================================== */
+.historyContent {
+    display: flex;
+    gap: 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+.historyText {
+    flex: 1;
+}
+
+.historyTitle {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.historyParagraph {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.historyTimeline {
+    flex: 0 0 350px;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 32px;
+}
+
+.timelineItem {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.timelineItem:last-child {
+    border-bottom: none;
+}
+
+.timelineYear {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0087ff;
+    min-width: 60px;
+}
+
+.timelineEvent {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+}
+
+/* ==========================================
+   TWO CARDS SECTION
+   ========================================== */
+.twoCardsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.linkCard {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px;
+    transition: all 0.3s ease;
+}
+
+.linkCard:hover {
+    border-color: rgba(0, 135, 255, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.linkCardIcon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    color: #0087ff;
+}
+
+.linkCardTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.linkCardDescription {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.linkCardCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0087ff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: gap 0.2s ease;
+}
+
+.linkCardCta:hover {
+    gap: 12px;
+}
+
+/* ==========================================
+   VALUES SECTION
+   ========================================== */
+.valuesLayout {
+    display: flex;
+    gap: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+.valuesText {
+    flex: 0 0 400px;
+}
+
+.valuesTagline {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.valuesTitle {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.valuesDescription {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+    margin-bottom: 24px;
+}
+
+.valuesCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0087ff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: gap 0.2s ease;
+}
+
+.valuesCta:hover {
+    gap: 12px;
+}
+
+.valuesGrid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.valueCard {
+    text-align: center;
+    padding: 24px;
+}
+
+.valueIcon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(0, 135, 255, 0.15), rgba(0, 198, 255, 0.1));
+    border-radius: 20px;
+    color: #0087ff;
+}
+
+.valueTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    line-height: 1.4;
+}
+
+/* ==========================================
+   HIGHLIGHT SECTION (Dark Banner)
+   ========================================== */
+.highlightSection {
+    position: relative;
+    z-index: 1;
+    padding: 100px 20px;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 20, 40, 0.9) 0%,
+        rgba(0, 10, 20, 0.95) 100%
+    );
+    text-align: center;
+}
+
+.highlightIcon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    color: #0087ff;
+}
+
+.highlightTitle {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.highlightSubtitle {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #0087ff;
+    margin-bottom: 24px;
+}
+
+.highlightText {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 700px;
+    margin: 0 auto 32px;
+    line-height: 1.8;
+}
+
+.highlightCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: gap 0.2s ease;
+}
+
+.highlightCta:hover {
+    gap: 12px;
+}
+
+/* ==========================================
+   COMMITMENTS SECTION
+   ========================================== */
+.commitmentsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.commitmentCard {
+    display: flex;
+    gap: 24px;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s ease;
+}
+
+.commitmentCard:hover {
+    border-color: rgba(0, 135, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.commitmentIcon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 135, 255, 0.2), rgba(0, 198, 255, 0.1));
+    border-radius: 16px;
+    color: #0087ff;
+    flex-shrink: 0;
+}
+
+.commitmentContent {
+    flex: 1;
+}
+
+.commitmentTitle {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.commitmentDescription {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.7;
+    margin-bottom: 16px;
+}
+
+.commitmentCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0087ff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: gap 0.2s ease;
+}
+
+.commitmentCta:hover {
+    gap: 12px;
+}
+
+/* ==========================================
+   HOW WE WORK SECTION
+   ========================================== */
+.howWeWorkContent {
+    display: flex;
+    gap: 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: center;
+}
+
+.howWeWorkText {
+    flex: 1;
+}
+
+.howWeWorkTagline {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.howWeWorkTitle {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.howWeWorkParagraph {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+    margin-bottom: 16px;
+}
+
+.howWeWorkVisual {
+    flex: 0 0 350px;
+    display: flex;
+    justify-content: center;
+}
+
+.howWeWorkIllustration {
+    width: 280px;
+    height: 280px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workCircle {
+    position: absolute;
+    border-radius: 50%;
+}
+
+.workCircle1 {
+    width: 180px;
+    height: 180px;
+    background: linear-gradient(135deg, rgba(0, 135, 255, 0.3), rgba(0, 198, 255, 0.2));
+    animation: pulse 4s ease-in-out infinite;
+}
+
+.workCircle2 {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, rgba(0, 198, 255, 0.4), rgba(100, 180, 255, 0.3));
+    animation: pulse 4s ease-in-out infinite;
+    animation-delay: -2s;
+}
+
+.workIcon {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+/* ==========================================
+   ARTICLES SECTION
+   ========================================== */
+.articlesLayout {
+    display: flex;
+    gap: 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+.articlesHeader {
+    flex: 0 0 280px;
+}
+
+.articlesTitle {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+    line-height: 1.3;
+}
+
+.articlesDescription {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.7;
+}
+
+.articlesGrid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.articleCard {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s ease;
+}
+
+.articleCard:hover {
+    border-color: rgba(0, 135, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.articleTag {
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.articleTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.articleCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #0087ff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: gap 0.2s ease;
+}
+
+.articleCta:hover {
+    gap: 10px;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 1024px) {
+    .heroContainer {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .heroVisual {
+        flex: none;
+        order: -1;
+    }
+
+    .heroIllustration {
+        width: 280px;
+        height: 280px;
+    }
+
+    .historyContent {
+        flex-direction: column;
+    }
+
+    .historyTimeline {
+        flex: none;
+        width: 100%;
+    }
+
+    .twoCardsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .valuesLayout {
+        flex-direction: column;
+    }
+
+    .valuesText {
+        flex: none;
+        text-align: center;
+    }
+
+    .valuesGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .commitmentsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .howWeWorkContent {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .howWeWorkVisual {
+        flex: none;
+        order: -1;
+    }
+
+    .articlesLayout {
+        flex-direction: column;
+    }
+
+    .articlesHeader {
+        flex: none;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .heroSection {
+        padding: 100px 16px 60px;
+        min-height: auto;
+    }
+
+    .section {
+        padding: 60px 16px;
+    }
+
+    .backLink {
+        top: 16px;
+        left: 16px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+
+    .valuesGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .articlesGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .commitmentCard {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .commitmentIcon {
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .valuesGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .heroCircle1 {
+        width: 150px;
+        height: 150px;
+    }
+
+    .heroCircle2 {
+        width: 100px;
+        height: 100px;
+    }
+
+    .heroCircle3 {
+        width: 70px;
+        height: 70px;
+    }
+}

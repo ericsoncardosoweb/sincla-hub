@@ -1,0 +1,689 @@
+/* ==========================================
+   Carreiras Page - Inspired by Atlassian
+   ========================================== */
+
+/* Page Wrapper */
+.pageWrapper {
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Back Link */
+.backLink {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.backLink:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(-2px);
+}
+
+/* ==========================================
+   HERO SECTION
+   ========================================== */
+.heroSection {
+    position: relative;
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 20px 80px;
+    overflow: hidden;
+}
+
+.heroContent {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.heroTagline {
+    display: inline-block;
+    padding: 8px 20px;
+    background: linear-gradient(135deg, rgba(0, 135, 255, 0.2), rgba(0, 198, 255, 0.1));
+    border: 1px solid rgba(0, 135, 255, 0.3);
+    border-radius: 30px;
+    color: #00c6ff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    margin-bottom: 24px;
+}
+
+.heroTitle {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #0087ff 50%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.heroSubtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 650px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+}
+
+.heroCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #0087ff 0%, #00c6ff 100%);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow:
+        0 4px 20px rgba(0, 135, 255, 0.4),
+        0 8px 32px rgba(0, 135, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.heroCta:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 25px rgba(0, 135, 255, 0.5),
+        0 12px 40px rgba(0, 135, 255, 0.3);
+}
+
+.heroStats {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statItem {
+    text-align: center;
+}
+
+.statNumber {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #0087ff;
+    margin-bottom: 8px;
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ==========================================
+   SECTION BASE STYLES
+   ========================================== */
+.section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 20px;
+}
+
+.sectionDark {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.sectionHeader {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 60px;
+}
+
+.sectionTitle {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+}
+
+/* ==========================================
+   TEAMS SECTION
+   ========================================== */
+.teamsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.teamCard {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.teamCard:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 135, 255, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 135, 255, 0.1);
+}
+
+.teamIcon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(0, 135, 255, 0.2), rgba(0, 198, 255, 0.1));
+    border-radius: 16px;
+    color: #0087ff;
+}
+
+.teamName {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.teamCount {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ==========================================
+   VALUES SECTION
+   ========================================== */
+.valuesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.valueCard {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.04) 0%,
+        rgba(0, 135, 255, 0.02) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 40px;
+    transition: all 0.3s ease;
+}
+
+.valueCard:hover {
+    border-color: rgba(0, 135, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.valueIcon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0087ff, #00c6ff);
+    border-radius: 14px;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.valueTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.valueDescription {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.7;
+}
+
+/* ==========================================
+   REMOTE WORK SECTION
+   ========================================== */
+.remoteSection {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 135, 255, 0.08) 0%,
+        rgba(0, 198, 255, 0.04) 100%
+    );
+    border: 1px solid rgba(0, 135, 255, 0.2);
+    border-radius: 24px;
+}
+
+.remoteContent {
+    flex: 1;
+}
+
+.remoteTag {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(0, 198, 255, 0.15);
+    border-radius: 20px;
+    color: #00c6ff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+}
+
+.remoteTitle {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.remoteDescription {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.remoteFeatures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.remoteFeature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+}
+
+.remoteFeature svg {
+    color: #00c6ff;
+}
+
+.remoteVisual {
+    flex: 0 0 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.globeIcon {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 135, 255, 0.2), rgba(0, 198, 255, 0.1));
+    border-radius: 50%;
+    color: #0087ff;
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* ==========================================
+   JOBS SECTION
+   ========================================== */
+.jobsFilters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 48px;
+}
+
+.filterButton {
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filterButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.filterButtonActive {
+    background: linear-gradient(135deg, #0087ff, #00c6ff);
+    border-color: transparent;
+    color: white;
+}
+
+.jobsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.jobCard {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.02) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s ease;
+}
+
+.jobCard:hover {
+    border-color: rgba(0, 135, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.jobHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.jobTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.jobBadge {
+    padding: 4px 12px;
+    background: rgba(0, 135, 255, 0.15);
+    border-radius: 20px;
+    color: #0087ff;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.jobMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.jobMetaItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+}
+
+.jobMetaItem svg {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.jobApply {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid rgba(0, 135, 255, 0.5);
+    border-radius: 8px;
+    color: #0087ff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.jobApply:hover {
+    background: rgba(0, 135, 255, 0.1);
+    border-color: #0087ff;
+}
+
+/* ==========================================
+   EARLY CAREER SECTION
+   ========================================== */
+.earlyCareerContent {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.earlyCareerText {
+    flex: 1;
+}
+
+.earlyCareerTitle {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.earlyCareerDescription {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.earlyCareerCta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.earlyCareerCta:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.earlyCareerVisual {
+    flex: 0 0 300px;
+}
+
+.graduationIcon {
+    width: 180px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 198, 255, 0.15), rgba(0, 135, 255, 0.1));
+    border-radius: 24px;
+    color: #00c6ff;
+}
+
+/* ==========================================
+   COMMUNITY CTA SECTION
+   ========================================== */
+.communityCta {
+    text-align: center;
+    padding: 80px 20px;
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 135, 255, 0.05) 50%,
+        transparent 100%
+    );
+}
+
+.communityTitle {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+}
+
+.communityDescription {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 500px;
+    margin: 0 auto 32px;
+}
+
+.communityButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 28px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.communityButton:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 1024px) {
+    .remoteSection {
+        flex-direction: column;
+        gap: 40px;
+        padding: 40px;
+    }
+
+    .remoteVisual {
+        flex: none;
+    }
+
+    .earlyCareerContent {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .earlyCareerVisual {
+        flex: none;
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .heroSection {
+        padding: 100px 16px 60px;
+        min-height: 75vh;
+    }
+
+    .heroStats {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .section {
+        padding: 60px 16px;
+    }
+
+    .backLink {
+        top: 16px;
+        left: 16px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    .teamsGrid,
+    .valuesGrid,
+    .jobsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .remoteSection {
+        padding: 24px;
+    }
+
+    .globeIcon {
+        width: 140px;
+        height: 140px;
+    }
+
+    .graduationIcon {
+        width: 140px;
+        height: 140px;
+    }
+}

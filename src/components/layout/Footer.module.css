@@ -160,6 +160,30 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
+/* Social Media Icons */
+.socialLinks {
+    display: flex;
+    align-items: center;
+}
+
+.socialIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s ease;
+}
+
+.socialIcon:hover {
+    background: rgba(0, 135, 255, 0.15);
+    color: #0087ff;
+    transform: translateY(-2px);
+}
+
 /* ==========================================
    Responsividade
    ========================================== */
@@ -174,7 +198,7 @@
     }
 
     .legalLinks {
-        order: 3;
+        order: 4;
         width: 100%;
         justify-content: flex-start;
         margin-top: 12px;
@@ -182,6 +206,10 @@
 
     .languageSelector {
         order: 2;
+    }
+
+    .socialLinks {
+        order: 3;
     }
 
     .copyright {

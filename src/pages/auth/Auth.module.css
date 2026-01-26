@@ -284,13 +284,33 @@
    Password Strength Indicator - Glassmorphism
    ========================================== */
 
+.strengthContainer {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.strengthLabel {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
 .strengthBar {
-    height: 6px;
-    border-radius: 3px;
+    height: 8px;
+    border-radius: 4px;
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(4px);
     overflow: hidden;
-    margin-top: 10px;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
@@ -374,6 +394,46 @@
     color: rgba(255, 255, 255, 0.95);
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Back Link - Fixed Top Left */
+.backLinkTop {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition:
+        color 0.2s var(--ease-smooth),
+        background 0.2s var(--ease-smooth),
+        border-color 0.2s var(--ease-smooth),
+        transform 0.2s var(--ease-smooth),
+        box-shadow 0.2s var(--ease-smooth);
+}
+
+.backLinkTop:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(-2px);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.25),
+        0 0 20px -5px rgba(0, 135, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* ==========================================

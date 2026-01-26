@@ -1,0 +1,141 @@
+/* ==========================================
+   Page Template - Placeholder Pages
+   ========================================== */
+
+.wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+    padding: 100px 20px 60px;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+}
+
+/* Back Link */
+.backLink {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition:
+        color 0.2s var(--ease-smooth),
+        background 0.2s var(--ease-smooth),
+        border-color 0.2s var(--ease-smooth),
+        transform 0.2s var(--ease-smooth);
+}
+
+.backLink:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(-2px);
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    margin-bottom: 24px;
+}
+
+.breadcrumbLink {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    transition: color 0.2s var(--ease-smooth);
+}
+
+.breadcrumbLink:hover {
+    color: #0087ff;
+}
+
+.breadcrumbCurrent {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #0087ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Content */
+.content {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.02) 50%,
+        rgba(0, 135, 255, 0.02) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow:
+        0 0 40px -10px rgba(0, 135, 255, 0.1),
+        0 25px 50px -12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Placeholder */
+.placeholder {
+    padding: 60px 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wrapper {
+        padding: 80px 16px 40px;
+    }
+
+    .content {
+        padding: 24px;
+    }
+
+    .backLink {
+        top: 16px;
+        left: 16px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+}
