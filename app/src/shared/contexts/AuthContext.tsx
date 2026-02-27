@@ -209,9 +209,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
 
-        if (session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
           await initializeUserData(session.user.id);
-        } else {
+        } else if (event === 'SIGNED_OUT' || !session?.user) {
           // Clear state on sign out
           devLog('signOut', 'Limpando estado...');
           setSubscriber(null);
