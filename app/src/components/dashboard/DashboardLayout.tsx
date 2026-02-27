@@ -97,7 +97,7 @@ const iconMap: Record<string, typeof IconUsers> = {
 export function DashboardLayout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, subscriber, companies, currentCompany, setCurrentCompany, signOut, loading } = useAuth();
+    const { user, subscriber, companies, currentCompany, setCurrentCompany, signOut, loading, isAdmin } = useAuth();
 
     // Responsive breakpoints
     const isCompact = useMediaQuery('(max-width: 1439px)');
@@ -624,15 +624,19 @@ export function DashboardLayout() {
                                 >
                                     Meu Perfil
                                 </Menu.Item>
-                                <Menu.Divider />
-                                <Menu.Item
-                                    leftSection={<IconShield style={{ width: rem(14), height: rem(14) }} />}
-                                    component={Link}
-                                    to="/painel/admin"
-                                    c="blue"
-                                >
-                                    Painel Admin
-                                </Menu.Item>
+                                {isAdmin && (
+                                    <>
+                                        <Menu.Divider />
+                                        <Menu.Item
+                                            leftSection={<IconShield style={{ width: rem(14), height: rem(14) }} />}
+                                            component={Link}
+                                            to="/painel/admin"
+                                            c="blue"
+                                        >
+                                            Painel Admin
+                                        </Menu.Item>
+                                    </>
+                                )}
                                 <Menu.Divider />
                                 <Menu.Item
                                     color="red"

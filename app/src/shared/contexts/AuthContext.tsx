@@ -70,6 +70,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   subscriber: Subscriber | null;
+  isAdmin: boolean;
   loading: boolean;
 
   // Company state
@@ -100,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [subscriber, setSubscriber] = useState<Subscriber | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Company state
@@ -216,6 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setCompanies([]);
           setCurrentCompanyState(null);
           setCurrentMembership(null);
+          setIsAdmin(false);
           localStorage.removeItem(CURRENT_COMPANY_KEY);
           setLoading(false);
         }
@@ -236,6 +239,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const subscriberData = await loadSubscriber(userId);
       devLog('loadSubscriber', subscriberData ? 'OK' : 'Não encontrado');
       setSubscriber(subscriberData);
+
+      // Check Admin status
+      devLog('checkAdminStatus', 'Verificando privilégios... ' + userId);
+      const { data: adminData } = await supabase
+        .from('admin_users')
+        .select('is_active')
+        .eq('id', userId)
+        .single();
+
+      setIsAdmin(!!adminData?.is_active);
 
       // Load companies
       devLog('loadCompanies', 'Buscando empresas...');
@@ -364,6 +377,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     session,
     subscriber,
+    isAdmin,
     loading,
     companies,
     currentCompany,

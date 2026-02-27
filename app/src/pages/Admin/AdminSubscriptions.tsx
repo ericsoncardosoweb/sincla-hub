@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
     Container, Title, Text, Card, Group, Badge, Stack, Skeleton,
-    Table, TextInput, SimpleGrid, ThemeIcon, Select,
+    Table, TextInput, SimpleGrid, ThemeIcon, Select, Button, Modal,
 } from '@mantine/core';
 import {
     IconSearch, IconCreditCard, IconTrendingUp,
-    IconClock, IconX,
+    IconClock, IconX, IconCrown, IconGift,
 } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
 
@@ -76,6 +76,13 @@ export function AdminSubscriptions() {
     const [filterProduct, setFilterProduct] = useState<string | null>(null);
     const [products, setProducts] = useState<{ value: string; label: string }[]>([]);
 
+    // Grant Subscription
+    const [grantModalOpened, setGrantModalOpened] = useState(false);
+    const [grantLoading, setGrantLoading] = useState(false);
+    const [companies, setCompanies] = useState<{ value: string; label: string }[]>([]);
+    const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
@@ -83,8 +90,16 @@ export function AdminSubscriptions() {
             const { data: prods } = await supabase
                 .from('products')
                 .select('id, name')
+                .eq('is_active', true)
                 .order('name');
             setProducts((prods || []).map(p => ({ value: p.id, label: p.name })));
+
+            // Load companies for the grant modal
+            const { data: comps } = await supabase
+                .from('companies')
+                .select('id, name')
+                .order('name');
+            setCompanies((comps || []).map(c => ({ value: c.id, label: c.name })));
 
             // Load subscriptions
             let query = supabase
@@ -142,10 +157,19 @@ export function AdminSubscriptions() {
     return (
         <Container size="xl" py="md">
             <Stack gap="lg">
-                <div>
-                    <Title order={2}>Assinaturas</Title>
-                    <Text c="dimmed">Todas as assinaturas de produtos na plataforma</Text>
-                </div>
+                <Group justify="space-between">
+                    <div>
+                        <Title order={2}>Assinaturas</Title>
+                        <Text c="dimmed">Todas as assinaturas de produtos na plataforma</Text>
+                    </div>
+                    <Button
+                        leftSection={<IconCrown size={16} />}
+                        color="violet"
+                        onClick={() => setGrantModalOpened(true)}
+                    >
+                        Conceder Acesso Ilimitado
+                    </Button>
+                </Group>
 
                 {/* KPIs */}
                 {loading ? (
@@ -318,6 +342,87 @@ export function AdminSubscriptions() {
                     Exibindo {filtered.length} de {subscriptions.length} assinaturas
                 </Text>
             </Stack>
+
+            <Modal
+                opened={grantModalOpened}
+                onClose={() => !grantLoading && setGrantModalOpened(false)}
+                title={
+                    <Group gap="xs">
+                        <IconGift size={20} color="var(--mantine-color-violet-6)" />
+                        <Title order={4}>Conceder Cortesia Enterprise</Title>
+                    </Group>
+                }
+                centered
+            >
+                <Stack gap="md">
+                    <Text size="sm" c="dimmed">
+                        Forneça acesso vitalício com limite máximo de licenças sem a necessidade de passar pelo Checkout (Asaas). A assinatura será registrada como Plano Enterprise com valor R$ 0,00.
+                    </Text>
+
+                    <Select
+                        label="Empresa Recebedora"
+                        placeholder="Selecione a empresa"
+                        searchable
+                        data={companies}
+                        value={selectedCompany}
+                        onChange={setSelectedCompany}
+                        required
+                    />
+
+                    <Select
+                        label="Produto"
+                        placeholder="Selecione o produto (ou deixe em branco para TODOS)"
+                        searchable
+                        clearable
+                        data={products}
+                        value={selectedProduct}
+                        onChange={setSelectedProduct}
+                        description="Se você não selecionar um produto, todas as ferramentas do Hub serão concedidas de uma vez."
+                    />
+
+                    <Group justify="flex-end" mt="md">
+                        <Button variant="subtle" onClick={() => setGrantModalOpened(false)} disabled={grantLoading}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            color="violet"
+                            onClick={async () => {
+                                if (!selectedCompany) return alert('Selecione uma empresa.');
+                                setGrantLoading(true);
+
+                                try {
+                                    const productsToGrant = selectedProduct
+                                        ? products.filter(p => p.value === selectedProduct)
+                                        : products;
+
+                                    if (productsToGrant.length === 0) throw new Error('Nenhum produto encontrado para conceder.');
+
+                                    const { error } = await supabase
+                                        .rpc('admin_grant_subscription', {
+                                            p_company_id: selectedCompany,
+                                            p_product_ids: productsToGrant.map(p => p.value)
+                                        });
+
+                                    if (error) throw error;
+
+                                    setGrantModalOpened(false);
+                                    setSelectedCompany(null);
+                                    setSelectedProduct(null);
+                                    loadData();
+                                } catch (error: any) {
+                                    console.error(error);
+                                    alert('Erro ao conceder assinatura: ' + (error.message || 'Falha desconhecida.'));
+                                } finally {
+                                    setGrantLoading(false);
+                                }
+                            }}
+                            loading={grantLoading}
+                        >
+                            Conceder Acessos
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
         </Container>
     );
 }

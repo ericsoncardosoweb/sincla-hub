@@ -57,7 +57,7 @@ const navItems: NavItem[] = [
 export function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { subscriber, signOut } = useAuth();
+    const { subscriber, isAdmin, loading, signOut } = useAuth();
 
     // Responsive breakpoints
     const isCompact = useMediaQuery('(max-width: 1439px)');
@@ -78,6 +78,18 @@ export function AdminLayout() {
             setCollapsed(false);
         }
     }, [isCompact, isMobile]);
+
+    // Admin Route Protection Guard
+    useEffect(() => {
+        if (!loading && !isAdmin) {
+            navigate('/painel', { replace: true });
+        }
+    }, [isAdmin, loading, navigate]);
+
+    // Prevent render while checking admin status
+    if (loading || !isAdmin) {
+        return null; // Or a loader if preferred
+    }
 
     const toggleSidebar = useCallback(() => {
         if (isMobile) {
