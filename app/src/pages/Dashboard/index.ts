@@ -1,0 +1,9 @@
+export { DashboardHome } from './DashboardHome';
+export { Companies } from './Companies';
+export { CompanySettings } from './CompanySettings';
+export { Team } from './Team';
+export { Subscriptions } from './Subscriptions';
+export { Integrations } from './Integrations';
+export { Contacts } from './Contacts';
+export { Profile } from './Profile';
+export { Onboarding } from './Onboarding';

@@ -1,0 +1,140 @@
+/* ─── Sincla Global Styles ─────────────────────────────────────────────────── */
+/* Importado por todas as apps via: import '@sincla/ui/styles' */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ─── CSS Reset Additions ─────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--sincla-bg-base);
+    color: var(--sincla-text-primary);
+    line-height: 1.6;
+}
+
+/* ─── Sincla Design Tokens ────────────────────────────────────────────────── */
+
+:root {
+    /* Brand Colors */
+    --sincla-blue: #0087ff;
+    --sincla-blue-dark: #006fcc;
+    --sincla-blue-light: #e6f3ff;
+    --sincla-orange: #ff8c00;
+    --sincla-orange-light: #fff3e0;
+
+    /* Backgrounds */
+    --sincla-bg-base: #0a0a0f;
+    --sincla-bg-elevated: #12121a;
+    --sincla-bg-card: #1a1a24;
+    --sincla-bg-card-hover: #222230;
+
+    /* Text */
+    --sincla-text-primary: #ffffff;
+    --sincla-text-secondary: rgba(255, 255, 255, 0.7);
+    --sincla-text-muted: rgba(255, 255, 255, 0.5);
+
+    /* Borders */
+    --sincla-border: rgba(255, 255, 255, 0.08);
+    --sincla-border-hover: rgba(255, 255, 255, 0.15);
+
+    /* Shadows */
+    --sincla-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --sincla-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.2);
+    --sincla-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.3);
+    --sincla-shadow-glow: 0 0 30px rgba(0, 135, 255, 0.3);
+
+    /* Transitions */
+    --sincla-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --sincla-duration-fast: 150ms;
+    --sincla-duration-normal: 300ms;
+    --sincla-duration-slow: 500ms;
+}
+
+/* ─── Utility: Gradient Text ──────────────────────────────────────────────── */
+
+.sincla-gradient-text {
+    background: linear-gradient(135deg, var(--sincla-blue), var(--sincla-orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ─── Utility: Glass Card ─────────────────────────────────────────────────── */
+
+.sincla-glass {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--sincla-border);
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes sincla-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes sincla-fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes sincla-scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes sincla-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.sincla-animate-fade-in {
+    animation: sincla-fade-in var(--sincla-duration-normal) var(--sincla-ease) forwards;
+}
+
+.sincla-animate-fade-in-up {
+    animation: sincla-fade-in-up var(--sincla-duration-normal) var(--sincla-ease) forwards;
+}
+
+.sincla-animate-scale-in {
+    animation: sincla-scale-in var(--sincla-duration-fast) var(--sincla-ease) forwards;
+}

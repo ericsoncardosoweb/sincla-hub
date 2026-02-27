@@ -1,0 +1,29 @@
+/* ============================
+   Shared Components — PageHeader & EmptyState
+   ============================ */
+
+/* ---- PageHeader ---- */
+.header {
+    min-height: 48px;
+}
+
+.title {
+    color: #00045c !important;
+}
+
+.actionButton {
+    white-space: nowrap;
+}
+
+.helpButton {
+    flex-shrink: 0;
+}
+
+/* ---- EmptyState ---- */
+.emptyState {
+    min-height: 200px;
+}
+
+.emptyIcon {
+    opacity: 0.7;
+}

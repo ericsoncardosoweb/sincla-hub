@@ -1,0 +1,254 @@
+/* ============================
+   DashboardLayout — Sincla Hub
+   Sidebar-first layout (layout="alt")
+   ============================ */
+
+.shell {
+  --header-height: 60px;
+  --sincla-primary: #00045c;
+  --sincla-accent: #098eee;
+  --sidebar-transition: 0.2s ease;
+}
+
+/* ---- Header (sits to the right of sidebar, light theme) ---- */
+.header {
+  background-color: #fff;
+  border-bottom: 1px solid var(--mantine-color-gray-2);
+  z-index: 200;
+}
+
+/* ---- Select input on light header ---- */
+.selectInput {
+  background-color: #fff;
+  border: 1.5px solid var(--sincla-primary);
+  color: var(--mantine-color-dark-7);
+  border-radius: var(--mantine-radius-md);
+}
+
+.selectInput:focus {
+  border-color: var(--sincla-accent);
+  box-shadow: 0 0 0 2px rgba(9, 142, 238, 0.15);
+}
+
+/* ---- Tools Grid Button ---- */
+.toolsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--mantine-radius-sm);
+  background-color: var(--sincla-primary);
+  color: #fff;
+  transition: all 0.15s ease;
+}
+
+.toolsButton:hover {
+  background-color: var(--sincla-accent);
+}
+
+/* ---- Tools Dropdown ---- */
+.toolsDropdown {
+  padding: 16px !important;
+}
+
+.toolItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 6px;
+  border-radius: var(--mantine-radius-md);
+  transition: background-color 0.15s ease;
+  position: relative;
+  min-height: 80px;
+}
+
+.toolItem:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+.toolLabel {
+  max-width: 80px;
+}
+
+.toolActiveDot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #00c853;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* ---- User Button ---- */
+.userButton {
+  padding: 6px 12px;
+  border-radius: var(--mantine-radius-md);
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.userButton:hover {
+  background-color: var(--mantine-color-gray-1);
+}
+
+/* ---- Sidebar / Navbar (full height, from top to bottom) ---- */
+.navbar {
+  background-color: #fff;
+  border-right: 1px solid var(--mantine-color-gray-2);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--sidebar-transition);
+  overflow: visible;
+  z-index: 201;
+  /* Above header to go from top to bottom */
+}
+
+/* ---- Sidebar Logo Area ---- */
+.sidebarLogoArea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 4px;
+  min-height: 48px;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex: 1;
+  justify-content: center;
+}
+
+/* ---- Sidebar Toggle — floats at the right edge of sidebar ---- */
+.sidebarToggle {
+  position: absolute;
+  top: 22px;
+  right: -13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--sincla-accent);
+  border: 2px solid #fff;
+  color: #fff;
+  transition: all 0.15s ease;
+  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.sidebarToggle:hover {
+  background-color: var(--sincla-primary);
+  transform: scale(1.1);
+}
+
+/* ---- Nav List ---- */
+.navList {
+  flex: 1;
+}
+
+/* ---- Nav Links ---- */
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--mantine-radius-md);
+  color: var(--mantine-color-gray-7);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.navLink:hover {
+  background-color: rgba(9, 142, 238, 0.08);
+  color: var(--sincla-accent);
+}
+
+.navLinkActive {
+  background-color: rgba(9, 142, 238, 0.12);
+  color: var(--sincla-accent);
+  position: relative;
+}
+
+.navLinkActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 3px 3px 0;
+  background-color: var(--sincla-accent);
+}
+
+.navLinkActive:hover {
+  background-color: rgba(9, 142, 238, 0.18);
+  color: var(--sincla-accent);
+}
+
+/* Collapsed state — center icon */
+.navLinkCollapsed {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.navIcon {
+  flex-shrink: 0;
+}
+
+.navLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Add Company Button ---- */
+.addCompanyButton {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--mantine-radius-md);
+  color: var(--sincla-accent);
+  border: 1px dashed var(--mantine-color-gray-4);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.addCompanyButton:hover {
+  background-color: rgba(9, 142, 238, 0.06);
+  border-color: var(--sincla-accent);
+}
+
+/* ---- Navbar Footer ---- */
+.navbarFooter {
+  margin-top: auto;
+}
+
+.companyInfo {
+  padding: 8px 0;
+}
+
+/* ---- Mobile Drawer ---- */
+.drawerBody {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---- Responsive: Mobile < 1024px ---- */
+@media (max-width: 1023px) {
+  .shell {
+    --app-shell-navbar-offset: 0px !important;
+  }
+}

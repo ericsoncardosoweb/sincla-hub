@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# Sincla Ecosystem
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Organização macro de todas as plataformas do ecossistema Sincla.
 
-Currently, two official plugins are available:
+## Estrutura
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+sincla/
+├── site/           ← Site institucional (sincla.com.br)
+├── app/            ← Painel geral (app.sincla.com.br)
+├── tools/          ← Plataformas (git e deploy independentes)
+│   ├── rh/         ← Sincla RH
+│   ├── ead/        ← Sincla EAD
+│   ├── bolso/      ← Sincla Bolso
+│   ├── lead/       ← Sincla Leads
+│   └── agenda/     ← Sincla Agenda
+├── packages/       ← Pacotes npm compartilhados
+│   ├── ui/         ← @sincla/ui — Tema, componentes
+│   ├── auth/       ← @sincla/auth — Supabase, SSO
+│   └── shared/     ← @sincla/shared — Types, hooks, utils
+└── docs/           ← Documentação macro
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Domínios
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| URL | Pasta | Descrição |
+|-----|-------|-----------|
+| `sincla.com.br` | `site/` | Landing page institucional |
+| `app.sincla.com.br` | `app/` | Painel geral do Hub |
+| `app.sincla.com.br/rh` | `tools/rh/` | Sincla RH |
+| `app.sincla.com.br/ead` | `tools/ead/` | Sincla EAD |
+| `app.sincla.com.br/bolso` | `tools/bolso/` | Sincla Bolso |
+| `app.sincla.com.br/lead` | `tools/lead/` | Sincla Leads |
+| `app.sincla.com.br/agenda` | `tools/agenda/` | Sincla Agenda |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Git
+
+- **Este repositório** gerencia: `docs/`, `packages/`, `site/`, `app/`
+- **`tools/`** é ignorado pelo git raiz — cada tool tem seu `.git` independente
+- Deploys são independentes por app
+
+## Packages Compartilhados
+
+Cada app pode consumir os pacotes via `npm link` ou path relativo:
+
+```tsx
+import { SinclaProvider } from '@sincla/ui';
+import { AuthProvider, useAuth } from '@sincla/auth';
+import { formatCurrency, type SinclaUser } from '@sincla/shared';
 ```

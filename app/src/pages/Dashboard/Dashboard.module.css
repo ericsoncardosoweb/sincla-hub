@@ -1,0 +1,103 @@
+/* ============================
+   Dashboard Home — Sincla Hub
+   ============================ */
+
+/* ---- Greeting ---- */
+.greeting {
+    margin-bottom: 24px;
+}
+
+/* ---- Main Cards ---- */
+.mainCard {
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease;
+}
+
+.mainCard:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.mainCardBody {
+    flex: 1;
+    min-height: 120px;
+}
+
+/* ---- List Items (inside cards) ---- */
+.listItem {
+    padding: 6px 8px;
+    border-radius: var(--mantine-radius-md);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    flex-wrap: nowrap;
+}
+
+.listItem:hover {
+    background-color: var(--mantine-color-gray-0);
+}
+
+/* ---- Empty State inside cards ---- */
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 0;
+    flex: 1;
+}
+
+/* ---- Add Button ---- */
+.addButton {
+    margin-top: 4px;
+    border: 1px dashed var(--mantine-color-gray-3);
+    border-radius: var(--mantine-radius-md);
+}
+
+.addButton:hover {
+    border-color: var(--mantine-color-teal-5);
+}
+
+/* ---- Tools Carousel ---- */
+.toolsCarousel {
+    display: flex;
+    gap: 16px;
+    padding-bottom: 8px;
+}
+
+/* ---- Tool Card ---- */
+.toolCard {
+    width: 280px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease;
+    border: 1px solid var(--mantine-color-gray-3);
+    flex-shrink: 0;
+}
+
+.toolCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.toolCardActive {
+    border-color: var(--tool-color, var(--mantine-color-blue-5));
+    border-width: 1.5px;
+}
+
+.toolDesc {
+    min-height: 32px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .toolsCarousel {
+        gap: 12px;
+    }
+
+    .toolCard {
+        min-width: 220px;
+        max-width: 260px;
+    }
+}

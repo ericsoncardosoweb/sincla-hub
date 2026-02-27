@@ -1,0 +1,522 @@
+/* ==========================================
+   AUTH PAGES - Shared Styles
+   ==========================================
+   Login, Register, Forgot Password
+   Glassmorphism design with Sincla branding
+   ========================================== */
+
+.wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 40px 20px;
+    background: var(--bg-dark);
+}
+
+/* ==========================================
+   Container & Layout
+   ========================================== */
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    z-index: 1;
+}
+
+/* ==========================================
+   Logo
+   ========================================== */
+
+.logoWrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.2s var(--ease-smooth), opacity 0.2s var(--ease-smooth);
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+/* ==========================================
+   Card - Premium Glassmorphism
+   ========================================== */
+
+.card {
+    background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.03) 50%,
+            rgba(0, 135, 255, 0.02) 100%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        /* Outer glow - Sincla blue */
+        0 0 40px -10px rgba(0, 135, 255, 0.15),
+        /* Depth shadow */
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        /* Inner top highlight */
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        /* Inner subtle glow */
+        inset 0 0 20px rgba(255, 255, 255, 0.02);
+    transition:
+        border-color 0.3s var(--ease-smooth),
+        box-shadow 0.3s var(--ease-smooth),
+        transform 0.3s var(--ease-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle shine effect */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.03),
+            transparent);
+    transition: left 0.5s var(--ease-smooth);
+    pointer-events: none;
+}
+
+.card:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow:
+        /* Enhanced outer glow */
+        0 0 60px -10px rgba(0, 135, 255, 0.25),
+        /* Depth shadow */
+        0 30px 60px -15px rgba(0, 0, 0, 0.5),
+        /* Inner top highlight */
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        /* Inner glow */
+        inset 0 0 30px rgba(0, 135, 255, 0.03);
+    transform: translateY(-2px);
+}
+
+.card:hover::before {
+    left: 100%;
+}
+
+/* ==========================================
+   Dark text overrides for light Mantine theme
+   on dark glassmorphism background
+   ========================================== */
+
+.card :global(.mantine-InputWrapper-label),
+.card :global(.mantine-Input-input),
+.card :global(.mantine-Checkbox-label),
+.card :global(.mantine-Divider-label),
+.card :global(.mantine-Text-root) {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.card :global(.mantine-InputWrapper-required) {
+    color: #ff6b6b;
+}
+
+.card :global(.mantine-Checkbox-input) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.card :global(.mantine-Divider-root) {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.card :global(.mantine-PasswordInput-innerInput) {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* ==========================================
+   Typography
+   ========================================== */
+
+.title {
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ==========================================
+   Form Inputs - Glassmorphism
+   ========================================== */
+
+.input {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.95);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    transition:
+        border-color 0.2s var(--ease-smooth),
+        background-color 0.2s var(--ease-smooth),
+        box-shadow 0.2s var(--ease-smooth);
+}
+
+.input:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.input:focus {
+    border-color: #0087ff;
+    background: rgba(0, 135, 255, 0.08);
+    box-shadow:
+        0 0 0 3px rgba(0, 135, 255, 0.2),
+        0 0 20px -5px rgba(0, 135, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* ==========================================
+   Buttons - Glassmorphism
+   ========================================== */
+
+.submitButton {
+    background: linear-gradient(135deg, #0087ff 0%, #0065cc 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+    height: 48px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 4px 15px rgba(0, 135, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition:
+        transform 0.2s var(--ease-smooth),
+        box-shadow 0.2s var(--ease-smooth),
+        background 0.2s var(--ease-smooth);
+}
+
+/* Button shine effect */
+.submitButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent);
+    transition: left 0.4s var(--ease-smooth);
+}
+
+.submitButton:hover {
+    background: linear-gradient(135deg, #0095ff 0%, #0087ff 100%);
+    box-shadow:
+        0 8px 30px rgba(0, 135, 255, 0.5),
+        0 0 40px -10px rgba(0, 135, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.submitButton:hover::before {
+    left: 100%;
+}
+
+.submitButton:active {
+    transform: translateY(0);
+    box-shadow:
+        0 2px 10px rgba(0, 135, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.socialButton {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+    height: 44px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+    transition:
+        border-color 0.2s var(--ease-smooth),
+        background-color 0.2s var(--ease-smooth),
+        box-shadow 0.2s var(--ease-smooth),
+        transform 0.2s var(--ease-smooth);
+}
+
+.socialButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 4px 15px rgba(0, 0, 0, 0.15),
+        0 0 20px -10px rgba(0, 135, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.socialButton:active {
+    transform: translateY(0);
+}
+
+/* ==========================================
+   Links
+   ========================================== */
+
+.link {
+    color: #0087ff;
+    font-weight: 500;
+    transition: color 0.2s var(--ease-smooth);
+}
+
+.link:hover {
+    color: #00a3ff;
+    text-decoration: underline;
+}
+
+.footerLink {
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.2s var(--ease-smooth);
+}
+
+.footerLink:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================
+   Password Strength Indicator - Glassmorphism
+   ========================================== */
+
+.strengthContainer {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.strengthLabel {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.strengthBar {
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.strengthProgress {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s var(--ease-smooth), background-color 0.3s var(--ease-smooth);
+    box-shadow: 0 0 10px currentColor;
+}
+
+.strengthWeak {
+    background: linear-gradient(90deg, #ff4757, #ff6b7a);
+}
+
+.strengthMedium {
+    background: linear-gradient(90deg, #ffa502, #ffbe33);
+}
+
+.strengthStrong {
+    background: linear-gradient(90deg, #2ed573, #7bed9f);
+}
+
+/* ==========================================
+   Success Message - Glassmorphism
+   ========================================== */
+
+.successIcon {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg,
+            rgba(0, 135, 255, 0.15) 0%,
+            rgba(0, 198, 255, 0.08) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 135, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    color: #0087ff;
+    box-shadow:
+        0 0 30px rgba(0, 135, 255, 0.2),
+        inset 0 0 20px rgba(0, 135, 255, 0.1);
+    animation: successPulse 2s ease-in-out infinite;
+}
+
+@keyframes successPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 135, 255, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 0 15px rgba(0, 135, 255, 0);
+    }
+}
+
+/* ==========================================
+   Back Link - Glassmorphism
+   ========================================== */
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+    margin-bottom: 24px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid transparent;
+    transition:
+        color 0.2s var(--ease-smooth),
+        background 0.2s var(--ease-smooth),
+        border-color 0.2s var(--ease-smooth);
+}
+
+.backLink:hover {
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Back Link - Fixed Top Left */
+.backLinkTop {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 100;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition:
+        color 0.2s var(--ease-smooth),
+        background 0.2s var(--ease-smooth),
+        border-color 0.2s var(--ease-smooth),
+        transform 0.2s var(--ease-smooth),
+        box-shadow 0.2s var(--ease-smooth);
+}
+
+.backLinkTop:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(-2px);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.25),
+        0 0 20px -5px rgba(0, 135, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================
+   Steps Indicator - Glassmorphism
+   ========================================== */
+
+.steps {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 32px;
+}
+
+.step {
+    width: 44px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(4px);
+    transition:
+        background-color 0.3s var(--ease-smooth),
+        box-shadow 0.3s var(--ease-smooth);
+}
+
+.stepActive {
+    background: linear-gradient(90deg, #0087ff, #00c6ff);
+    box-shadow: 0 0 15px rgba(0, 135, 255, 0.4);
+}
+
+.stepCompleted {
+    background: linear-gradient(90deg, #2ed573, #7bed9f);
+    box-shadow: 0 0 15px rgba(46, 213, 115, 0.4);
+}
+
+/* ==========================================
+   Responsive
+   ========================================== */
+
+@media (max-width: 520px) {
+    .wrapper {
+        padding: 24px 16px;
+    }
+
+    .card {
+        padding: 24px 20px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-height: 700px) {
+    .wrapper {
+        padding: 20px;
+    }
+
+    .logoWrapper {
+        margin-bottom: 20px;
+    }
+}

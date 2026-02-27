@@ -1,0 +1,161 @@
+type PlatformType = 'rh' | 'ead' | 'bolso' | 'leads' | 'agenda' | 'intranet';
+
+interface Platform {
+    id: PlatformType;
+    name: string;
+    tagline: string;
+    description: string;
+    color: string;
+    icon: string;
+    logo?: string;
+    url: string;
+    features: string[];
+    isComingSoon?: boolean;
+}
+
+
+export const platforms: Platform[] = [
+    {
+        id: 'rh',
+        name: 'Sincla RH',
+        tagline: 'Gestão de RH moderna e prática',
+        description: 'Plataforma completa de gestão de recursos humanos com funcionalidades inteligentes e integrada com I.A. Gerencie colaboradores, avaliações de desempenho, pesquisas de clima e muito mais.',
+        color: '#0066CC',
+        icon: 'users',
+        logo: '/logos/sincla-rh.svg',
+        url: 'https://rh.sincla.com.br',
+        features: [
+            'Gestão de colaboradores',
+            'Avaliações 360°',
+            'Pesquisas de clima',
+            'Gestão de competências',
+            'Feedbacks contínuos',
+            'Intranet corporativa',
+            'Onboarding digital',
+        ],
+    },
+    {
+        id: 'ead',
+        name: 'Sincla EAD',
+        tagline: 'Cursos e comunidade online',
+        description: 'Plataforma de cursos e comunidade online com recursos de I.A. integrados. Perfeito para infoprodutores e empresas que precisam de uma área de treinamento para colaboradores.',
+        color: '#FF6600',
+        icon: 'book',
+        logo: '/logos/sincla-ead.svg',
+        url: 'https://ead.sincla.com.br',
+        features: [
+            'Criação de cursos',
+            'Área de membros',
+            'Comunidade online',
+            'Certificados automáticos',
+            'Analytics de engajamento',
+            'Gestão de professores',
+            'Gamificação',
+        ],
+    },
+    {
+        id: 'bolso',
+        name: 'Sincla Bolso',
+        tagline: 'Finanças pessoais inteligentes',
+        description: 'Plataforma de gestão de finanças pessoal, integrada com WhatsApp e inteligência artificial. Prático para organizar suas finanças com a ajuda da Ágata, nossa assistente I.A.',
+        color: '#8B5CF6',
+        icon: 'wallet',
+        logo: '/logos/sincla-bolso.svg',
+        url: 'https://bolso.sincla.com.br',
+        features: [
+            'Dashboard 50/30/20',
+            'Controle de gastos',
+            'Categorização por I.A.',
+            'Metas gamificadas',
+            'Assistente Ágata',
+            'Integração WhatsApp',
+            'Relatórios visuais',
+        ],
+    },
+    {
+        id: 'leads',
+        name: 'Sincla Leads',
+        tagline: 'Páginas de alta conversão',
+        description: 'Plataforma de páginas de conversão Web prática, simples e sem código. Relatórios avançados para funil de vendas e integração com as principais ferramentas do mercado.',
+        color: '#DC2626',
+        icon: 'chart',
+        logo: '/logos/sincla-leads.svg',
+        url: 'https://leads.sincla.com.br',
+        features: [
+            'Builder drag-and-drop',
+            'Templates premium',
+            'Formulários inteligentes',
+            'Analytics de funil',
+            'A/B Testing',
+            'Integrações CRM',
+            'Domínio personalizado',
+        ],
+    },
+    {
+        id: 'agenda',
+        name: 'Sincla Agenda',
+        tagline: 'Produtividade pessoal',
+        description: 'Plataforma de gestão de compromissos pessoais e produtividade. Organize seu tempo com inteligência e aumente sua eficiência no dia a dia.',
+        color: '#7C3AED',
+        icon: 'calendar',
+        logo: '/logos/sincla-agenda.svg',
+        url: 'https://agenda.sincla.com.br',
+        features: [
+            'Calendário inteligente',
+            'Time blocking',
+            'Lembretes personalizados',
+            'Sync com Google/Outlook',
+            'Relatórios de produtividade',
+            'Metas semanais',
+            'Foco mode',
+        ],
+    },
+    {
+        id: 'intranet',
+        name: 'Sincla Intranet',
+        tagline: 'Comunicação corporativa',
+        description: 'Plataforma para integrar a comunicação da empresa com funcionalidades poderosas para gestão e acessíveis para o dia a dia.',
+        color: '#0EA5E9',
+        icon: 'building',
+        logo: '/logos/sincla-intranet.svg',
+        url: 'https://intranet.sincla.com.br',
+        features: [
+            'Feed de comunicados',
+            'Mural de avisos',
+            'Documentos compartilhados',
+            'Diretório de colaboradores',
+            'Chat interno',
+            'Integração Sincla RH',
+        ],
+        isComingSoon: true,
+    },
+];
+
+export const discountRules = {
+    subscriber: 0.15, // 15% para assinantes Sincla
+    enterprise: 0.50, // 50% para ferramentas pessoais em contas empresariais
+};
+
+export const partnerLevels = [
+    {
+        id: 'bronze',
+        name: 'Bronze',
+        commission: 10,
+        requirements: 'Certificação básica',
+        benefits: ['Materiais exclusivos', 'Suporte dedicado'],
+    },
+    {
+        id: 'silver',
+        name: 'Prata',
+        commission: 15,
+        requirements: '5+ clientes ativos',
+        benefits: ['Materiais exclusivos', 'Suporte prioritário', 'Webinars VIP'],
+    },
+    {
+        id: 'gold',
+        name: 'Ouro',
+        commission: 20,
+        requirements: '15+ clientes ativos',
+        benefits: ['Materiais exclusivos', 'Suporte dedicado', 'Webinars VIP', 'Leads qualificados'],
+    },
+];
