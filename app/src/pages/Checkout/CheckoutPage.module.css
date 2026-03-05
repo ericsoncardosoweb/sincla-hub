@@ -438,6 +438,29 @@
     background: #1c7ed6;
 }
 
+.pixCopyBtnCopied {
+    background: #40c057;
+    animation: pixCopiedPulse 0.3s ease;
+}
+
+.pixCopyBtnCopied:hover {
+    background: #2f9e44;
+}
+
+@keyframes pixCopiedPulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
 /* Sucesso */
 .successFull {
     display: flex;

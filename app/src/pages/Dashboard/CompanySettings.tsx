@@ -51,6 +51,7 @@ export function CompanySettings() {
             website: '',
             primary_color: '#228be6',
             secondary_color: '#1971c2',
+            custom_domain: '',
         },
     });
 
@@ -66,6 +67,7 @@ export function CompanySettings() {
                 website: s.website || '',
                 primary_color: currentCompany.primary_color || '#228be6',
                 secondary_color: currentCompany.secondary_color || '#1971c2',
+                custom_domain: (currentCompany as any).custom_domain || '',
             });
             // Reset upload state
             setUploadedLogoUrl(null);
@@ -188,6 +190,7 @@ export function CompanySettings() {
                     secondary_color: values.secondary_color,
                     logo_url: logoUrl || null,
                     favicon_url: faviconUrl || null,
+                    custom_domain: values.custom_domain?.trim() || null,
                     // Store extra info in settings JSONB
                     settings: {
                         ...((currentCompany as any).settings || {}),
@@ -471,13 +474,13 @@ export function CompanySettings() {
                                     <TextInput
                                         label="Domínio personalizado"
                                         placeholder="app.meudominio.com.br"
-                                        description={currentCompany.custom_domain
-                                            ? `✅ Domínio atual: ${currentCompany.custom_domain}`
+                                        description={form.values.custom_domain
+                                            ? `✅ Domínio atual: ${form.values.custom_domain}`
                                             : 'Deixe vazio para usar o domínio padrão Sincla'
                                         }
                                         disabled={!canEdit}
-                                        defaultValue={currentCompany.custom_domain || ''}
                                         leftSection={<IconWorld size={16} />}
+                                        {...form.getInputProps('custom_domain')}
                                     />
                                     <Alert variant="light" color="blue" mt="md" title="Como configurar?">
                                         <Text size="xs">

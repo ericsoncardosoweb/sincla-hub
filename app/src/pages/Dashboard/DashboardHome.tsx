@@ -35,6 +35,8 @@ import {
     IconChartBar,
     IconEdit,
     IconSwitchHorizontal,
+    IconShare,
+    IconCheck,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
@@ -83,6 +85,7 @@ export function DashboardHome() {
 
     const [products, setProducts] = useState<ProductWithSubscription[]>([]);
     const [loading, setLoading] = useState(true);
+    const [copiedToolId, setCopiedToolId] = useState<string | null>(null);
 
     useEffect(() => {
         loadProducts();
@@ -154,6 +157,21 @@ export function DashboardHome() {
     };
 
     const firstName = subscriber?.name?.split(' ')[0] || 'Usuário';
+
+    // Build login URL for a tool (custom_domain or default)
+    const getToolLoginUrl = (tool: ProductWithSubscription) => {
+        if (currentCompany?.custom_domain) {
+            return `https://${currentCompany.custom_domain}/login`;
+        }
+        return `${window.location.origin}${tool.base_url}/login`;
+    };
+
+    const handleCopyToolLink = (tool: ProductWithSubscription) => {
+        const url = getToolLoginUrl(tool);
+        navigator.clipboard.writeText(url);
+        setCopiedToolId(tool.id);
+        setTimeout(() => setCopiedToolId(null), 2000);
+    };
     const activeProducts = products.filter(p => p.subscription && ['active', 'trial'].includes(p.subscription.status));
     const allTools = products;
 
@@ -378,7 +396,7 @@ export function DashboardHome() {
                                         className={`${styles.toolCard} ${isActive ? styles.toolCardActive : ''}`}
                                         style={{ '--tool-color': color } as React.CSSProperties}
                                     >
-                                        {/* Top: icon + status */}
+                                        {/* Top: icon + status + share */}
                                         <Group justify="space-between" mb="md">
                                             <ThemeIcon
                                                 size={48}
@@ -388,15 +406,38 @@ export function DashboardHome() {
                                             >
                                                 <IconComp size={24} />
                                             </ThemeIcon>
-                                            <Badge
-                                                variant="light"
-                                                color={isActive ? 'green' : 'gray'}
-                                                size="sm"
-                                            >
-                                                {isActive
-                                                    ? (tool.subscription?.status === 'trial' ? 'Trial' : 'Ativo')
-                                                    : 'Disponível'}
-                                            </Badge>
+                                            <Group gap={6}>
+                                                {isActive && (
+                                                    <Tooltip
+                                                        label={copiedToolId === tool.id ? 'Link copiado!' : 'Copiar link de login'}
+                                                        withArrow
+                                                        position="top"
+                                                        opened={copiedToolId === tool.id ? true : undefined}
+                                                        color={copiedToolId === tool.id ? 'green' : undefined}
+                                                    >
+                                                        <ActionIcon
+                                                            variant="subtle"
+                                                            size="sm"
+                                                            color={copiedToolId === tool.id ? 'green' : 'gray'}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleCopyToolLink(tool);
+                                                            }}
+                                                        >
+                                                            {copiedToolId === tool.id ? <IconCheck size={14} /> : <IconShare size={14} />}
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                )}
+                                                <Badge
+                                                    variant="light"
+                                                    color={isActive ? 'green' : 'gray'}
+                                                    size="sm"
+                                                >
+                                                    {isActive
+                                                        ? (tool.subscription?.status === 'trial' ? 'Trial' : 'Ativo')
+                                                        : 'Disponível'}
+                                                </Badge>
+                                            </Group>
                                         </Group>
 
                                         {/* Name + desc */}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation, Outlet, Link, Navigate } from 'react-router-dom';
 import {
     AppShell,
@@ -48,6 +48,9 @@ import {
     IconWorld,
     IconBook,
     IconEye,
+    IconShoppingCart,
+    IconChartBar,
+    IconMessage,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
@@ -92,6 +95,9 @@ const iconMap: Record<string, typeof IconUsers> = {
     IconTarget,
     IconCalendar,
     IconBuildingCommunity,
+    IconShoppingCart,
+    IconChartBar,
+    IconMessage,
 };
 
 export function DashboardLayout() {
@@ -299,6 +305,60 @@ export function DashboardLayout() {
                     return navButton;
                 })}
             </Stack>
+
+            {/* Meus APPs — Active tools */}
+            {(() => {
+                const myApps = toolProducts.filter(t => t.hasSubscription);
+                if (myApps.length === 0) return null;
+
+                return (
+                    <>
+                        <Divider my="sm" />
+                        {(!collapsed || isMobile) && (
+                            <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" mb={4}>
+                                Meus APPs
+                            </Text>
+                        )}
+                        <Stack gap={4} className={styles.navList}>
+                            {myApps.map(tool => {
+                                const IconComp = iconMap[tool.icon] || IconUsers;
+                                const color = tool.brand_color || '#0087ff';
+                                const toolName = tool.name.replace('Sincla ', '');
+
+                                const btn = (
+                                    <UnstyledButton
+                                        key={tool.id}
+                                        className={`${styles.navLink} ${collapsed && !isMobile ? styles.navLinkCollapsed : ''}`}
+                                        onClick={async () => {
+                                            if (isMobile) setMobileOpened(false);
+                                            if (currentCompany) {
+                                                await redirectToProduct(tool as any, currentCompany as any);
+                                            }
+                                        }}
+                                    >
+                                        <IconComp
+                                            size={20}
+                                            stroke={1.5}
+                                            className={styles.navIcon}
+                                            style={{ color }}
+                                        />
+                                        {(!collapsed || isMobile) && (
+                                            <>
+                                                <Text size="sm" className={styles.navLabel}>{toolName}</Text>
+                                                <Badge size="xs" variant="dot" color="green" ml="auto" />
+                                            </>
+                                        )}
+                                    </UnstyledButton>
+                                );
+
+                                return collapsed && !isMobile
+                                    ? <Tooltip key={tool.id} label={toolName} position="right" withArrow>{btn}</Tooltip>
+                                    : <React.Fragment key={tool.id}>{btn}</React.Fragment>;
+                            })}
+                        </Stack>
+                    </>
+                );
+            })()}
 
             {/* Secondary Navigation */}
             <Divider my="sm" />

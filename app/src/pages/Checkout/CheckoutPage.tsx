@@ -161,6 +161,7 @@ export function CheckoutPage() {
     // PIX
     const [pixData, setPixData] = useState<{ qrCode: string; copyPaste: string; paymentId: string } | null>(null);
     const [pollingPayment, setPollingPayment] = useState(false);
+    const [pixCopied, setPixCopied] = useState(false);
     const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // ===== Load data & Security =====
@@ -546,15 +547,23 @@ export function CheckoutPage() {
                     {error && <div className={styles.errorAlert}>{error}</div>}
 
                     {/* PIX Success */}
-                    {pixData ? (
+                    {pixData && paymentMethod === 'PIX' ? (
                         <div className={styles.pixContainer}>
                             <h3>Escaneie o QR Code</h3>
                             <img src={pixData.qrCode} alt="QR Code PIX" />
                             <p style={{ fontSize: '0.85rem', color: '#868e96' }}>
                                 {pollingPayment ? 'Aguardando confirmação do pagamento...' : 'QR Code gerado'}
                             </p>
-                            <button className={styles.pixCopyBtn} onClick={() => navigator.clipboard.writeText(pixData.copyPaste)}>
-                                <IconCopy size={14} /> Copiar código PIX
+                            <button
+                                className={`${styles.pixCopyBtn} ${pixCopied ? styles.pixCopyBtnCopied : ''}`}
+                                onClick={() => {
+                                    navigator.clipboard.writeText(pixData.copyPaste);
+                                    setPixCopied(true);
+                                    setTimeout(() => setPixCopied(false), 2000);
+                                }}
+                            >
+                                {pixCopied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                                {pixCopied ? 'Copiado!' : 'Copiar código PIX'}
                             </button>
                         </div>
                     ) : (

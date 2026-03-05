@@ -148,8 +148,8 @@ export async function redirectToProduct(
     callbackUrl.searchParams.set('key', token);
     callbackUrl.searchParams.set('empresa', company.slug);
 
-    // Redirect to the product
-    window.location.href = callbackUrl.toString();
+    // Open the product in a new tab
+    window.open(callbackUrl.toString(), '_blank');
 }
 
 /**
