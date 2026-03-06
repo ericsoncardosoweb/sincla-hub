@@ -219,15 +219,41 @@ async function syncWithSupabase(
         if (endpoint.includes('/subscriptions') && method === 'POST' && response?.id) {
             console.log(`[Asaas Checkout] Sincronizando assinatura ${response.id} para company ${companyId}`)
 
+            // Extrair slug do plano de múltiplas fontes
             const description = (response.description as string) || ''
-            const planSlug = extractPlanSlug(description)
+            let planSlugForDb = extractPlanSlug(description)
 
-            // Buscar plan_id pelo slug se possível
-            let planSlugForDb = planSlug || 'starter'
+            // Se não extraiu da description, buscar do banco via productId
+            if (!planSlugForDb && productId) {
+                // Tenta achar o plano pelo valor mensal + produto
+                const monthlyValue = response.cycle === 'YEARLY'
+                    ? (response.value as number) / 12
+                    : (response.value as number)
+
+                const { data: matchedPlan } = await supabase
+                    .from('product_plans')
+                    .select('slug')
+                    .eq('product_id', productId)
+                    .eq('is_active', true)
+                    .or(`price_monthly.eq.${monthlyValue},price_yearly.eq.${response.value}`)
+                    .limit(1)
+                    .single()
+
+                if (matchedPlan?.slug) {
+                    planSlugForDb = matchedPlan.slug
+                    console.log(`[Asaas Checkout] Plano identificado via DB: ${planSlugForDb}`)
+                }
+            }
+
+            // Fallback final
+            if (!planSlugForDb) {
+                planSlugForDb = 'starter'
+                console.warn(`[Asaas Checkout] WARN: Não foi possível identificar o plano, usando fallback 'starter'. Description: "${description}"`)
+            }
 
             const upsertData: any = {
                 company_id: companyId,
-                product_id: productId || 'rh', // Fallback garantido
+                product_id: productId || 'rh',
                 plan: planSlugForDb,
                 status: response.status === 'ACTIVE' ? 'active' : 'pending',
                 billing_cycle: (response.cycle as string || 'MONTHLY').toLowerCase(),
@@ -260,6 +286,14 @@ async function syncWithSupabase(
  */
 function extractPlanSlug(description: string): string | null {
     if (!description) return null
-    const match = description.match(/Plano\s+(\w+)/i)
-    return match ? match[1].toLowerCase() : null
+    // Match: 'Plano Pro', 'Plano Starter', etc.
+    const matchPlano = description.match(/Plano\s+(\w+)/i)
+    if (matchPlano) return matchPlano[1].toLowerCase()
+    // Match: 'Sincla Hub - Pro [plan:pro]'
+    const matchTag = description.match(/\[plan:(\w+)\]/i)
+    if (matchTag) return matchTag[1].toLowerCase()
+    // Match: 'Sincla Hub - Pro'
+    const matchDash = description.match(/-\s+(\w+)\s*$/)
+    if (matchDash) return matchDash[1].toLowerCase()
+    return null
 }

@@ -17,7 +17,7 @@ import { CheckoutLayout } from './components/checkout/CheckoutLayout';
 import { CheckoutPage } from './pages/Checkout/CheckoutPage';
 
 // Admin pages
-import { AdminLayout, AdminDashboard, AdminProducts, AdminPlans, AdminPartners, AdminUsers, AdminInfrastructure, AdminSubscribers, AdminSubscriptions, AdminSettings, AdminLegalPages } from './pages/Admin';
+import { AdminLayout, AdminDashboard, AdminProducts, AdminPlans, AdminPartners, AdminUsers, AdminInfrastructure, AdminSubscribers, AdminSubscriptions, AdminSettings, AdminLegalPages, AdminNotifications } from './pages/Admin';
 
 // Partner pages
 import { PartnerLayout, PartnerDashboard, PartnerClients, PartnerWithdrawals, PartnerSettings } from './pages/Partner';
@@ -86,6 +86,7 @@ export function App() {
                                     <Route path="admins" element={<AdminUsers />} />
                                     <Route path="infraestrutura" element={<AdminInfrastructure />} />
                                     <Route path="paginas-legais" element={<AdminLegalPages />} />
+                                    <Route path="notificacoes" element={<AdminNotifications />} />
                                     <Route path="configuracoes" element={<AdminSettings />} />
                                 </Route>
                             </Routes>

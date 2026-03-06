@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation, Outlet, Link, Navigate } from 'react-router-dom';
+import { NotificationBell } from '../notifications/NotificationBell';
 import {
     AppShell,
     Group,
@@ -20,6 +21,7 @@ import {
     SimpleGrid,
     ThemeIcon,
     ActionIcon,
+    Collapse,
     rem,
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
@@ -33,6 +35,7 @@ import {
     IconAddressBook,
     IconLogout,
     IconChevronDown,
+    IconChevronUp,
     IconChevronLeft,
     IconChevronRight,
     IconHeartHandshake,
@@ -51,6 +54,7 @@ import {
     IconShoppingCart,
     IconChartBar,
     IconMessage,
+    IconLayoutGrid,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
@@ -113,6 +117,7 @@ export function DashboardLayout() {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileOpened, setMobileOpened] = useState(false);
     const [toolsOpened, setToolsOpened] = useState(false);
+    const [appsExpanded, setAppsExpanded] = useState(true);
     const [toolProducts, setToolProducts] = useState<ToolProduct[]>([]);
 
     // Auto-collapse based on screen size
@@ -306,56 +311,85 @@ export function DashboardLayout() {
                 })}
             </Stack>
 
-            {/* Meus APPs — Active tools */}
+            {/* Meus APPs — Active tools (item expansível com subitens) */}
             {(() => {
                 const myApps = toolProducts.filter(t => t.hasSubscription);
                 if (myApps.length === 0) return null;
 
+                const appsToggle = (
+                    <UnstyledButton
+                        className={`${styles.navLink} ${collapsed && !isMobile ? styles.navLinkCollapsed : ''}`}
+                        onClick={() => {
+                            if (collapsed && !isMobile) {
+                                // Se está colapsado, expandir sidebar e abrir subitens
+                                setAppsExpanded(true);
+                            } else {
+                                setAppsExpanded(prev => !prev);
+                            }
+                        }}
+                    >
+                        <IconLayoutGrid
+                            size={20}
+                            stroke={1.5}
+                            className={styles.navIcon}
+                            style={{ color: 'var(--sincla-accent)' }}
+                        />
+                        {(!collapsed || isMobile) && (
+                            <>
+                                <Text size="sm" className={styles.navLabel} fw={500}>Meus APPs</Text>
+                                <Badge size="xs" variant="light" color="blue" ml="auto" mr={4}>
+                                    {myApps.length}
+                                </Badge>
+                                {appsExpanded ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
+                            </>
+                        )}
+                    </UnstyledButton>
+                );
+
                 return (
                     <>
                         <Divider my="sm" />
-                        {(!collapsed || isMobile) && (
-                            <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" mb={4}>
-                                Meus APPs
-                            </Text>
+                        {collapsed && !isMobile ? (
+                            <Tooltip label="Meus APPs" position="right" withArrow>
+                                {appsToggle}
+                            </Tooltip>
+                        ) : (
+                            appsToggle
                         )}
-                        <Stack gap={4} className={styles.navList}>
-                            {myApps.map(tool => {
-                                const IconComp = iconMap[tool.icon] || IconUsers;
-                                const color = tool.brand_color || '#0087ff';
-                                const toolName = tool.name.replace('Sincla ', '');
 
-                                const btn = (
-                                    <UnstyledButton
-                                        key={tool.id}
-                                        className={`${styles.navLink} ${collapsed && !isMobile ? styles.navLinkCollapsed : ''}`}
-                                        onClick={async () => {
-                                            if (isMobile) setMobileOpened(false);
-                                            if (currentCompany) {
-                                                await redirectToProduct(tool as any, currentCompany as any);
-                                            }
-                                        }}
-                                    >
-                                        <IconComp
-                                            size={20}
-                                            stroke={1.5}
-                                            className={styles.navIcon}
-                                            style={{ color }}
-                                        />
-                                        {(!collapsed || isMobile) && (
-                                            <>
+                        {(!collapsed || isMobile) && (
+                            <Collapse in={appsExpanded}>
+                                <Stack gap={2} pl="md">
+                                    {myApps.map(tool => {
+                                        const IconComp = iconMap[tool.icon] || IconUsers;
+                                        const color = tool.brand_color || '#0087ff';
+                                        const toolName = tool.name.replace('Sincla ', '');
+
+                                        return (
+                                            <UnstyledButton
+                                                key={tool.id}
+                                                className={styles.navLink}
+                                                onClick={async () => {
+                                                    if (isMobile) setMobileOpened(false);
+                                                    if (currentCompany) {
+                                                        await redirectToProduct(tool as any, currentCompany as any);
+                                                    }
+                                                }}
+                                            >
+                                                <IconComp
+                                                    size={18}
+                                                    stroke={1.5}
+                                                    className={styles.navIcon}
+                                                    style={{ color }}
+                                                />
                                                 <Text size="sm" className={styles.navLabel}>{toolName}</Text>
                                                 <Badge size="xs" variant="dot" color="green" ml="auto" />
-                                            </>
-                                        )}
-                                    </UnstyledButton>
-                                );
-
-                                return collapsed && !isMobile
-                                    ? <Tooltip key={tool.id} label={toolName} position="right" withArrow>{btn}</Tooltip>
-                                    : <React.Fragment key={tool.id}>{btn}</React.Fragment>;
-                            })}
-                        </Stack>
+                                            </UnstyledButton>
+                                        );
+                                    })}
+                                </Stack>
+                            </Collapse>
+                        )}
                     </>
                 );
             })()}
@@ -592,6 +626,9 @@ export function DashboardLayout() {
                                 )}
                             </Group>
                         )}
+
+                        {/* Notification Bell */}
+                        <NotificationBell />
 
                         {/* Tools Grid Button */}
                         <Popover

@@ -3,13 +3,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Container, Text, Card, Group, Badge, Stack, Skeleton,
     Table, ThemeIcon, SimpleGrid, Button, Divider, Loader,
-    ActionIcon, Title, Modal,
+    ActionIcon, Title, Modal, Tooltip, SegmentedControl,
 } from '@mantine/core';
 import {
     IconCreditCard, IconCalendar, IconReceipt, IconUsers,
     IconStar, IconCheck, IconArrowLeft, IconRocket,
     IconSchool, IconTarget, IconBuildingCommunity, IconShoppingCart,
-    IconMessage, IconChartBar,
+    IconMessage, IconChartBar, IconArrowsExchange, IconArrowUp,
+    IconArrowDown, IconBrandWhatsapp,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
@@ -124,6 +125,15 @@ export function Subscriptions() {
     const isSuccess = searchParams.get('sucesso') === 'true';
     const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
 
+    // Change plan modal state
+    const [changePlanModalOpen, setChangePlanModalOpen] = useState(false);
+    const [selectedSub, setSelectedSub] = useState<SubscriptionRow | null>(null);
+    const [changePlans, setChangePlans] = useState<PlanOption[]>([]);
+    const [changePlanLoading, setChangePlanLoading] = useState(false);
+    const [changePlanSaving, setChangePlanSaving] = useState(false);
+    const [selectedNewPlan, setSelectedNewPlan] = useState<PlanOption | null>(null);
+    const [changeBillingCycle, setChangeBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
     const handleCloseSuccessModal = () => {
         searchParams.delete('sucesso');
         searchParams.delete('produto');
@@ -144,6 +154,7 @@ export function Subscriptions() {
     };
     const [plans, setPlans] = useState<PlanOption[]>([]);
     const [loadingPlans, setLoadingPlans] = useState(false);
+    const [platformWhatsapp, setPlatformWhatsapp] = useState('');
 
     useEffect(() => {
         if (currentCompany) loadData();
@@ -152,6 +163,11 @@ export function Subscriptions() {
     useEffect(() => {
         if (productId) loadPlans(productId);
     }, [productId]);
+
+    useEffect(() => {
+        supabase.from('platform_settings').select('value').eq('key', 'empresa_whatsapp').single()
+            .then(({ data }) => { if (data?.value) setPlatformWhatsapp(data.value); });
+    }, []);
 
     const loadData = async () => {
         if (!currentCompany) return;
@@ -198,6 +214,47 @@ export function Subscriptions() {
         } finally {
             setLoadingPlans(false);
         }
+    };
+
+    // ── Change Plan Logic ──
+    const handleOpenChangePlan = async (sub: SubscriptionRow) => {
+        setSelectedSub(sub);
+        setSelectedNewPlan(null);
+        setChangeBillingCycle(sub.billing_cycle === 'yearly' ? 'yearly' : 'monthly');
+        setChangePlanModalOpen(true);
+        setChangePlanLoading(true);
+        try {
+            const { data } = await supabase
+                .from('product_plans')
+                .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days')
+                .eq('product_id', sub.product_id)
+                .eq('is_active', true)
+                .order('sort_order');
+            setChangePlans(data || []);
+        } catch (err) {
+            console.error('Error loading plans for change:', err);
+        } finally {
+            setChangePlanLoading(false);
+        }
+    };
+
+    const handleConfirmPlanChange = async () => {
+        if (!selectedSub || !selectedNewPlan || !currentCompany) return;
+        // Redirecionar para o checkout com o novo plano
+        const productId = selectedSub.product_id;
+        const planSlug = selectedNewPlan.slug;
+        const cycle = changeBillingCycle === 'yearly' ? 'annual' : 'monthly';
+        setChangePlanModalOpen(false);
+        navigate(`/checkout?produto=${productId}&plano=${planSlug}&ciclo=${cycle}`);
+    };
+
+    const getPlanDirection = (currentPlan: string, newPlan: PlanOption): 'upgrade' | 'downgrade' | 'same' => {
+        const order = ['free', 'starter', 'pro', 'business', 'enterprise', 'team'];
+        const currentIdx = order.indexOf(currentPlan);
+        const newIdx = order.indexOf(newPlan.slug);
+        if (newIdx > currentIdx) return 'upgrade';
+        if (newIdx < currentIdx) return 'downgrade';
+        return 'same';
     };
 
     if (!currentCompany) {
@@ -316,11 +373,11 @@ export function Subscriptions() {
                                         <Text size="xs" c="dimmed" mb="sm">{plan.description}</Text>
                                     )}
 
-                                    <Group gap="xs" align="baseline" mb={4}>
+                                    <Group gap={4} align="baseline" mb={4}>
                                         <Text size="xl" fw={800} style={{ color }}>
-                                            {formatCurrency(plan.price_monthly)}
+                                            {plan.price_monthly === 0 && plan.price_yearly === 0 ? 'Sob Consulta' : formatCurrency(plan.price_monthly)}
                                         </Text>
-                                        <Text size="xs" c="dimmed">/mês</Text>
+                                        {plan.price_monthly > 0 && <Text size="xs" c="dimmed">/mês</Text>}
                                     </Group>
 
                                     {plan.price_yearly > 0 && (
@@ -358,13 +415,22 @@ export function Subscriptions() {
                                     <Button
                                         fullWidth
                                         variant={plan.is_popular ? 'filled' : 'light'}
-                                        onClick={() => window.location.href = `/checkout?produto=${productId}&plano=${plan.slug}&ciclo=monthly`}
+                                        onClick={() => {
+                                            if (plan.slug === 'enterprise') {
+                                                const num = platformWhatsapp.replace(/\D/g, '');
+                                                window.open(`https://wa.me/55${num}?text=${encodeURIComponent(`Olá! Gostaria de saber mais sobre o plano Enterprise do ${productInfo?.name || 'Sincla'}.`)}`, '_blank');
+                                            } else {
+                                                window.location.href = `/checkout?produto=${productId}&plano=${plan.slug}&ciclo=monthly`;
+                                            }
+                                        }}
+                                        leftSection={plan.slug === 'enterprise' ? <IconBrandWhatsapp size={16} /> : undefined}
+                                        color={plan.slug === 'enterprise' ? 'green' : undefined}
                                         style={{
-                                            ...(plan.is_popular ? { backgroundColor: color } : { color }),
+                                            ...(plan.slug !== 'enterprise' && plan.is_popular ? { backgroundColor: color } : plan.slug !== 'enterprise' ? { color } : {}),
                                             transition: 'all 0.2s ease',
                                         }}
                                     >
-                                        Quero Ativar
+                                        {plan.slug === 'enterprise' ? 'Falar com Consultor' : 'Quero Ativar'}
                                     </Button>
                                 </Card>
                             ))}
@@ -465,6 +531,7 @@ export function Subscriptions() {
                                     <Table.Th>Valor/mês</Table.Th>
                                     <Table.Th>Ciclo</Table.Th>
                                     <Table.Th>Período</Table.Th>
+                                    <Table.Th ta="center">Ações</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>
@@ -504,6 +571,21 @@ export function Subscriptions() {
                                             {sub.status === 'trial' && sub.trial_ends_at && (
                                                 <Text size="xs" c="blue">Trial até {formatDate(sub.trial_ends_at)}</Text>
                                             )}
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Group gap={4} justify="center">
+                                                <Tooltip label="Mudar plano" withArrow>
+                                                    <ActionIcon
+                                                        variant="light"
+                                                        color="blue"
+                                                        size="sm"
+                                                        onClick={() => handleOpenChangePlan(sub)}
+                                                        disabled={sub.status === 'canceled'}
+                                                    >
+                                                        <IconArrowsExchange size={14} />
+                                                    </ActionIcon>
+                                                </Tooltip>
+                                            </Group>
                                         </Table.Td>
                                     </Table.Tr>
                                 ))}
@@ -546,6 +628,182 @@ export function Subscriptions() {
                         Voltar para minhas Assinaturas
                     </Button>
                 </Stack>
+            </Modal>
+
+            {/* Modal de Mudança de Plano */}
+            <Modal
+                opened={changePlanModalOpen}
+                onClose={() => setChangePlanModalOpen(false)}
+                title={
+                    <Group gap="xs">
+                        <IconArrowsExchange size={20} />
+                        <Text fw={600}>Mudar Plano — {selectedSub?.product?.name || selectedSub?.product_id}</Text>
+                    </Group>
+                }
+                centered
+                size="xl"
+            >
+                {changePlanLoading ? (
+                    <Stack align="center" py="xl">
+                        <Loader />
+                        <Text c="dimmed" size="sm">Carregando planos disponíveis...</Text>
+                    </Stack>
+                ) : (
+                    <Stack gap="md">
+                        {/* Ciclo de cobrança */}
+                        <Group justify="center">
+                            <SegmentedControl
+                                value={changeBillingCycle}
+                                onChange={(v) => setChangeBillingCycle(v as 'monthly' | 'yearly')}
+                                data={[
+                                    { label: 'Mensal', value: 'monthly' },
+                                    { label: 'Anual (desconto)', value: 'yearly' },
+                                ]}
+                                size="sm"
+                            />
+                        </Group>
+
+                        {/* Cards dos planos */}
+                        <SimpleGrid cols={{ base: 1, sm: 2, md: changePlans.length >= 4 ? 4 : changePlans.length >= 3 ? 3 : 2 }} spacing="sm">
+                            {changePlans.map((plan) => {
+                                const isCurrent = plan.slug === selectedSub?.plan;
+                                const isEnterprise = plan.slug === 'enterprise';
+                                const isSelected = selectedNewPlan?.id === plan.id;
+                                const direction = selectedSub ? getPlanDirection(selectedSub.plan, plan) : 'same';
+                                const displayPrice = changeBillingCycle === 'yearly' && plan.price_yearly > 0
+                                    ? plan.price_yearly / 12
+                                    : plan.price_monthly;
+
+                                return (
+                                    <Card
+                                        key={plan.id}
+                                        withBorder
+                                        radius="md"
+                                        padding="md"
+                                        style={{
+                                            borderColor: isCurrent ? 'var(--mantine-color-green-5)' : isSelected ? 'var(--mantine-color-blue-5)' : undefined,
+                                            borderWidth: isCurrent || isSelected ? 2 : 1,
+                                            cursor: (isCurrent || isEnterprise) ? 'default' : 'pointer',
+                                            opacity: isCurrent ? 0.7 : 1,
+                                            transition: 'all 0.2s ease',
+                                            position: 'relative',
+                                        }}
+                                        onClick={() => {
+                                            if (!isCurrent && !isEnterprise) setSelectedNewPlan(plan);
+                                        }}
+                                    >
+                                        {isCurrent && (
+                                            <Badge
+                                                variant="filled"
+                                                color="green"
+                                                size="xs"
+                                                style={{ position: 'absolute', top: 8, right: 8 }}
+                                            >
+                                                Atual
+                                            </Badge>
+                                        )}
+                                        {isSelected && !isCurrent && (
+                                            <Badge
+                                                variant="filled"
+                                                color="blue"
+                                                size="xs"
+                                                style={{ position: 'absolute', top: 8, right: 8 }}
+                                            >
+                                                Selecionado
+                                            </Badge>
+                                        )}
+
+                                        <Text fw={700} size="md">{plan.name}</Text>
+                                        {plan.description && (
+                                            <Text size="xs" c="dimmed" lineClamp={2}>{plan.description}</Text>
+                                        )}
+
+                                        <Group gap={4} align="baseline" mt="xs">
+                                            <Text size="lg" fw={800} c={isCurrent ? 'green' : isSelected ? 'blue' : undefined}>
+                                                {plan.price_monthly === 0 && plan.price_yearly === 0 ? 'Sob Consulta' : formatCurrency(displayPrice)}
+                                            </Text>
+                                            {plan.price_monthly > 0 && <Text size="xs" c="dimmed">/mês</Text>}
+                                        </Group>
+
+                                        {changeBillingCycle === 'yearly' && plan.discount_yearly_percent > 0 && (
+                                            <Badge variant="light" color="green" size="xs" mt={4}>
+                                                {plan.discount_yearly_percent}% de desconto
+                                            </Badge>
+                                        )}
+
+                                        <Divider my="xs" />
+
+                                        <Stack gap={3}>
+                                            {plan.features.slice(0, 4).map((f: string, i: number) => (
+                                                <Group key={i} gap={4} wrap="nowrap">
+                                                    <IconCheck size={12} color="var(--mantine-color-green-5)" />
+                                                    <Text size="xs">{f}</Text>
+                                                </Group>
+                                            ))}
+                                            {plan.features.length > 4 && (
+                                                <Text size="xs" c="dimmed">+{plan.features.length - 4} mais</Text>
+                                            )}
+                                        </Stack>
+
+                                        {!isCurrent && !isEnterprise && direction !== 'same' && (
+                                            <Badge
+                                                variant="light"
+                                                color={direction === 'upgrade' ? 'blue' : 'orange'}
+                                                size="xs"
+                                                mt="xs"
+                                                leftSection={direction === 'upgrade' ? <IconArrowUp size={10} /> : <IconArrowDown size={10} />}
+                                            >
+                                                {direction === 'upgrade' ? 'Upgrade' : 'Downgrade'}
+                                            </Badge>
+                                        )}
+
+                                        {isEnterprise && !isCurrent && (
+                                            <Button
+                                                fullWidth
+                                                variant="filled"
+                                                color="green"
+                                                size="xs"
+                                                mt="xs"
+                                                leftSection={<IconBrandWhatsapp size={14} />}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const num = platformWhatsapp.replace(/\D/g, '');
+                                                    window.open(`https://wa.me/55${num}?text=${encodeURIComponent(`Olá! Gostaria de saber mais sobre o plano Enterprise do ${selectedSub?.product?.name || 'Sincla'}.`)}`, '_blank');
+                                                }}
+                                            >
+                                                Falar com Consultor
+                                            </Button>
+                                        )}
+                                    </Card>
+                                );
+                            })}
+                        </SimpleGrid>
+
+                        {/* Resumo da mudança */}
+                        {selectedNewPlan && (
+                            <Card withBorder radius="md" padding="md" bg="var(--mantine-color-blue-0)">
+                                <Group justify="space-between" align="center">
+                                    <div>
+                                        <Text size="sm" fw={600}>
+                                            {getPlanDirection(selectedSub?.plan || '', selectedNewPlan) === 'upgrade' ? '⬆️ Upgrade' : '⬇️ Downgrade'}: {planLabels[selectedSub?.plan || ''] || selectedSub?.plan} → {selectedNewPlan.name}
+                                        </Text>
+                                        <Text size="xs" c="dimmed">
+                                            Novo valor: {formatCurrency(changeBillingCycle === 'yearly' ? selectedNewPlan.price_yearly / 12 : selectedNewPlan.price_monthly)}/mês
+                                            {changeBillingCycle === 'yearly' ? ` (${formatCurrency(selectedNewPlan.price_yearly)}/ano)` : ''}
+                                        </Text>
+                                    </div>
+                                    <Button
+                                        onClick={handleConfirmPlanChange}
+                                        loading={changePlanSaving}
+                                        color={getPlanDirection(selectedSub?.plan || '', selectedNewPlan) === 'upgrade' ? 'blue' : 'orange'}
+                                    >
+                                        Confirmar Mudança
+                                    </Button>
+                                </Group>
+                            </Card>
+                        )}
+                    </Stack>
+                )}
             </Modal>
         </Container>
     );

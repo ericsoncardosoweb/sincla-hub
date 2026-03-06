@@ -66,16 +66,20 @@ export function AdminUsers() {
         if (!newAdminEmail.trim()) return;
         setAdding(true);
         try {
+            // Buscar subscriber pelo email (case-insensitive)
+            const emailNormalized = newAdminEmail.trim().toLowerCase();
             const { data: sub } = await supabase
                 .from('subscribers')
                 .select('id, email')
-                .eq('email', newAdminEmail.trim())
+                .ilike('email', emailNormalized)
                 .single();
 
             if (!sub) {
+                // Fallback: verificar se existe no auth.users (pode ter conta sem subscriber)
+                // Tentar buscar via RPC ou informar melhor o admin
                 notifications.show({
                     title: 'Usuário não encontrado',
-                    message: 'Nenhum subscriber com esse email.',
+                    message: `Nenhum assinante com o email "${emailNormalized}". O usuário precisa ter feito login pelo menos uma vez no Hub para ser adicionado como admin.`,
                     color: 'red',
                 });
                 return;

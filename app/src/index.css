@@ -1,5 +1,6 @@
 @import '@mantine/core/styles.css';
 @import '@mantine/notifications/styles.css';
+@import '@mantine/tiptap/styles.css';
 
 * {
     margin: 0;
@@ -61,4 +62,16 @@ select:focus-visible {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+.mantine-Popover-dropdown.mantine-MultiSelect-dropdown {
+    z-index: 2000 !important;
+}
+
+.mantine-Modal-overlay.mantine-Overlay-root {
+    z-index: 210 !important;
+}
+
+.mantine-Modal-inner {
+    z-index: 1000;
 }

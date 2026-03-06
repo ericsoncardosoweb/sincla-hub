@@ -109,13 +109,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentCompany, setCurrentCompanyState] = useState<Company | null>(null);
   const [currentMembership, setCurrentMembership] = useState<CompanyMember | null>(null);
 
-  // Load subscriber data
+  // Load subscriber data (com fallback de auto-criação se trigger falhou)
   const loadSubscriber = async (userId: string) => {
     const { data, error } = await supabase
       .from('subscribers')
       .select('*')
       .eq('id', userId)
       .single();
+
+    if (error && error.code === 'PGRST116') {
+      // Subscriber não existe — trigger handle_new_user pode ter falhado
+      // Criar automaticamente como fallback
+      console.warn('[Auth] Subscriber não encontrado para', userId, '— criando automaticamente...');
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const fallbackName = authUser.user_metadata?.name
+          || authUser.user_metadata?.full_name
+          || authUser.email?.split('@')[0]
+          || 'Usuário';
+
+        const { data: newSub, error: insertErr } = await supabase
+          .from('subscribers')
+          .upsert({
+            id: userId,
+            email: authUser.email,
+            name: fallbackName,
+          }, { onConflict: 'id' })
+          .select('*')
+          .single();
+
+        if (insertErr) {
+          console.error('[Auth] Falha ao criar subscriber de fallback:', insertErr);
+          return null;
+        }
+        console.log('[Auth] ✓ Subscriber criado com sucesso via fallback');
+        return newSub as Subscriber;
+      }
+      return null;
+    }
 
     if (error) {
       console.error('Error loading subscriber:', error);

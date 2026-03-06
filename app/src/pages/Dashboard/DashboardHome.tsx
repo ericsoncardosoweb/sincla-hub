@@ -198,11 +198,11 @@ export function DashboardHome() {
 
             {/* 3 Main Cards */}
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg" mb="xl">
-                {/* Card A: Meus Produtos */}
+                {/* Card A: Meus APPs */}
                 <Card withBorder radius="md" className={styles.mainCard}>
                     <Card.Section withBorder inheritPadding py="xs">
                         <Group justify="space-between">
-                            <Text fw={600} size="sm">Meus Produtos</Text>
+                            <Text fw={600} size="sm">Meus APPs</Text>
                             <Badge variant="light" color="blue" size="sm">
                                 {activeProducts.length}
                             </Badge>
@@ -222,7 +222,7 @@ export function DashboardHome() {
                                     <Group
                                         key={product.id}
                                         className={styles.listItem}
-                                        onClick={() => handleAccessProduct(product)}
+                                        wrap="nowrap"
                                     >
                                         <ThemeIcon
                                             size={28}
@@ -233,9 +233,34 @@ export function DashboardHome() {
                                             <IconComp size={16} />
                                         </ThemeIcon>
                                         <Text size="sm" fw={500} style={{ flex: 1 }}>{product.name}</Text>
-                                        <Badge size="xs" variant="light" color="green">
-                                            {product.subscription?.status === 'trial' ? 'Trial' : 'Ativo'}
-                                        </Badge>
+                                        <Group gap={4} wrap="nowrap">
+                                            <Tooltip label={copiedToolId === product.id ? 'Link copiado!' : 'Compartilhar link'} withArrow>
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    color={copiedToolId === product.id ? 'green' : 'gray'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleCopyToolLink(product);
+                                                    }}
+                                                >
+                                                    {copiedToolId === product.id ? <IconCheck size={14} /> : <IconShare size={14} />}
+                                                </ActionIcon>
+                                            </Tooltip>
+                                            <Tooltip label="Acessar ferramenta" withArrow>
+                                                <ActionIcon
+                                                    variant="light"
+                                                    size="sm"
+                                                    color="blue"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleAccessProduct(product);
+                                                    }}
+                                                >
+                                                    <IconExternalLink size={14} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        </Group>
                                     </Group>
                                 );
                             })

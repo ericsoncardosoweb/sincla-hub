@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
                 status,
                 plan,
                 plan_id,
-                product_plans ( slug )
+                product_plans ( slug, limits )
             `)
             .eq('company_id', company_id)
             .eq('product_id', product_id)
@@ -169,6 +169,7 @@ Deno.serve(async (req) => {
             access_level: accessLevel,
             product_id: product_id,
             plan_code: subscription?.product_plans?.slug || subscription?.plan || 'pro',
+            plan_limits: subscription?.product_plans?.limits || {},
             branding: {
                 logo_url: company.logo_url,
                 favicon_url: company.favicon_url,

@@ -9,3 +9,4 @@ export { AdminSubscribers } from './AdminSubscribers';
 export { AdminSubscriptions } from './AdminSubscriptions';
 export { AdminSettings } from './AdminSettings';
 export { AdminLegalPages } from './AdminLegalPages';
+export { AdminNotifications } from './AdminNotifications';

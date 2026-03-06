@@ -31,6 +31,7 @@ import {
     IconServer,
     IconFileText,
     IconTags,
+    IconBell,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import styles from '../../components/dashboard/DashboardLayout.module.css';
@@ -51,6 +52,7 @@ const navItems: NavItem[] = [
     { icon: IconShieldCheck, label: 'Admins', path: '/painel/admin/admins' },
     { icon: IconServer, label: 'Infraestrutura', path: '/painel/admin/infraestrutura' },
     { icon: IconFileText, label: 'Políticas e Termos', path: '/painel/admin/paginas-legais' },
+    { icon: IconBell, label: 'Notificações', path: '/painel/admin/notificacoes' },
     { icon: IconSettings, label: 'Configurações', path: '/painel/admin/configuracoes' },
 ];
 
@@ -86,11 +88,6 @@ export function AdminLayout() {
         }
     }, [isAdmin, loading, navigate]);
 
-    // Prevent render while checking admin status
-    if (loading || !isAdmin) {
-        return null; // Or a loader if preferred
-    }
-
     const toggleSidebar = useCallback(() => {
         if (isMobile) {
             setMobileOpened(prev => !prev);
@@ -108,6 +105,11 @@ export function AdminLayout() {
         navigate(path);
         if (isMobile) setMobileOpened(false);
     };
+
+    // Prevent render while checking admin status
+    if (loading || !isAdmin) {
+        return null;
+    }
 
     const sidebarWidth = collapsed ? 70 : 260;
 
