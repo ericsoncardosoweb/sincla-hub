@@ -130,7 +130,7 @@ export function Subscriptions() {
     const [selectedSub, setSelectedSub] = useState<SubscriptionRow | null>(null);
     const [changePlans, setChangePlans] = useState<PlanOption[]>([]);
     const [changePlanLoading, setChangePlanLoading] = useState(false);
-    const [changePlanSaving, setChangePlanSaving] = useState(false);
+    const [changePlanSaving, _setChangePlanSaving] = useState(false);
     const [selectedNewPlan, setSelectedNewPlan] = useState<PlanOption | null>(null);
     const [changeBillingCycle, setChangeBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
