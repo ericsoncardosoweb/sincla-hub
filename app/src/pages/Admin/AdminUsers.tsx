@@ -42,17 +42,29 @@ export function AdminUsers() {
     const loadAdmins = async () => {
         setLoading(true);
         try {
-            const { data } = await supabase
+            // 1. Buscar admin_users (sem join FK, pois admin_users.id -> auth.users, não subscribers)
+            const { data: adminData } = await supabase
                 .from('admin_users')
-                .select(`
-                    id, email, is_active, created_at,
-                    subscriber:subscribers!id (name, email, avatar_url)
-                `)
+                .select('id, email, is_active, created_at')
                 .order('created_at', { ascending: true });
 
-            const adminsData = (data || []).map((a: any) => ({
+            if (!adminData || adminData.length === 0) {
+                setAdmins([]);
+                return;
+            }
+
+            // 2. Buscar subscribers correspondentes (mesmos UUIDs, via RLS admin)
+            const adminIds = adminData.map((a: any) => a.id);
+            const { data: subsData } = await supabase
+                .from('subscribers')
+                .select('id, name, email, avatar_url')
+                .in('id', adminIds);
+
+            const subsMap = new Map((subsData || []).map((s: any) => [s.id, s]));
+
+            const adminsData = adminData.map((a: any) => ({
                 ...a,
-                subscriber: Array.isArray(a.subscriber) ? a.subscriber[0] : a.subscriber,
+                subscriber: subsMap.get(a.id) || null,
             }));
             setAdmins(adminsData);
         } catch (error) {
@@ -66,20 +78,27 @@ export function AdminUsers() {
         if (!newAdminEmail.trim()) return;
         setAdding(true);
         try {
-            // Buscar subscriber pelo email (case-insensitive)
+            // Buscar subscriber pelo email via RPC admin (bypassa RLS)
             const emailNormalized = newAdminEmail.trim().toLowerCase();
-            const { data: sub } = await supabase
-                .from('subscribers')
-                .select('id, email')
-                .ilike('email', emailNormalized)
-                .single();
+            const { data: subResults, error: rpcError } = await supabase
+                .rpc('admin_find_subscriber_by_email', { p_email: emailNormalized });
+
+            if (rpcError) {
+                console.error('RPC error:', rpcError);
+                notifications.show({
+                    title: 'Erro na busca',
+                    message: rpcError.message || 'Falha ao buscar assinante.',
+                    color: 'red',
+                });
+                return;
+            }
+
+            const sub = subResults?.[0] || null;
 
             if (!sub) {
-                // Fallback: verificar se existe no auth.users (pode ter conta sem subscriber)
-                // Tentar buscar via RPC ou informar melhor o admin
                 notifications.show({
                     title: 'Usuário não encontrado',
-                    message: `Nenhum assinante com o email "${emailNormalized}". O usuário precisa ter feito login pelo menos uma vez no Hub para ser adicionado como admin.`,
+                    message: `Nenhum assinante com o email "${emailNormalized}". O usuário precisa ter feito login pelo menos uma vez no Hub.`,
                     color: 'red',
                 });
                 return;
