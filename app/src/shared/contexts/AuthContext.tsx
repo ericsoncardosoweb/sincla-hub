@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
@@ -108,6 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [currentCompany, setCurrentCompanyState] = useState<Company | null>(null);
   const [currentMembership, setCurrentMembership] = useState<CompanyMember | null>(null);
+
+  // Flag para evitar re-inicialização ao trocar de aba (race condition com onAuthStateChange)
+  const initializedRef = useRef(false);
+  const initializingRef = useRef(false);
 
   // Load subscriber data (com fallback de auto-criação se trigger falhou)
   const loadSubscriber = async (userId: string) => {
@@ -237,14 +241,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         devLog('onAuthStateChange', event, session?.user?.email ?? 'null');
+
+        // TOKEN_REFRESHED: apenas atualizar session/user sem re-carregar dados
+        if (event === 'TOKEN_REFRESHED') {
+          devLog('tokenRefresh', 'Apenas atualizando session (sem reload)');
+          setSession(session);
+          setUser(session?.user ?? null);
+          return;
+        }
+
         setSession(session);
         setUser(session?.user ?? null);
 
         if (event === 'SIGNED_IN' && session?.user) {
+          // Evitar re-inicialização se já estava carregado (troca de aba)
+          if (initializedRef.current) {
+            devLog('skipReInit', 'Dados já carregados, pulando re-inicialização');
+            return;
+          }
           await initializeUserData(session.user.id);
         } else if (event === 'SIGNED_OUT' || !session?.user) {
           // Clear state on sign out
           devLog('signOut', 'Limpando estado...');
+          initializedRef.current = false;
+          initializingRef.current = false;
           setSubscriber(null);
           setCompanies([]);
           setCurrentCompanyState(null);
@@ -261,6 +281,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize user data after auth
   const initializeUserData = async (userId: string) => {
+    // Evitar chamadas simultâneas (race condition)
+    if (initializingRef.current) {
+      devLog('initializeUserData', 'Já em andamento, ignorando chamada duplicada');
+      return;
+    }
+    initializingRef.current = true;
     devLog('initializeUserData', `Carregando dados para ${userId}...`);
     setLoading(true);
 
@@ -315,6 +341,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error initializing user data:', error);
     } finally {
       setLoading(false);
+      initializedRef.current = true;
+      initializingRef.current = false;
     }
   };
 
