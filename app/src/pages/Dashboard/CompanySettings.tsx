@@ -359,7 +359,7 @@ export function CompanySettings() {
 
                                 <div>
                                     <Text size="sm" fw={500} mb="xs">Favicon da Empresa</Text>
-                                    <Text size="xs" c="dimmed" mb="sm">Recomendado: imagem quadrada de 192x192 pixels (PNG ou SVG)</Text>
+                                    <Text size="xs" c="dimmed" mb="sm">Recomendado: imagem quadrada (PNG, SVG, ICO ou JPG)</Text>
                                     <Group>
                                         <Avatar
                                             src={faviconPreview || (currentCompany as any).favicon_url}
@@ -371,7 +371,7 @@ export function CompanySettings() {
                                         </Avatar>
                                         <FileInput
                                             placeholder="Selecionar favicon"
-                                            accept="image/png,image/svg+xml,image/x-icon,image/ico"
+                                            accept="image/*"
                                             leftSection={<IconUpload size={16} />}
                                             value={faviconFile}
                                             onChange={handleFaviconChange}
