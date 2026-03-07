@@ -22,7 +22,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconLink, IconWorld, IconCopy } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconLink, IconWorld, IconCopy, IconCheck, IconX } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
@@ -40,6 +40,10 @@ export function CompanySettings() {
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [uploadedFaviconUrl, setUploadedFaviconUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [slugEditing, setSlugEditing] = useState(false);
+    const [slugValue, setSlugValue] = useState('');
+    const [slugError, setSlugError] = useState('');
+    const [slugChecking, setSlugChecking] = useState(false);
 
     const form = useForm({
         initialValues: {
@@ -76,6 +80,9 @@ export function CompanySettings() {
             setUploadedFaviconUrl(null);
             setFaviconPreview(null);
             setFaviconFile(null);
+            setSlugValue(normalizeSlug(currentCompany.slug || ''));
+            setSlugEditing(false);
+            setSlugError('');
         }
     }, [currentCompany]);
 
@@ -171,6 +178,53 @@ export function CompanySettings() {
         }
     };
 
+    // Normalizar slug: lowercase, sem acentos, espaços→hífens, sem especiais
+    const normalizeSlug = (val: string) => {
+        return val
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remover acentos
+            .replace(/[^a-z0-9-]/g, '-') // substituir tudo que não é alfanumérico
+            .replace(/-+/g, '-') // colapsar hífens múltiplos
+            .replace(/^-|-$/g, ''); // remover hífens de borda
+    };
+
+    const handleSlugChange = (val: string) => {
+        const normalized = normalizeSlug(val);
+        setSlugValue(normalized);
+        setSlugError('');
+    };
+
+    const validateSlugUniqueness = async (): Promise<boolean> => {
+        if (!slugValue.trim() || !currentCompany) return false;
+        if (slugValue === currentCompany.slug) return true; // não mudou
+
+        setSlugChecking(true);
+        try {
+            const { data, error } = await supabase
+                .from('companies')
+                .select('id')
+                .eq('slug', slugValue)
+                .neq('id', currentCompany.id)
+                .maybeSingle();
+
+            if (error) {
+                setSlugError('Erro ao validar slug');
+                return false;
+            }
+            if (data) {
+                setSlugError('Este slug já está em uso por outra empresa');
+                return false;
+            }
+            setSlugError('');
+            return true;
+        } catch {
+            setSlugError('Erro ao validar slug');
+            return false;
+        } finally {
+            setSlugChecking(false);
+        }
+    };
+
     const handleSubmit = async (values: typeof form.values) => {
         if (!currentCompany) return;
 
@@ -180,12 +234,23 @@ export function CompanySettings() {
             const logoUrl = uploadedLogoUrl || (currentCompany as any).logo_url || null;
             const faviconUrl = uploadedFaviconUrl || (currentCompany as any).favicon_url || null;
 
+            // Validate slug uniqueness if changed
+            const finalSlug = slugValue.trim() || currentCompany.slug;
+            if (finalSlug !== currentCompany.slug) {
+                const isUnique = await validateSlugUniqueness();
+                if (!isUnique) {
+                    setLoading(false);
+                    return;
+                }
+            }
+
             // Update company - only columns that exist in the table
             const { error } = await supabase
                 .from('companies')
                 .update({
                     name: values.name,
                     cnpj: values.cnpj || null,
+                    slug: finalSlug,
                     primary_color: values.primary_color,
                     secondary_color: values.secondary_color,
                     logo_url: logoUrl || null,
@@ -209,6 +274,22 @@ export function CompanySettings() {
                 message: 'Configurações salvas com sucesso',
                 color: 'green',
             });
+
+            // Se o slug mudou, forçar reload para atualizar toda a navegação
+            if (finalSlug !== currentCompany.slug) {
+                notifications.show({
+                    title: 'Slug atualizado',
+                    message: `O link da empresa agora é: app.sincla.com.br/${finalSlug}`,
+                    color: 'blue',
+                });
+                // Limpar cache de empresas para forçar refetch
+                localStorage.removeItem('currentEmpresaId');
+                localStorage.removeItem('sincla_tenant_branding');
+                // Refresh completo para atualizar navegação
+                await refreshCompanies();
+                window.location.reload();
+                return;
+            }
 
             refreshCompanies();
         } catch (error: any) {
@@ -428,16 +509,27 @@ export function CompanySettings() {
                             <Stack gap="lg">
                                 <div>
                                     <Text size="sm" fw={500} mb="xs">Link da sua Empresa</Text>
-                                    <Text size="xs" c="dimmed" mb="sm">Este é o endereço público da sua empresa na plataforma Sincla.</Text>
-                                    <Group gap="xs">
+                                    <Text size="xs" c="dimmed" mb="sm">Este é o endereço público da sua empresa na plataforma Sincla. Você pode personalizar o slug.</Text>
+
+                                    <Group gap="xs" align="flex-start">
                                         <TextInput
-                                            value={`app.sincla.com.br/${currentCompany.slug}`}
-                                            readOnly
-                                            leftSection={<IconLink size={16} />}
+                                            value={slugValue}
+                                            onChange={(e) => handleSlugChange(e.target.value)}
+                                            onBlur={validateSlugUniqueness}
+                                            leftSection={<Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>app.sincla.com.br/</Text>}
+                                            leftSectionWidth={140}
+                                            error={slugError}
+                                            disabled={!canEdit}
                                             style={{ flex: 1 }}
                                             styles={{ input: { fontFamily: 'monospace', fontWeight: 500 } }}
+                                            rightSection={
+                                                slugChecking ? <IconCheck size={16} color="gray" /> :
+                                                    slugError ? <IconX size={16} color="var(--mantine-color-red-6)" /> :
+                                                        slugValue && slugValue !== currentCompany.slug ? <IconCheck size={16} color="var(--mantine-color-green-6)" /> :
+                                                            null
+                                            }
                                         />
-                                        <CopyButton value={`https://app.sincla.com.br/${currentCompany.slug}`}>
+                                        <CopyButton value={`https://app.sincla.com.br/${slugValue}`}>
                                             {({ copied, copy }) => (
                                                 <Tooltip label={copied ? 'Copiado!' : 'Copiar link'} withArrow>
                                                     <ActionIcon
@@ -456,12 +548,15 @@ export function CompanySettings() {
                                                 variant="light"
                                                 color="blue"
                                                 size="lg"
-                                                onClick={() => window.open(`https://app.sincla.com.br/${currentCompany.slug}`, '_blank')}
+                                                onClick={() => window.open(`https://app.sincla.com.br/${slugValue}`, '_blank')}
                                             >
                                                 <IconWorld size={16} />
                                             </ActionIcon>
                                         </Tooltip>
                                     </Group>
+                                    {slugValue !== currentCompany.slug && !slugError && (
+                                        <Text size="xs" c="green" mt={4}>Slug alterado. Clique em "Salvar Alterações" para aplicar.</Text>
+                                    )}
                                 </div>
 
                                 <Divider />
