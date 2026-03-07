@@ -22,7 +22,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconLink, IconWorld, IconCopy, IconCheck, IconX } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
@@ -40,7 +40,6 @@ export function CompanySettings() {
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [uploadedFaviconUrl, setUploadedFaviconUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
-    const [slugEditing, setSlugEditing] = useState(false);
     const [slugValue, setSlugValue] = useState('');
     const [slugError, setSlugError] = useState('');
     const [slugChecking, setSlugChecking] = useState(false);
@@ -81,7 +80,6 @@ export function CompanySettings() {
             setFaviconPreview(null);
             setFaviconFile(null);
             setSlugValue(normalizeSlug(currentCompany.slug || ''));
-            setSlugEditing(false);
             setSlugError('');
         }
     }, [currentCompany]);
