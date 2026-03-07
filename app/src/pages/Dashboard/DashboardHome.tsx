@@ -160,10 +160,11 @@ export function DashboardHome() {
 
     // Build login URL for a tool (custom_domain or default)
     const getToolLoginUrl = (tool: ProductWithSubscription) => {
+        const slug = currentCompany?.slug || '';
         if (currentCompany?.custom_domain) {
-            return `https://${currentCompany.custom_domain}/login`;
+            return `https://${currentCompany.custom_domain}/${slug}/login`;
         }
-        return `${window.location.origin}${tool.base_url}/login`;
+        return `${window.location.origin}${tool.base_url}/${slug}/login`;
     };
 
     const handleCopyToolLink = (tool: ProductWithSubscription) => {
