@@ -19,8 +19,14 @@ export function AuthCallback() {
                 const hashParams = new URLSearchParams(window.location.hash.substring(1));
                 const accessToken = hashParams.get('access_token');
                 const refreshToken = hashParams.get('refresh_token');
+                const type = hashParams.get('type');
                 const error = hashParams.get('error');
                 const errorDescription = hashParams.get('error_description');
+
+                // Check query params too (redirectTo may use ?type=recovery)
+                const queryParams = new URLSearchParams(window.location.search);
+                const queryType = queryParams.get('type');
+                const isRecovery = type === 'recovery' || queryType === 'recovery';
 
                 // Check for errors
                 if (error) {
@@ -47,6 +53,12 @@ export function AuthCallback() {
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (session) {
+                    // If this is a password recovery flow, redirect to reset password page
+                    if (isRecovery) {
+                        navigate('/redefinir-senha');
+                        return;
+                    }
+
                     // Successfully authenticated, redirect to dashboard
                     // Check if this is a new user (needs to create company) or existing
                     const { data: companies } = await supabase

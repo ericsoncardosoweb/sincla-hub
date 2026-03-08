@@ -6,7 +6,7 @@ import { theme } from './shared/styles/theme';
 import { AuthProvider, CompanyProvider } from './shared/contexts';
 
 // Auth pages
-import { Login, Register, ForgotPassword, AuthCallback } from './pages/auth';
+import { Login, Register, ForgotPassword, AuthCallback, ResetPassword } from './pages/auth';
 
 // Dashboard pages
 import { DashboardLayout } from './components/dashboard';
@@ -45,6 +45,7 @@ export function App() {
                                 <Route path="/cadastro" element={<Register />} />
                                 <Route path="/esqueci-senha" element={<ForgotPassword />} />
                                 <Route path="/auth/callback" element={<AuthCallback />} />
+                                <Route path="/redefinir-senha" element={<ResetPassword />} />
 
                                 {/* Redireciona raiz para /painel */}
                                 <Route path="/" element={<Navigate to="/painel" replace />} />
