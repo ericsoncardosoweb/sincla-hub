@@ -55,6 +55,7 @@ interface ProductWithSubscription {
     base_url: string;
     brand_color: string | null;
     landing_url: string | null;
+    hasPlans: boolean;
     subscription?: {
         id: string;
         plan: string;
@@ -101,6 +102,14 @@ export function DashboardHome() {
                 .eq('is_active', true)
                 .order('sort_order');
 
+            // Load which products have active plans
+            const { data: plansData } = await supabase
+                .from('product_plans')
+                .select('product_id')
+                .eq('is_active', true);
+
+            const productsWithPlans = new Set((plansData || []).map(p => p.product_id));
+
             let subsMap: Record<string, any> = {};
             if (currentCompany) {
                 const { data: subscriptions } = await supabase
@@ -115,6 +124,7 @@ export function DashboardHome() {
 
             const mapped: ProductWithSubscription[] = (allProducts || []).map(p => ({
                 ...p,
+                hasPlans: productsWithPlans.has(p.id),
                 subscription: subsMap[p.id] ? {
                     id: subsMap[p.id].id,
                     plan: subsMap[p.id].plan,
@@ -474,38 +484,51 @@ export function DashboardHome() {
 
                                         {/* CTAs */}
                                         <Group gap="xs" mt="auto">
-                                            {tool.landing_url && (
-                                                <Button
+                                            {!tool.hasPlans && !isActive ? (
+                                                <Badge
                                                     variant="light"
-                                                    size="xs"
                                                     color="gray"
-                                                    component="a"
-                                                    href={tool.landing_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    leftSection={<IconExternalLink size={14} />}
-                                                    style={{ flex: 1 }}
+                                                    size="lg"
+                                                    style={{ flex: 1, textAlign: 'center' }}
                                                 >
-                                                    Conhecer
-                                                </Button>
-                                            )}
-                                            {isActive ? (
-                                                <Button
-                                                    size="xs"
-                                                    style={{ flex: 1, backgroundColor: color }}
-                                                    onClick={() => handleAccessProduct(tool)}
-                                                >
-                                                    Acessar
-                                                </Button>
+                                                    Em Breve
+                                                </Badge>
                                             ) : (
-                                                <Button
-                                                    size="xs"
-                                                    variant="filled"
-                                                    style={{ flex: 1, backgroundColor: color }}
-                                                    onClick={() => handleActivateProduct(tool)}
-                                                >
-                                                    Ativar
-                                                </Button>
+                                                <>
+                                                    {tool.landing_url && (
+                                                        <Button
+                                                            variant="light"
+                                                            size="xs"
+                                                            color="gray"
+                                                            component="a"
+                                                            href={tool.landing_url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            leftSection={<IconExternalLink size={14} />}
+                                                            style={{ flex: 1 }}
+                                                        >
+                                                            Conhecer
+                                                        </Button>
+                                                    )}
+                                                    {isActive ? (
+                                                        <Button
+                                                            size="xs"
+                                                            style={{ flex: 1, backgroundColor: color }}
+                                                            onClick={() => handleAccessProduct(tool)}
+                                                        >
+                                                            Acessar
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            size="xs"
+                                                            variant="filled"
+                                                            style={{ flex: 1, backgroundColor: color }}
+                                                            onClick={() => handleActivateProduct(tool)}
+                                                        >
+                                                            Ativar
+                                                        </Button>
+                                                    )}
+                                                </>
                                             )}
                                         </Group>
                                     </Card>
