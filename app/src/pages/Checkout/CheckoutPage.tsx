@@ -12,7 +12,7 @@ import { Loader } from '@mantine/core';
 import {
     IconArrowLeft, IconShieldCheck, IconCreditCard,
     IconQrcode, IconCheck, IconLock, IconCalendar,
-    IconUser, IconMapPin, IconCopy,
+    IconUser, IconMapPin, IconCopy, IconBuilding, IconChevronDown,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
@@ -116,7 +116,7 @@ function CardBrandIcon({ brand }: { brand: CardBrand }) {
 export function CheckoutPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { currentCompany, user } = useAuth();
+    const { currentCompany, companies, setCurrentCompany, user } = useAuth();
 
     // URL params
     const productId = searchParams.get('produto') || '';
@@ -469,6 +469,37 @@ export function CheckoutPage() {
                     <button className={styles.summaryBack} onClick={() => navigate(returnTo)}>
                         <IconArrowLeft size={14} /> {product.name}
                     </button>
+
+                    {/* Company confirmation banner */}
+                    <div className={styles.companyBanner}>
+                        <div className={styles.companyBannerIcon}>
+                            <IconBuilding size={18} />
+                        </div>
+                        <div className={styles.companyBannerContent}>
+                            <span className={styles.companyBannerLabel}>Assinando para:</span>
+                            {companies.length > 1 ? (
+                                <select
+                                    className={styles.companySelect}
+                                    value={currentCompany?.id || ''}
+                                    onChange={(e) => {
+                                        const companyId = e.target.value;
+                                        if (companyId) {
+                                            localStorage.setItem('sincla_current_company', companyId);
+                                            setCurrentCompany(companyId);
+                                        }
+                                    }}
+                                >
+                                    {companies.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <strong className={styles.companyBannerName}>
+                                    {currentCompany?.name || 'Nenhuma empresa'}
+                                </strong>
+                            )}
+                        </div>
+                    </div>
 
                     <div style={{ marginBottom: 4 }}>
                         <span className={styles.priceMain}>{formatCurrency(price)}</span>
