@@ -657,12 +657,37 @@ export function Header() {
                     />
                 }
                 styles={{
-                    body: { background: '#0a0a0f' },
-                    header: { background: '#0a0a0f' },
+                    body: { background: '#f0f4f8' },
+                    header: { background: '#f0f4f8' },
                 }}
             >
-                <Stack gap="lg" mt="xl">
-                    <Text className={classes.mobileMenuLabel}>Produtos</Text>
+                <Stack gap="lg" mt="md">
+                    <Button
+                        component="a"
+                        href="https://app.sincla.com.br/cadastro"
+                        variant="gradient"
+                        gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
+                        fullWidth
+                        size="lg"
+                        radius="xl"
+                        onClick={close}
+                    >
+                        Criar minha conta
+                    </Button>
+                    <Button
+                        component="a"
+                        href="https://app.sincla.com.br/login"
+                        variant="outline"
+                        color="dark"
+                        fullWidth
+                        size="md"
+                        radius="xl"
+                        onClick={close}
+                    >
+                        Já tenho conta — Entrar
+                    </Button>
+
+                    <Text className={classes.mobileMenuLabel} mt="xl">Produtos</Text>
                     {products.map((product) => (
                         <a
                             key={product.name}
@@ -709,28 +734,6 @@ export function Header() {
                         <IconHeadset size={20} />
                         Suporte
                     </a>
-
-                    <Button
-                        component="a"
-                        href="https://app.sincla.com.br/login"
-                        variant="subtle"
-                        color="gray"
-                        fullWidth
-                        mt="xl"
-                        onClick={close}
-                    >
-                        Entrar
-                    </Button>
-                    <Button
-                        component="a"
-                        href="https://app.sincla.com.br/cadastro"
-                        variant="gradient"
-                        gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
-                        fullWidth
-                        onClick={close}
-                    >
-                        Inscrever-se
-                    </Button>
                 </Stack>
             </Drawer>
         </header>

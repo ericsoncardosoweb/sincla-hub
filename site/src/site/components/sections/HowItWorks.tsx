@@ -24,10 +24,10 @@ const steps = [
 ];
 
 interface HowItWorksProps {
-    onOpenModal: () => void;
+    signupUrl: string;
 }
 
-export function HowItWorks({ onOpenModal }: HowItWorksProps) {
+export function HowItWorks({ signupUrl }: HowItWorksProps) {
     return (
         <section id="como-funciona" className={classes.section}>
             <Container size="xl">
@@ -86,12 +86,13 @@ export function HowItWorks({ onOpenModal }: HowItWorksProps) {
                     {/* CTA */}
                     <Stack align="center" gap="xs" mt={48}>
                         <Button
+                            component="a"
+                            href={signupUrl}
                             size="lg"
                             variant="gradient"
                             gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
                             rightSection={<IconArrowRight size={18} />}
                             className={classes.ctaButton}
-                            onClick={onOpenModal}
                         >
                             Criar minha identidade
                         </Button>

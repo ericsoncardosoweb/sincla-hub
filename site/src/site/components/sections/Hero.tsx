@@ -3,10 +3,10 @@ import { IconArrowRight } from '@tabler/icons-react';
 import classes from './Hero.module.css';
 
 interface HeroProps {
-    onOpenModal: () => void;
+    signupUrl: string;
 }
 
-export function Hero({ onOpenModal }: HeroProps) {
+export function Hero({ signupUrl }: HeroProps) {
     return (
         <section id="hero" className={classes.hero}>
             <Container size="xl" className={classes.container}>
@@ -35,12 +35,13 @@ export function Hero({ onOpenModal }: HeroProps) {
                     {/* CTAs */}
                     <Group gap="md" mt={40} className={classes.ctaGroup}>
                         <Button
+                            component="a"
+                            href={signupUrl}
                             size="lg"
                             variant="filled"
                             color="blue"
                             radius="xl"
                             className={classes.primaryCta}
-                            onClick={onOpenModal}
                         >
                             Começar gratuitamente
                         </Button>
@@ -51,6 +52,8 @@ export function Hero({ onOpenModal }: HeroProps) {
                             radius="xl"
                             rightSection={<IconArrowRight size={18} />}
                             className={classes.secondaryCta}
+                            component="a"
+                            href="#como-funciona"
                         >
                             Ver demonstração
                         </Button>

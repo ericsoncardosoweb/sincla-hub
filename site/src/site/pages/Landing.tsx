@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import { Hero } from '../components/sections/Hero';
@@ -13,15 +12,11 @@ import { Partners } from '../components/sections/Partners';
 import { Support } from '../components/sections/Support';
 import { CtaBanner } from '../components/sections/CtaBanner';
 import { ScrollProgress } from '../components/common/ScrollProgress';
-import { OnboardingModal } from '../components/modals/OnboardingModal';
 import { SignatureVisual } from '../components/signature-visual';
 
+const SIGNUP_URL = 'https://app.sincla.com.br/cadastro';
+
 export function Landing() {
-    const [modalOpened, setModalOpened] = useState(false);
-
-    const openModal = () => setModalOpened(true);
-    const closeModal = () => setModalOpened(false);
-
     return (
         <div data-landing style={{ background: 'var(--bg-dark)', color: 'var(--text-primary)', minHeight: '100vh' }}>
             {/* Assinatura Visual Sincla - Sistema Gravitacional */}
@@ -30,20 +25,19 @@ export function Landing() {
             <ScrollProgress />
             <Header />
             <main id="main-content">
-                <Hero onOpenModal={openModal} />
-                <ProductShowcase onOpenModal={openModal} />
+                <Hero signupUrl={SIGNUP_URL} />
+                <ProductShowcase signupUrl={SIGNUP_URL} />
                 <Stats />
                 <TeamSolutions />
                 <Testimonials />
-                <HowItWorks onOpenModal={openModal} />
+                <HowItWorks signupUrl={SIGNUP_URL} />
                 <Platforms />
                 <Enterprise />
                 <Partners />
                 <Support />
-                <CtaBanner onOpenModal={openModal} />
+                <CtaBanner signupUrl={SIGNUP_URL} />
             </main>
             <Footer />
-            <OnboardingModal opened={modalOpened} onClose={closeModal} />
         </div>
     );
 }

@@ -4,7 +4,7 @@ import { IconArrowRight } from '@tabler/icons-react';
 import classes from './ProductShowcase.module.css';
 
 interface ProductShowcaseProps {
-    onOpenModal: () => void;
+    signupUrl: string;
 }
 
 // Dados dos produtos para showcase com logos SVG
@@ -101,7 +101,7 @@ const showcaseProducts = [
     },
 ];
 
-function ProductSection({ product, index, onOpenModal }: { product: typeof showcaseProducts[0]; index: number; onOpenModal: () => void }) {
+function ProductSection({ product, index, signupUrl }: { product: typeof showcaseProducts[0]; index: number; signupUrl: string }) {
     const sectionRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
 
@@ -184,11 +184,12 @@ function ProductSection({ product, index, onOpenModal }: { product: typeof showc
                         {/* CTAs */}
                         <Group gap="md" mt={32}>
                             <Button
+                                component="a"
+                                href={signupUrl}
                                 size="md"
                                 radius="xl"
                                 style={{ background: product.color }}
                                 className={classes.ctaPrimary}
-                                onClick={onOpenModal}
                             >
                                 {product.ctaText}
                             </Button>
@@ -300,7 +301,7 @@ function ProductSection({ product, index, onOpenModal }: { product: typeof showc
     );
 }
 
-export function ProductShowcase({ onOpenModal }: ProductShowcaseProps) {
+export function ProductShowcase({ signupUrl }: ProductShowcaseProps) {
     return (
         <div className={classes.showcaseWrapper}>
             {/* Section Header */}
@@ -316,7 +317,7 @@ export function ProductShowcase({ onOpenModal }: ProductShowcaseProps) {
                     key={product.id}
                     product={product}
                     index={index}
-                    onOpenModal={onOpenModal}
+                    signupUrl={signupUrl}
                 />
             ))}
         </div>

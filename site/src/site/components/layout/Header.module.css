@@ -484,18 +484,18 @@
 .mobileMenuLabel {
     font-size: 0.7rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(0, 0, 0, 0.45);
     letter-spacing: 0.1em;
     text-transform: uppercase;
     margin-bottom: -8px;
 }
 
 .mobileNavLink {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 0, 0, 0.8);
     font-size: 1rem;
     font-weight: 500;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -503,7 +503,7 @@
 }
 
 .mobileNavLink:hover {
-    color: #00c6ff;
+    color: #0066CC;
 }
 
 /* ==========================================
