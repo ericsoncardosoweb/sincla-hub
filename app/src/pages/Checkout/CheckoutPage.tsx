@@ -12,7 +12,7 @@ import { Loader } from '@mantine/core';
 import {
     IconArrowLeft, IconShieldCheck, IconCreditCard,
     IconQrcode, IconCheck, IconLock, IconCalendar,
-    IconUser, IconMapPin, IconCopy, IconBuilding, IconChevronDown,
+    IconUser, IconMapPin, IconCopy, IconBuilding,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';

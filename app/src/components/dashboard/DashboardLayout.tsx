@@ -586,7 +586,7 @@ export function DashboardLayout() {
                         {isMobile && (
                             <Link to="/painel" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                                 <img
-                                    src="/logos/logo-sincla-branco.svg"
+                                    src="/logos/logo-sincla.svg"
                                     alt="Sincla"
                                     height={28}
                                     style={{ display: 'block' }}
