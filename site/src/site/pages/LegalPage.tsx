@@ -36,6 +36,7 @@ const DEFAULT_VARS: Record<string, string> = {
 // Map slug aliases to canonical slugs
 const SLUG_MAP: Record<string, string> = {
     'politica-privacidade': 'politica-privacidade',
+    'politicas-de-privacidade': 'politica-privacidade',
     'termos-de-uso': 'termos-de-uso',
 };
 

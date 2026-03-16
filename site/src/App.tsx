@@ -60,6 +60,7 @@ function App() {
             <Route path="/recursos" element={<Recursos />} />
             {/* Legal Pages */}
             <Route path="/politica-privacidade" element={<LegalPage />} />
+            <Route path="/politicas-de-privacidade" element={<LegalPage />} />
             <Route path="/termos-de-uso" element={<LegalPage />} />
             <Route path="/legal/:slug" element={<LegalPage />} />
           </Routes>
