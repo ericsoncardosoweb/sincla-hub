@@ -116,7 +116,9 @@ export function Team() {
 
             if (error) throw error;
 
-            setMembers(data as unknown as TeamMember[]);
+            // Filtrar membros com user null (subscriber ausente ou RLS bloqueado)
+            const validMembers = (data || []).filter((m: any) => m.user !== null);
+            setMembers(validMembers as unknown as TeamMember[]);
         } catch (error) {
             console.error('Error loading members:', error);
             notifications.show({
@@ -285,7 +287,7 @@ export function Team() {
             return;
         }
 
-        if (!confirm(`Remover ${member.user.name || member.user.email} da equipe?`)) {
+        if (!confirm(`Remover ${member.user?.name || member.user?.email || 'este membro'} da equipe?`)) {
             return;
         }
 
@@ -318,6 +320,7 @@ export function Team() {
 
     const filteredMembers = useMemo(() => {
         return members.filter(m => {
+            if (!m.user) return false; // skip membros sem user
             const matchesSearch = !search ||
                 (m.user.name || '').toLowerCase().includes(search.toLowerCase()) ||
                 m.user.email.toLowerCase().includes(search.toLowerCase());
@@ -431,7 +434,7 @@ export function Team() {
                                             size="sm"
                                             color="blue"
                                         >
-                                            {(member.user.name || member.user.email).charAt(0).toUpperCase()}
+                                            {(member.user?.name || member.user?.email || '?').charAt(0).toUpperCase()}
                                         </Avatar>
                                         <Text size="sm" fw={500}>
                                             {member.user.name || 'Sem nome'}
