@@ -76,6 +76,12 @@ export function LegalPage() {
             setError(null);
 
             try {
+                if (!supabase) {
+                    setError('Conteúdo indisponível no momento');
+                    setLoading(false);
+                    return;
+                }
+
                 const canonicalSlug = SLUG_MAP[slug] || slug;
 
                 // Fetch page and settings in parallel
