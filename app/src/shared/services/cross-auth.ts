@@ -133,9 +133,13 @@ export async function redirectToProduct(
     product: Product,
     company: Company
 ): Promise<void> {
+    // Abrir a janela ANTES da chamada assíncrona para evitar popup blocker
+    const newWindow = window.open('about:blank', '_blank');
+
     const token = await generateCrossToken(product.id, company.id);
 
     if (!token) {
+        if (newWindow) newWindow.close();
         throw new Error('Failed to generate authentication token');
     }
 
@@ -148,8 +152,13 @@ export async function redirectToProduct(
     callbackUrl.searchParams.set('key', token);
     callbackUrl.searchParams.set('empresa', company.slug);
 
-    // Open the product in a new tab
-    window.open(callbackUrl.toString(), '_blank');
+    // Redirect the already-opened window
+    if (newWindow) {
+        newWindow.location.href = callbackUrl.toString();
+    } else {
+        // Fallback: se mesmo assim bloqueou, redireciona na mesma aba
+        window.location.href = callbackUrl.toString();
+    }
 }
 
 /**
