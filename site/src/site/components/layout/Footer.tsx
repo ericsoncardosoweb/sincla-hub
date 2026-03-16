@@ -48,7 +48,7 @@ const saibaMaisLinks = [
 const legalLinks = [
     { label: 'Política de privacidade', href: '/politicas-de-privacidade' },
     { label: 'Termos de uso', href: '/termos-de-uso' },
-    { label: 'Aviso legal', href: '#' },
+    { label: 'Políticas de compra', href: '/politicas-de-compra' },
 ];
 
 // Redes sociais

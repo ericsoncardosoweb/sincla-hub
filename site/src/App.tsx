@@ -62,6 +62,7 @@ function App() {
             <Route path="/politica-privacidade" element={<LegalPage />} />
             <Route path="/politicas-de-privacidade" element={<LegalPage />} />
             <Route path="/termos-de-uso" element={<LegalPage />} />
+            <Route path="/politicas-de-compra" element={<LegalPage />} />
             <Route path="/legal/:slug" element={<LegalPage />} />
           </Routes>
         </BrowserRouter>

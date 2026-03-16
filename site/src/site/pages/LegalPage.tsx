@@ -38,6 +38,7 @@ const SLUG_MAP: Record<string, string> = {
     'politica-privacidade': 'politica-privacidade',
     'politicas-de-privacidade': 'politica-privacidade',
     'termos-de-uso': 'termos-de-uso',
+    'politicas-de-compra': 'politicas-de-compra',
 };
 
 function resolveVariables(html: string, settings: PlatformSetting[]): string {
@@ -194,6 +195,61 @@ const FALLBACK_CONTENT: Record<string, { title: string; content: string }> = {
 <ul>
 <li><strong>E-mail:</strong> <a href="mailto:contato@sincla.com.br">contato@sincla.com.br</a></li>
 <li><strong>Site:</strong> <a href="https://sincla.com.br">sincla.com.br</a></li>
+</ul>
+`
+    },
+    'politicas-de-compra': {
+        title: 'Políticas de Compra',
+        content: `
+<h1>Políticas de Compra e Reembolso</h1>
+<p><strong>Última atualização:</strong> Março de 2026</p>
+<p>A Sincla Tecnologia Ltda ("Sincla") valoriza a transparência em suas relações comerciais. Esta política descreve as condições de compra, assinatura e reembolso dos nossos serviços.</p>
+
+<h2>1. Planos e Assinaturas</h2>
+<p>A Sincla oferece planos de assinatura mensal e anual para acesso às suas plataformas. Os valores, recursos e condições de cada plano estão descritos na página de preços e no momento da contratação.</p>
+
+<h2>2. Direito de Arrependimento e Reembolso</h2>
+<p>Em conformidade com o Código de Defesa do Consumidor (Art. 49), você tem direito ao reembolso integral nos seguintes termos:</p>
+<ul>
+<li><strong>Primeiros 7 (sete) dias:</strong> Após a contratação de uma <strong>nova assinatura</strong>, você pode solicitar o cancelamento e reembolso integral dentro de 7 dias corridos, sem necessidade de justificativa.</li>
+<li><strong>Renovações automáticas:</strong> As renovações de assinaturas (mensais ou anuais) <strong>não dão direito a reembolso</strong>, pois o usuário já teve acesso e utilizou o serviço durante o período anterior. O cancelamento de renovações toma efeito no próximo ciclo de cobrança.</li>
+</ul>
+
+<h2>3. Como Solicitar Reembolso</h2>
+<p>Para solicitar seu reembolso dentro do prazo de 7 dias:</p>
+<ul>
+<li>Acesse seu painel em <a href="https://app.sincla.com.br">app.sincla.com.br</a> e cancele a assinatura; ou</li>
+<li>Envie um e-mail para <a href="mailto:financeiro@sincla.com.br">financeiro@sincla.com.br</a> com o assunto "Solicitação de Reembolso" informando seu nome e e-mail cadastrado.</li>
+</ul>
+<p>O reembolso será processado em até <strong>10 dias úteis</strong> após a confirmação, utilizando o mesmo método de pagamento original.</p>
+
+<h2>4. Cancelamento de Assinatura</h2>
+<p>Você pode cancelar sua assinatura a qualquer momento pelo painel de configurações. Ao cancelar:</p>
+<ul>
+<li>Seu acesso permanece ativo até o final do período já pago;</li>
+<li>Não haverá cobranças futuras após o cancelamento;</li>
+<li>Seus dados serão mantidos por 90 dias para eventual reativação.</li>
+</ul>
+
+<h2>5. Formas de Pagamento</h2>
+<p>Aceitamos as seguintes formas de pagamento:</p>
+<ul>
+<li>Cartão de crédito (Visa, Mastercard, Elo, Amex);</li>
+<li>Boleto bancário;</li>
+<li>PIX.</li>
+</ul>
+<p>Os pagamentos são processados por gateways de pagamento parceiros com certificação PCI-DSS. A Sincla não armazena dados de cartão de crédito.</p>
+
+<h2>6. Alteração de Plano</h2>
+<p>Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. O valor será ajustado proporcionalmente (pro-rata) no próximo ciclo de cobrança.</p>
+
+<h2>7. Canais de Contato</h2>
+<p>Para dúvidas sobre compras, assinaturas ou reembolsos, entre em contato:</p>
+<ul>
+<li><strong>E-mail financeiro:</strong> <a href="mailto:financeiro@sincla.com.br">financeiro@sincla.com.br</a></li>
+<li><strong>E-mail geral:</strong> <a href="mailto:contato@sincla.com.br">contato@sincla.com.br</a></li>
+<li><strong>WhatsApp:</strong> (11) 99999-9999</li>
+<li><strong>Site:</strong> <a href="https://sincla.com.br/suporte">sincla.com.br/suporte</a></li>
 </ul>
 `
     }
