@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { Container, Title, Text, Loader, Center, Stack, Alert } from '@mantine/core';
+import { Container, Text, Loader, Center, Stack, Alert } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
