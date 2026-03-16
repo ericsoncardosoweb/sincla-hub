@@ -46,7 +46,7 @@ const saibaMaisLinks = [
 
 // Links do rodapé inferior (legal)
 const legalLinks = [
-    { label: 'Política de privacidade', href: '/politica-privacidade' },
+    { label: 'Política de privacidade', href: '/politicas-de-privacidade' },
     { label: 'Termos de uso', href: '/termos-de-uso' },
     { label: 'Aviso legal', href: '#' },
 ];
@@ -142,7 +142,7 @@ export function Footer() {
                         {/* Legal Links */}
                         <Group gap="lg" wrap="wrap" className={classes.legalLinks}>
                             {legalLinks.map((link) => (
-                                <Anchor key={link.label} href={link.href} className={classes.legalLink}>
+                                <Anchor key={link.label} component={Link} to={link.href} className={classes.legalLink}>
                                     {link.label}
                                 </Anchor>
                             ))}
