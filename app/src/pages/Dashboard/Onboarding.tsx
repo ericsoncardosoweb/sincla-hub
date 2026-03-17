@@ -137,7 +137,7 @@ export function Onboarding() {
             });
 
             await refreshCompanies();
-            setCurrentCompany(data.id);
+            setCurrentCompany(data.id, false);
             setCreatedCompanyId(data.id);
 
             notifications.show({

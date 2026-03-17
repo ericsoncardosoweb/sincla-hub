@@ -482,9 +482,8 @@ export function CheckoutPage() {
                                     className={styles.companySelect}
                                     value={currentCompany?.id || ''}
                                     onChange={(e) => {
-                                        const companyId = e.target.value;
+                                         const companyId = e.target.value;
                                         if (companyId) {
-                                            localStorage.setItem('sincla_current_company', companyId);
                                             setCurrentCompany(companyId);
                                         }
                                     }}

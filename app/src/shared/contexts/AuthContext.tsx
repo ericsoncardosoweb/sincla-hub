@@ -86,7 +86,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 
   // Company methods
-  setCurrentCompany: (companyId: string) => void;
+  setCurrentCompany: (companyId: string, forceReload?: boolean) => void;
   refreshCompanies: () => Promise<void>;
 
   // Cross-auth
@@ -397,14 +397,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Company methods
-  const setCurrentCompany = async (companyId: string) => {
+  const setCurrentCompany = async (companyId: string, forceReload = true) => {
     const company = companies.find(c => c.id === companyId);
     if (!company || !user) return;
 
-    setCurrentCompanyState(company);
+    // Salvar no localStorage ANTES do reload para garantir persistência
     localStorage.setItem(CURRENT_COMPANY_KEY, companyId);
 
-    // Load membership for new company
+    // Limpar caches que dependem do slug/empresa
+    localStorage.removeItem('sincla_tenant_branding');
+    sessionStorage.removeItem('sincla_company');
+    sessionStorage.removeItem('sincla_branding');
+
+    if (forceReload) {
+      // Reload completo para garantir que todos os dados, tokens e caches
+      // sejam recarregados com a nova empresa
+      window.location.reload();
+      return;
+    }
+
+    // Atualização sem reload (para uso interno onde o reload é indesejado,
+    // ex: onboarding criando empresa e redirecionando em seguida)
+    setCurrentCompanyState(company);
     const membership = await loadMembership(user.id, companyId);
     setCurrentMembership(membership);
   };

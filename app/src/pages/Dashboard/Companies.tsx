@@ -234,7 +234,7 @@ export function Companies() {
 
                 // Update local context synchronously before navigating
                 await refreshCompanies();
-                await setCurrentCompany(data.id);
+                await setCurrentCompany(data.id, false);
 
                 setModalOpen(false);
                 navigate('/painel/configuracoes');
@@ -290,7 +290,13 @@ export function Companies() {
             });
 
             if (currentCompany?.id === company.id) {
-                setCurrentCompany(null as any);
+                // Empresa ativa foi excluída — limpar e recarregar para selecionar outra
+                localStorage.removeItem('sincla_current_company');
+                localStorage.removeItem('sincla_tenant_branding');
+                sessionStorage.removeItem('sincla_company');
+                sessionStorage.removeItem('sincla_branding');
+                window.location.reload();
+                return;
             }
             refreshCompanies();
         } catch (error: any) {

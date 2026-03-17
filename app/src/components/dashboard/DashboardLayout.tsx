@@ -197,10 +197,7 @@ export function DashboardLayout() {
 
     const handleCompanyChange = (companyId: string | null) => {
         if (companyId) {
-            localStorage.setItem('sincla_current_company', companyId);
             setCurrentCompany(companyId);
-            // Force full reload to ensure clean data
-            window.location.reload();
         }
     };
 
