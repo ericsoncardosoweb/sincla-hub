@@ -81,6 +81,7 @@ interface AuthContextType {
   // Auth methods
   signInWithMagicLink: (email: string) => Promise<{ error: AuthError | null }>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   signUp: (email: string, password: string, name: string, refCode?: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
 
@@ -365,6 +366,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+    return { error: error as AuthError | null };
+  };
+
   const signUp = async (email: string, password: string, name: string, refCode?: string) => {
     const { error } = await supabase.auth.signUp({
       email,
@@ -443,6 +458,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     currentMembership,
     signInWithMagicLink,
     signInWithPassword,
+    signInWithGoogle,
     signUp,
     signOut,
     setCurrentCompany,

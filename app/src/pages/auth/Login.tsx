@@ -11,19 +11,43 @@ import {
     Anchor,
     Stack,
     Box,
+    Divider,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconMail, IconLock, IconArrowLeft } from '@tabler/icons-react';
+import { IconMail, IconLock, IconArrowLeft, IconBrandGoogle } from '@tabler/icons-react';
 import { SignatureVisual } from '../../components/signature-visual';
 import { useAuth } from '../../shared/contexts';
 import classes from './Auth.module.css';
 
 export function Login() {
     const navigate = useNavigate();
-    const { signInWithPassword } = useAuth();
+    const { signInWithPassword, signInWithGoogle } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
+
+    const handleGoogleLogin = async () => {
+        setGoogleLoading(true);
+        try {
+            const { error } = await signInWithGoogle();
+            if (error) {
+                notifications.show({
+                    title: 'Erro',
+                    message: `Falha ao entrar com Google: ${error.message}`,
+                    color: 'red',
+                });
+            }
+        } catch {
+            notifications.show({
+                title: 'Erro inesperado',
+                message: 'Tente novamente em alguns instantes',
+                color: 'red',
+            });
+        } finally {
+            setGoogleLoading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,6 +112,20 @@ export function Login() {
                     <Text c="dimmed" size="sm" ta="center" mt={5} mb={30}>
                         Entre com sua conta para continuar
                     </Text>
+
+                    {/* Google Login */}
+                    <Button
+                        variant="default"
+                        fullWidth
+                        className={classes.socialButton}
+                        leftSection={<IconBrandGoogle size={18} />}
+                        onClick={handleGoogleLogin}
+                        loading={googleLoading}
+                    >
+                        Continuar com Google
+                    </Button>
+
+                    <Divider label="ou entre com email" labelPosition="center" my="lg" />
 
                     {/* Login Form */}
                     <form onSubmit={handleSubmit}>
