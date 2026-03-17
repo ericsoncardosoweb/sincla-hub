@@ -113,20 +113,6 @@ export function Login() {
                         Entre com sua conta para continuar
                     </Text>
 
-                    {/* Google Login */}
-                    <Button
-                        variant="default"
-                        fullWidth
-                        className={classes.socialButton}
-                        leftSection={<IconBrandGoogle size={18} />}
-                        onClick={handleGoogleLogin}
-                        loading={googleLoading}
-                    >
-                        Continuar com Google
-                    </Button>
-
-                    <Divider label="ou entre com email" labelPosition="center" my="lg" />
-
                     {/* Login Form */}
                     <form onSubmit={handleSubmit}>
                         <Stack>
@@ -171,6 +157,29 @@ export function Login() {
                             </Button>
                         </Stack>
                     </form>
+
+                    <Divider label="ou" labelPosition="center" my="lg" />
+
+                    {/* Google Login */}
+                    <Button
+                        variant="default"
+                        fullWidth
+                        leftSection={<IconBrandGoogle size={18} />}
+                        onClick={handleGoogleLogin}
+                        loading={googleLoading}
+                        styles={{
+                            root: {
+                                backgroundColor: '#fff',
+                                color: '#3c4043',
+                                border: '1px solid #dadce0',
+                                '&:hover': {
+                                    backgroundColor: '#f8f9fa',
+                                },
+                            },
+                        }}
+                    >
+                        Continuar com Google
+                    </Button>
 
                     <Text c="dimmed" size="sm" ta="center" mt={20}>
                         Não tem uma conta?{' '}

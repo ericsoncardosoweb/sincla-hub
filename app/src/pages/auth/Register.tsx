@@ -22,7 +22,6 @@ import {
     IconLock,
     IconUser,
     IconBrandGoogle,
-    IconBrandGithub,
     IconCheck,
     IconX,
     IconArrowLeft,
@@ -218,28 +217,6 @@ export function Register() {
                         Comece a transformar sua gestão hoje
                     </Text>
 
-                    {/* Social Login */}
-                    <Group grow mb="md">
-                        <Button
-                            variant="default"
-                            className={classes.socialButton}
-                            leftSection={<IconBrandGoogle size={18} />}
-                            onClick={() => handleSocialLogin('google')}
-                        >
-                            Google
-                        </Button>
-                        <Button
-                            variant="default"
-                            className={classes.socialButton}
-                            leftSection={<IconBrandGithub size={18} />}
-                            onClick={() => handleSocialLogin('github')}
-                        >
-                            GitHub
-                        </Button>
-                    </Group>
-
-                    <Divider label="ou cadastre com email" labelPosition="center" my="lg" />
-
                     {/* Register Form */}
                     <form onSubmit={handleSubmit}>
                         <Stack>
@@ -350,6 +327,28 @@ export function Register() {
                             </Button>
                         </Stack>
                     </form>
+
+                    <Divider label="ou" labelPosition="center" my="lg" />
+
+                    {/* Google Login */}
+                    <Button
+                        variant="default"
+                        fullWidth
+                        leftSection={<IconBrandGoogle size={18} />}
+                        onClick={() => handleSocialLogin('google')}
+                        styles={{
+                            root: {
+                                backgroundColor: '#fff',
+                                color: '#3c4043',
+                                border: '1px solid #dadce0',
+                                '&:hover': {
+                                    backgroundColor: '#f8f9fa',
+                                },
+                            },
+                        }}
+                    >
+                        Continuar com Google
+                    </Button>
 
                     <Text c="dimmed" size="sm" ta="center" mt={20}>
                         Já tem uma conta?{' '}
