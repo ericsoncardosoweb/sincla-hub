@@ -22,7 +22,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
@@ -40,6 +40,8 @@ export function CompanySettings() {
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [uploadedFaviconUrl, setUploadedFaviconUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [removedLogo, setRemovedLogo] = useState(false);
+    const [removedFavicon, setRemovedFavicon] = useState(false);
     const [slugValue, setSlugValue] = useState('');
     const [slugError, setSlugError] = useState('');
     const [slugChecking, setSlugChecking] = useState(false);
@@ -79,6 +81,8 @@ export function CompanySettings() {
             setUploadedFaviconUrl(null);
             setFaviconPreview(null);
             setFaviconFile(null);
+            setRemovedLogo(false);
+            setRemovedFavicon(false);
             setSlugValue(normalizeSlug(currentCompany.slug || ''));
             setSlugError('');
         }
@@ -228,17 +232,23 @@ export function CompanySettings() {
 
         setLoading(true);
         try {
-            // Use uploaded URLs or keep existing — add cache-buster para evitar cache CDN/browser
-            let logoUrl = uploadedLogoUrl || (currentCompany as any).logo_url || null;
-            let faviconUrl = uploadedFaviconUrl || (currentCompany as any).favicon_url || null;
-
-            // Garantir cache-buster nas URLs de assets para forçar reload
-            if (logoUrl && uploadedLogoUrl) {
-                // Se houve novo upload, garantir cache-buster
-                logoUrl = logoUrl.split('?')[0] + `?v=${Date.now()}`;
+            // Resolver URLs: remoção > novo upload > manter existente
+            let logoUrl: string | null = null;
+            if (removedLogo) {
+                logoUrl = null;
+            } else if (uploadedLogoUrl) {
+                logoUrl = uploadedLogoUrl.split('?')[0] + `?v=${Date.now()}`;
+            } else {
+                logoUrl = (currentCompany as any).logo_url || null;
             }
-            if (faviconUrl && uploadedFaviconUrl) {
-                faviconUrl = faviconUrl.split('?')[0] + `?v=${Date.now()}`;
+
+            let faviconUrl: string | null = null;
+            if (removedFavicon) {
+                faviconUrl = null;
+            } else if (uploadedFaviconUrl) {
+                faviconUrl = uploadedFaviconUrl.split('?')[0] + `?v=${Date.now()}`;
+            } else {
+                faviconUrl = (currentCompany as any).favicon_url || null;
             }
 
             // Validate slug uniqueness if changed
@@ -433,7 +443,7 @@ export function CompanySettings() {
                                     <Text size="sm" fw={500} mb="xs">Logo da Empresa</Text>
                                     <Group>
                                         <Avatar
-                                            src={logoPreview || (currentCompany as any).logo_url}
+                                            src={removedLogo ? null : (logoPreview || (currentCompany as any).logo_url)}
                                             size="xl"
                                             radius="md"
                                             color="blue"
@@ -445,9 +455,30 @@ export function CompanySettings() {
                                             accept="image/*"
                                             leftSection={<IconUpload size={16} />}
                                             value={logoFile}
-                                            onChange={handleLogoChange}
+                                            onChange={(file) => { setRemovedLogo(false); handleLogoChange(file); }}
                                             disabled={!canEdit || uploading}
                                         />
+                                        {(logoPreview || (currentCompany as any).logo_url) && !removedLogo && (
+                                            <Tooltip label="Remover logo">
+                                                <ActionIcon
+                                                    variant="light"
+                                                    color="red"
+                                                    size="lg"
+                                                    onClick={() => {
+                                                        setRemovedLogo(true);
+                                                        setLogoFile(null);
+                                                        setLogoPreview(null);
+                                                        setUploadedLogoUrl(null);
+                                                    }}
+                                                    disabled={!canEdit}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        )}
+                                        {removedLogo && (
+                                            <Text size="xs" c="red">Logo será removido ao salvar</Text>
+                                        )}
                                     </Group>
                                 </div>
 
@@ -458,7 +489,7 @@ export function CompanySettings() {
                                     <Text size="xs" c="dimmed" mb="sm">Recomendado: imagem quadrada (PNG, SVG, ICO ou JPG)</Text>
                                     <Group>
                                         <Avatar
-                                            src={faviconPreview || (currentCompany as any).favicon_url}
+                                            src={removedFavicon ? null : (faviconPreview || (currentCompany as any).favicon_url)}
                                             size={48}
                                             radius="sm"
                                             color="blue"
@@ -470,9 +501,30 @@ export function CompanySettings() {
                                             accept="image/*"
                                             leftSection={<IconUpload size={16} />}
                                             value={faviconFile}
-                                            onChange={handleFaviconChange}
+                                            onChange={(file) => { setRemovedFavicon(false); handleFaviconChange(file); }}
                                             disabled={!canEdit || uploading}
                                         />
+                                        {(faviconPreview || (currentCompany as any).favicon_url) && !removedFavicon && (
+                                            <Tooltip label="Remover favicon">
+                                                <ActionIcon
+                                                    variant="light"
+                                                    color="red"
+                                                    size="lg"
+                                                    onClick={() => {
+                                                        setRemovedFavicon(true);
+                                                        setFaviconFile(null);
+                                                        setFaviconPreview(null);
+                                                        setUploadedFaviconUrl(null);
+                                                    }}
+                                                    disabled={!canEdit}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        )}
+                                        {removedFavicon && (
+                                            <Text size="xs" c="red">Favicon será removido ao salvar</Text>
+                                        )}
                                     </Group>
                                 </div>
 
