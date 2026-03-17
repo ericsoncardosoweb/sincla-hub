@@ -9,6 +9,7 @@ import { AuthProvider, CompanyProvider } from './shared/contexts';
 import { Login, Register, ForgotPassword, AuthCallback, ResetPassword } from './pages/auth';
 import { lazy, Suspense } from 'react';
 const GoogleOAuthCallbackPage = lazy(() => import('./pages/auth/GoogleOAuthCallbackPage'));
+const GoogleOAuthConnectPage = lazy(() => import('./pages/auth/GoogleOAuthConnectPage'));
 
 // Dashboard pages
 import { DashboardLayout } from './components/dashboard';
@@ -51,6 +52,7 @@ export function App() {
 
                                 {/* Google OAuth Gateway Centralizado */}
                                 <Route path="/google/callback" element={<Suspense fallback={null}><GoogleOAuthCallbackPage /></Suspense>} />
+                                <Route path="/google/connect" element={<Suspense fallback={null}><GoogleOAuthConnectPage /></Suspense>} />
 
                                 {/* Redireciona raiz para /painel */}
                                 <Route path="/" element={<Navigate to="/painel" replace />} />
