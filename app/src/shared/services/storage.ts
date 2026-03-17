@@ -88,7 +88,12 @@ export const uploadEmpresaLogo = async (
 ): Promise<UploadResult> => {
     const slug = generateSlug(empresaSlug);
     const ext = file.name.split('.').pop() || 'png';
-    return uploadViaEdgeFunction(`empresas/${slug}/logo.${ext}`, file);
+    const result = await uploadViaEdgeFunction(`empresas/${slug}/logo.${ext}`, file);
+    // Adicionar cache-buster para forçar reload (Bunny CDN e browser podem cachear)
+    if (result.success && result.url) {
+        result.url = `${result.url}?v=${Date.now()}`;
+    }
+    return result;
 };
 
 /**
@@ -112,7 +117,12 @@ export const uploadEmpresaAsset = async (
 ): Promise<UploadResult> => {
     const slug = generateSlug(empresaSlug);
     const ext = file.name.split('.').pop() || 'png';
-    return uploadViaEdgeFunction(`empresas/${slug}/${tipo}.${ext}`, file);
+    const result = await uploadViaEdgeFunction(`empresas/${slug}/${tipo}.${ext}`, file);
+    // Cache-buster para forçar reload
+    if (result.success && result.url) {
+        result.url = `${result.url}?v=${Date.now()}`;
+    }
+    return result;
 };
 
 /**
