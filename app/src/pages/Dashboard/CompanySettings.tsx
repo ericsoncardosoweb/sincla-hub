@@ -228,9 +228,18 @@ export function CompanySettings() {
 
         setLoading(true);
         try {
-            // Use uploaded URLs or keep existing
-            const logoUrl = uploadedLogoUrl || (currentCompany as any).logo_url || null;
-            const faviconUrl = uploadedFaviconUrl || (currentCompany as any).favicon_url || null;
+            // Use uploaded URLs or keep existing — add cache-buster para evitar cache CDN/browser
+            let logoUrl = uploadedLogoUrl || (currentCompany as any).logo_url || null;
+            let faviconUrl = uploadedFaviconUrl || (currentCompany as any).favicon_url || null;
+
+            // Garantir cache-buster nas URLs de assets para forçar reload
+            if (logoUrl && uploadedLogoUrl) {
+                // Se houve novo upload, garantir cache-buster
+                logoUrl = logoUrl.split('?')[0] + `?v=${Date.now()}`;
+            }
+            if (faviconUrl && uploadedFaviconUrl) {
+                faviconUrl = faviconUrl.split('?')[0] + `?v=${Date.now()}`;
+            }
 
             // Validate slug uniqueness if changed
             const finalSlug = slugValue.trim() || currentCompany.slug;
@@ -242,8 +251,8 @@ export function CompanySettings() {
                 }
             }
 
-            // Update company - only columns that exist in the table
-            const { error } = await supabase
+            // Update company — usar .select().single() para verificar se RLS permitiu
+            const { data: updatedData, error } = await supabase
                 .from('companies')
                 .update({
                     name: values.name,
@@ -263,9 +272,18 @@ export function CompanySettings() {
                         website: values.website || null,
                     },
                 })
-                .eq('id', currentCompany.id);
+                .eq('id', currentCompany.id)
+                .select()
+                .single();
 
             if (error) throw error;
+
+            if (!updatedData) {
+                throw new Error('Não foi possível salvar. Verifique suas permissões.');
+            }
+
+            // Limpar cache de branding para forçar reload
+            localStorage.removeItem('sincla_tenant_branding');
 
             notifications.show({
                 title: 'Sucesso',
@@ -282,14 +300,13 @@ export function CompanySettings() {
                 });
                 // Limpar cache de empresas para forçar refetch
                 localStorage.removeItem('currentEmpresaId');
-                localStorage.removeItem('sincla_tenant_branding');
                 // Refresh completo para atualizar navegação
                 await refreshCompanies();
                 window.location.reload();
                 return;
             }
 
-            refreshCompanies();
+            await refreshCompanies();
         } catch (error: any) {
             console.error('Error saving settings:', error);
             notifications.show({
