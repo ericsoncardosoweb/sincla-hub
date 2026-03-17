@@ -9,7 +9,6 @@ import { IconUser, IconMail, IconPhone, IconId, IconLock } from '@tabler/icons-r
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader } from '../../components/shared';
-import { ConnectedAccountsBlock } from './components/ConnectedAccountsBlock';
 
 export function Profile() {
     const { subscriber, user } = useAuth();
@@ -190,9 +189,6 @@ export function Profile() {
                         </Stack>
                     </form>
                 </Card>
-
-                {/* Connected Accounts */}
-                <ConnectedAccountsBlock />
 
                 <Divider />
                 <Text size="xs" c="dimmed" ta="center">

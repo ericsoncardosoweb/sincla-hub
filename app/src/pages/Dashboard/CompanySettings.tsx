@@ -22,11 +22,12 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
 import { PageHeader, EmptyState } from '../../components/shared';
+import { ConnectedAccountsBlock } from './components/ConnectedAccountsBlock';
 
 export function CompanySettings() {
     const navigate = useNavigate();
@@ -380,6 +381,9 @@ export function CompanySettings() {
                         <Tabs.Tab value="domain" leftSection={<IconWorld size={16} />}>
                             Domínio
                         </Tabs.Tab>
+                        <Tabs.Tab value="integrations" leftSection={<IconPlugConnected size={16} />}>
+                            Integrações
+                        </Tabs.Tab>
                         <Tabs.Tab value="notifications" leftSection={<IconBell size={16} />}>
                             Notificações
                         </Tabs.Tab>
@@ -677,6 +681,11 @@ export function CompanySettings() {
                                 />
                             </Stack>
                         </Card>
+                    </Tabs.Panel>
+
+                    {/* Integrations Settings */}
+                    <Tabs.Panel value="integrations">
+                        <ConnectedAccountsBlock />
                     </Tabs.Panel>
                 </Tabs>
 
