@@ -14,11 +14,13 @@ import {
 import { notifications } from '@mantine/notifications';
 import { IconLock, IconCheck, IconAlertCircle, IconArrowLeft } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
+import { useAuth } from '../../shared/contexts';
 import { SignatureVisual } from '../../components/signature-visual';
 import classes from './Auth.module.css';
 
 export function ResetPassword() {
     const navigate = useNavigate();
+    const { setIsPasswordRecovery } = useAuth();
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -96,6 +98,7 @@ export function ResetPassword() {
             if (error) throw error;
 
             setSuccess(true);
+            setIsPasswordRecovery(false);
             notifications.show({
                 title: 'Senha redefinida!',
                 message: 'Sua senha foi alterada com sucesso.',

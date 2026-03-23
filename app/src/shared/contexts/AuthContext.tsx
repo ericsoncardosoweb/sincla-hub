@@ -72,6 +72,7 @@ interface AuthContextType {
   subscriber: Subscriber | null;
   isAdmin: boolean;
   loading: boolean;
+  isPasswordRecovery: boolean;
 
   // Company state
   companies: Company[];
@@ -91,6 +92,9 @@ interface AuthContextType {
 
   // Cross-auth
   generateCrossToken: (productId: string) => Promise<string | null>;
+
+  // Password recovery
+  setIsPasswordRecovery: (value: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -104,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [subscriber, setSubscriber] = useState<Subscriber | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   // Company state
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -248,6 +253,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           devLog('tokenRefresh', 'Apenas atualizando session (sem reload)');
           setSession(session);
           setUser(session?.user ?? null);
+          return;
+        }
+
+        // PASSWORD_RECOVERY: setar flag e NÃO inicializar dados
+        // Isso evita que o DashboardLayout capture a navegação
+        if (event === 'PASSWORD_RECOVERY') {
+          devLog('passwordRecovery', 'Fluxo de recuperação de senha detectado');
+          setIsPasswordRecovery(true);
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
           return;
         }
 
@@ -467,6 +483,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     subscriber,
     isAdmin,
     loading,
+    isPasswordRecovery,
     companies,
     currentCompany,
     currentMembership,
@@ -478,6 +495,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCurrentCompany,
     refreshCompanies,
     generateCrossToken,
+    setIsPasswordRecovery,
   };
 
   return (

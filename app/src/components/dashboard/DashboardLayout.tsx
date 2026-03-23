@@ -107,7 +107,7 @@ const iconMap: Record<string, typeof IconUsers> = {
 export function DashboardLayout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, subscriber, companies, currentCompany, setCurrentCompany, signOut, loading, isAdmin } = useAuth();
+    const { user, subscriber, companies, currentCompany, setCurrentCompany, signOut, loading, isAdmin, isPasswordRecovery } = useAuth();
 
     // Responsive breakpoints
     const isCompact = useMediaQuery('(max-width: 1439px)');
@@ -193,6 +193,11 @@ export function DashboardLayout() {
     // Not authenticated
     if (!user) {
         return <Navigate to="/login" replace />;
+    }
+
+    // Password recovery flow — redirecionar para tela de nova senha
+    if (isPasswordRecovery) {
+        return <Navigate to="/redefinir-senha" replace />;
     }
 
     const handleCompanyChange = (companyId: string | null) => {

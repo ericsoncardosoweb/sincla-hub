@@ -12,9 +12,10 @@ import {
     Stack,
     Box,
     Divider,
+    Alert,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconMail, IconLock, IconArrowLeft } from '@tabler/icons-react';
+import { IconMail, IconLock, IconArrowLeft, IconAlertCircle } from '@tabler/icons-react';
 
 const GoogleIcon = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -35,22 +36,28 @@ export function Login() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleGoogleLogin = async () => {
         setGoogleLoading(true);
+        setError(null);
         try {
-            const { error } = await signInWithGoogle();
-            if (error) {
+            const { error: authError } = await signInWithGoogle();
+            if (authError) {
+                const msg = `Falha ao entrar com Google: ${authError.message}`;
+                setError(msg);
                 notifications.show({
                     title: 'Erro',
-                    message: `Falha ao entrar com Google: ${error.message}`,
+                    message: msg,
                     color: 'red',
                 });
             }
         } catch {
+            const msg = 'Tente novamente em alguns instantes';
+            setError(msg);
             notifications.show({
                 title: 'Erro inesperado',
-                message: 'Tente novamente em alguns instantes',
+                message: msg,
                 color: 'red',
             });
         } finally {
@@ -62,16 +69,19 @@ export function Login() {
         e.preventDefault();
         if (import.meta.env.DEV) console.log('%c[Login] Submetendo...', 'color: #098eee; font-weight: bold;');
         setLoading(true);
+        setError(null);
         try {
             if (import.meta.env.DEV) console.log('%c[Login] Chamando signInWithPassword...', 'color: #098eee; font-weight: bold;');
-            const { error } = await signInWithPassword(email, password);
-            if (import.meta.env.DEV) console.log('%c[Login] signInWithPassword retornou', 'color: #098eee; font-weight: bold;', error ? `Erro: ${error.message}` : 'OK');
-            if (error) {
+            const { error: authError } = await signInWithPassword(email, password);
+            if (import.meta.env.DEV) console.log('%c[Login] signInWithPassword retornou', 'color: #098eee; font-weight: bold;', authError ? `Erro: ${authError.message}` : 'OK');
+            if (authError) {
+                const msg = authError.message === 'Invalid login credentials'
+                    ? 'Email ou senha incorretos'
+                    : authError.message;
+                setError(msg);
                 notifications.show({
                     title: 'Erro ao entrar',
-                    message: error.message === 'Invalid login credentials'
-                        ? 'Email ou senha incorretos'
-                        : error.message,
+                    message: msg,
                     color: 'red',
                 });
             } else {
@@ -79,9 +89,11 @@ export function Login() {
                 navigate('/painel');
             }
         } catch {
+            const msg = 'Tente novamente em alguns instantes';
+            setError(msg);
             notifications.show({
                 title: 'Erro inesperado',
-                message: 'Tente novamente em alguns instantes',
+                message: msg,
                 color: 'red',
             });
         } finally {
@@ -125,6 +137,18 @@ export function Login() {
                     {/* Login Form */}
                     <form onSubmit={handleSubmit}>
                         <Stack>
+                            {error && (
+                                <Alert
+                                    icon={<IconAlertCircle size={16} />}
+                                    color="red"
+                                    variant="light"
+                                    radius="md"
+                                    withCloseButton
+                                    onClose={() => setError(null)}
+                                >
+                                    {error}
+                                </Alert>
+                            )}
                             <TextInput
                                 label="Email"
                                 placeholder="seu@email.com"

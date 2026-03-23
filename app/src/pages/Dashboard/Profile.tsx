@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
     Container, Text, Card, Group, Stack,
     TextInput, Button, Avatar, Divider, PasswordInput, Title,
+    FileButton, ActionIcon, Tooltip, Alert,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconUser, IconMail, IconPhone, IconId, IconLock } from '@tabler/icons-react';
+import { IconUser, IconMail, IconPhone, IconId, IconLock, IconCamera, IconAlertCircle } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader } from '../../components/shared';
@@ -14,6 +15,9 @@ export function Profile() {
     const { subscriber, user } = useAuth();
     const [saving, setSaving] = useState(false);
     const [changingPassword, setChangingPassword] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(subscriber?.avatar_url || null);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const resetRef = useRef<() => void>(null);
 
     const form = useForm({
         initialValues: {
@@ -33,6 +37,77 @@ export function Profile() {
             confirmPassword: (v, values) => (v !== values.password ? 'Senhas não conferem' : null),
         },
     });
+
+    const handleAvatarUpload = async (file: File | null) => {
+        if (!file || !subscriber) return;
+
+        // Validar tipo e tamanho
+        if (!file.type.startsWith('image/')) {
+            notifications.show({
+                title: 'Arquivo inválido',
+                message: 'Por favor, selecione uma imagem (JPG, PNG, etc.)',
+                color: 'red',
+            });
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            notifications.show({
+                title: 'Arquivo muito grande',
+                message: 'A imagem deve ter no máximo 2MB',
+                color: 'red',
+            });
+            return;
+        }
+
+        setUploadingAvatar(true);
+        try {
+            const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+            const filePath = `avatars/${subscriber.id}.${fileExt}`;
+
+            // Upload para o storage
+            const { error: uploadError } = await supabase.storage
+                .from('public-assets')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // Gerar URL pública
+            const { data: urlData } = supabase.storage
+                .from('public-assets')
+                .getPublicUrl(filePath);
+
+            const newAvatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+            // Atualizar no perfil
+            const { error: updateError } = await supabase
+                .from('subscribers')
+                .update({
+                    avatar_url: newAvatarUrl,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', subscriber.id);
+
+            if (updateError) throw updateError;
+
+            setAvatarUrl(newAvatarUrl);
+            notifications.show({
+                title: 'Sucesso',
+                message: 'Foto de perfil atualizada!',
+                color: 'green',
+            });
+        } catch (error: any) {
+            console.error('Error uploading avatar:', error);
+            notifications.show({
+                title: 'Erro ao enviar foto',
+                message: error.message || 'Falha ao atualizar a foto de perfil',
+                color: 'red',
+            });
+        } finally {
+            setUploadingAvatar(false);
+            resetRef.current?.();
+        }
+    };
 
     const handleSaveProfile = async (values: typeof form.values) => {
         if (!subscriber) return;
@@ -59,7 +134,7 @@ export function Profile() {
             console.error('Error saving profile:', error);
             notifications.show({
                 title: 'Erro',
-                message: error.message || 'Falha ao salvar perfil',
+                message: error.message || 'Falha ao salvar perfil. Verifique suas permissões.',
                 color: 'red',
             });
         } finally {
@@ -94,26 +169,57 @@ export function Profile() {
         }
     };
 
+    // Verificar se o login foi feito via Google (sem senha)
+    const isOAuthUser = user?.app_metadata?.provider === 'google' || user?.app_metadata?.providers?.includes('google');
+
     return (
         <Container size="sm" py="md">
             <Stack gap="lg">
                 <PageHeader
                     title="Meu Perfil"
                     subtitle="Gerencie suas informações pessoais"
-                    helpContent="Aqui você pode atualizar seu nome, telefone, CPF/CNPJ e alterar sua senha de acesso."
+                    helpContent="Aqui você pode atualizar seu nome, telefone, CPF/CNPJ, foto de perfil e alterar sua senha de acesso."
                 />
 
                 {/* Avatar + Email */}
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
                     <Group>
-                        <Avatar
-                            src={subscriber?.avatar_url}
-                            size={80}
-                            radius="xl"
-                            color="blue"
-                        >
-                            {(subscriber?.name || subscriber?.email || '?').charAt(0).toUpperCase()}
-                        </Avatar>
+                        <div style={{ position: 'relative' }}>
+                            <Avatar
+                                src={avatarUrl}
+                                size={80}
+                                radius="xl"
+                                color="blue"
+                            >
+                                {(subscriber?.name || subscriber?.email || '?').charAt(0).toUpperCase()}
+                            </Avatar>
+                            <FileButton
+                                resetRef={resetRef}
+                                onChange={handleAvatarUpload}
+                                accept="image/png,image/jpeg,image/webp"
+                            >
+                                {(props) => (
+                                    <Tooltip label="Trocar foto de perfil" withArrow>
+                                        <ActionIcon
+                                            {...props}
+                                            variant="filled"
+                                            color="blue"
+                                            size="sm"
+                                            radius="xl"
+                                            loading={uploadingAvatar}
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                right: 0,
+                                                border: '2px solid white',
+                                            }}
+                                        >
+                                            <IconCamera size={12} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                )}
+                            </FileButton>
+                        </div>
                         <div>
                             <Text size="lg" fw={600}>{subscriber?.name || 'Sem nome'}</Text>
                             <Group gap={4}>
@@ -139,7 +245,7 @@ export function Profile() {
                                 {...form.getInputProps('name')}
                             />
                             <TextInput
-                                label="Telefone"
+                                label="WhatsApp / Telefone"
                                 placeholder="(11) 99999-9999"
                                 leftSection={<IconPhone size={16} />}
                                 {...form.getInputProps('phone')}
@@ -162,6 +268,19 @@ export function Profile() {
                 {/* Change Password */}
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
                     <Title order={4} mb="md">Alterar Senha</Title>
+
+                    {isOAuthUser && (
+                        <Alert
+                            icon={<IconAlertCircle size={16} />}
+                            color="blue"
+                            variant="light"
+                            radius="md"
+                            mb="md"
+                        >
+                            Você entrou com Google. Para definir uma senha para acesso direto, preencha os campos abaixo.
+                        </Alert>
+                    )}
+
                     <form onSubmit={passwordForm.onSubmit(handleChangePassword)}>
                         <Stack gap="md">
                             <PasswordInput
