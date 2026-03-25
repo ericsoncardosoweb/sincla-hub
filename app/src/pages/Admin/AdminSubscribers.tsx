@@ -154,29 +154,41 @@ export function AdminSubscribers() {
     }, [search]);
 
     const loadProductsAndPlans = useCallback(async () => {
-        const { data: prods } = await supabase
-            .from('products')
-            .select('id, name')
-            .eq('is_active', true)
-            .order('name');
-        setProducts((prods || []).map(p => ({ value: p.id, label: p.name })));
+        try {
+            const { data: prods, error: prodsErr } = await supabase
+                .from('products')
+                .select('id, name')
+                .eq('is_active', true)
+                .order('name');
+            if (prodsErr) console.error('Erro ao carregar produtos:', prodsErr);
+            setProducts((prods || []).map(p => ({ value: p.id, label: p.name })));
 
-        const { data: plans } = await supabase
-            .from('product_plans')
-            .select('id, name, slug, product_id')
-            .eq('is_active', true)
-            .order('sort_order');
-        setAllPlans((plans || []).map(p => ({
-            value: p.slug,
-            label: p.name,
-            productId: p.product_id,
-            slug: p.slug,
-        })));
+            const { data: plans, error: plansErr } = await supabase
+                .from('product_plans')
+                .select('id, name, slug, product_id')
+                .eq('is_active', true)
+                .order('sort_order');
+            if (plansErr) console.error('Erro ao carregar planos:', plansErr);
+            setAllPlans((plans || []).map(p => ({
+                value: p.slug,
+                label: p.name,
+                productId: p.product_id,
+                slug: p.slug,
+            })));
+        } catch (err) {
+            console.error('Erro geral ao carregar produtos/planos:', err);
+        }
     }, []);
+
+    // Carrega produtos/planos quando o modal abre
+    useEffect(() => {
+        if (createOpened) {
+            loadProductsAndPlans();
+        }
+    }, [createOpened]);
 
     useEffect(() => {
         loadData();
-        loadProductsAndPlans();
     }, []);
 
     const handleSearch = () => {
