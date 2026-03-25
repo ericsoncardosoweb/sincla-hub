@@ -351,7 +351,7 @@ ALTER TABLE service_pricing ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "usage_log_select" ON service_usage_log
     FOR SELECT USING (
         company_id IN (
-            SELECT company_id FROM company_members WHERE subscriber_id = auth.uid()
+            SELECT company_id FROM company_members WHERE user_id = auth.uid()
         )
     );
 
@@ -359,7 +359,7 @@ CREATE POLICY "usage_log_select" ON service_usage_log
 CREATE POLICY "credits_select" ON company_credits
     FOR SELECT USING (
         company_id IN (
-            SELECT company_id FROM company_members WHERE subscriber_id = auth.uid()
+            SELECT company_id FROM company_members WHERE user_id = auth.uid()
         )
     );
 
@@ -367,7 +367,7 @@ CREATE POLICY "credits_select" ON company_credits
 CREATE POLICY "purchases_select" ON credit_purchases
     FOR SELECT USING (
         company_id IN (
-            SELECT company_id FROM company_members WHERE subscriber_id = auth.uid()
+            SELECT company_id FROM company_members WHERE user_id = auth.uid()
         )
     );
 
@@ -375,7 +375,7 @@ CREATE POLICY "purchases_select" ON credit_purchases
 CREATE POLICY "storage_select" ON storage_quotas
     FOR SELECT USING (
         company_id IN (
-            SELECT company_id FROM company_members WHERE subscriber_id = auth.uid()
+            SELECT company_id FROM company_members WHERE user_id = auth.uid()
         )
     );
 
