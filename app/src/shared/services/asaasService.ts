@@ -373,6 +373,173 @@ export async function checkPixPaymentStatus(paymentId: string): Promise<{ status
     return { status: result?.status, paid };
 }
 
+// =============================================
+// ADD-ON PAYMENTS (Créditos / Storage)
+// =============================================
+
+export interface CreateAddonPaymentData {
+    companyId: string;
+    billingType: 'CREDIT_CARD' | 'PIX';
+    /** Tipo do add-on: 'creditos' ou 'storage' */
+    addonType: 'creditos' | 'storage';
+    /** Subtipo: service_type (ai, notification_email, etc) ou storage type (storage, stream) */
+    subType: string;
+    /** Quantidade comprada (unidades de crédito ou GB) */
+    quantity: number;
+    /** Valor total calculado em BRL */
+    value: number;
+    /** 'avulso' (expira 30d) ou 'recorrente' (mensal) */
+    cycle: 'avulso' | 'recorrente';
+    /** Dados de cartão (se CREDIT_CARD) */
+    creditCard?: {
+        holderName: string;
+        number: string;
+        expiryMonth: string;
+        expiryYear: string;
+        ccv: string;
+    };
+    creditCardHolderInfo?: {
+        name: string;
+        email: string;
+        cpfCnpj: string;
+        postalCode: string;
+        addressNumber: string;
+        phone: string;
+    };
+    customerName: string;
+    customerEmail: string;
+    customerCpfCnpj: string;
+    customerPhone?: string;
+}
+
+/**
+ * Criar pagamento avulso ou recorrente para add-ons (créditos de IA, storage, etc.)
+ */
+export async function createAddonPayment(data: CreateAddonPaymentData): Promise<SubscriptionResponse> {
+    try {
+        // 1. Criar/buscar cliente
+        const customer = await createOrGetCustomer({
+            name: data.customerName,
+            email: data.customerEmail,
+            cpfCnpj: data.customerCpfCnpj,
+            phone: data.customerPhone,
+        });
+
+        const addonLabels: Record<string, string> = {
+            ai: 'Créditos de IA',
+            notification_email: 'Créditos de Email',
+            notification_whatsapp: 'Créditos de WhatsApp',
+            storage: 'Storage CDN',
+            stream: 'Storage Stream (Vídeos)',
+        };
+        const label = addonLabels[data.subType] || data.subType;
+
+        if (data.cycle === 'recorrente') {
+            // Assinatura recorrente para add-on
+            const payload: Record<string, unknown> = {
+                customer: customer.id,
+                billingType: data.billingType,
+                value: data.value,
+                cycle: 'MONTHLY',
+                description: `Sincla Hub — ${label} (${data.quantity}x)`,
+                nextDueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+            };
+
+            if (data.billingType === 'CREDIT_CARD' && data.creditCard) {
+                payload.creditCard = {
+                    holderName: data.creditCard.holderName,
+                    number: data.creditCard.number.replace(/\D/g, ''),
+                    expiryMonth: data.creditCard.expiryMonth,
+                    expiryYear: data.creditCard.expiryYear.length === 2 ? `20${data.creditCard.expiryYear}` : data.creditCard.expiryYear,
+                    ccv: data.creditCard.ccv,
+                };
+                payload.creditCardHolderInfo = data.creditCardHolderInfo;
+            }
+
+            const result = await callAsaasCheckout({
+                endpoint: '/subscriptions',
+                method: 'POST',
+                data: payload,
+                userId: data.companyId,
+                addon: { type: data.addonType, subType: data.subType, quantity: data.quantity },
+            });
+
+            // PIX flow
+            if (data.billingType === 'PIX' && result?.id) {
+                const payments = await callAsaasCheckout({
+                    endpoint: `/subscriptions/${result.id}/payments`,
+                    method: 'GET',
+                });
+                const firstPayment = payments?.data?.[0];
+                if (firstPayment) {
+                    const pixQr = await callAsaasCheckout({
+                        endpoint: `/payments/${firstPayment.id}/pixQrCode`,
+                        method: 'GET',
+                    });
+                    return {
+                        success: true,
+                        subscriptionId: result.id,
+                        paymentId: firstPayment.id,
+                        pixQrCode: pixQr?.encodedImage,
+                        pixCopyPaste: pixQr?.payload,
+                    };
+                }
+            }
+
+            return { success: true, subscriptionId: result.id };
+        } else {
+            // Cobrança avulsa (payment único)
+            const payload: Record<string, unknown> = {
+                customer: customer.id,
+                billingType: data.billingType,
+                value: data.value,
+                description: `Sincla Hub — ${label} (${data.quantity}x) — Avulso`,
+                dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+            };
+
+            if (data.billingType === 'CREDIT_CARD' && data.creditCard) {
+                payload.creditCard = {
+                    holderName: data.creditCard.holderName,
+                    number: data.creditCard.number.replace(/\D/g, ''),
+                    expiryMonth: data.creditCard.expiryMonth,
+                    expiryYear: data.creditCard.expiryYear.length === 2 ? `20${data.creditCard.expiryYear}` : data.creditCard.expiryYear,
+                    ccv: data.creditCard.ccv,
+                };
+                payload.creditCardHolderInfo = data.creditCardHolderInfo;
+            }
+
+            const result = await callAsaasCheckout({
+                endpoint: '/payments',
+                method: 'POST',
+                data: payload,
+                userId: data.companyId,
+                addon: { type: data.addonType, subType: data.subType, quantity: data.quantity },
+            });
+
+            // PIX flow
+            if (data.billingType === 'PIX' && result?.id) {
+                const pixQr = await callAsaasCheckout({
+                    endpoint: `/payments/${result.id}/pixQrCode`,
+                    method: 'GET',
+                });
+                return {
+                    success: true,
+                    paymentId: result.id,
+                    pixQrCode: pixQr?.encodedImage,
+                    pixCopyPaste: pixQr?.payload,
+                };
+            }
+
+            return { success: true, paymentId: result.id };
+        }
+    } catch (error: any) {
+        return {
+            success: false,
+            error: error.message || 'Erro ao processar pagamento',
+        };
+    }
+}
+
 /**
  * Cancelar assinatura
  */

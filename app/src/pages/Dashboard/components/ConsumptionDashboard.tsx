@@ -7,10 +7,11 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Card, Text, Group, Stack, SimpleGrid, Progress, Badge,
     ThemeIcon, Skeleton, Button, Modal, Slider, Divider,
-    Table, SegmentedControl, Alert, Box, Paper, NumberInput,
+    Table, SegmentedControl, Alert, Box, Paper,
     Tabs,
 } from '@mantine/core';
 import {
@@ -18,7 +19,7 @@ import {
     IconBell, IconShoppingCart, IconSparkles, IconRefresh,
     IconTrendingUp, IconAlertCircle, IconHistory, IconPlus,
     IconCoin, IconDatabase, IconVideo, IconFile,
-    IconCheck, IconGauge,
+    IconGauge,
 } from '@tabler/icons-react';
 import { supabase } from '../../../shared/lib/supabase';
 
@@ -100,6 +101,7 @@ const serviceConfig: Record<string, { label: string; icon: typeof IconBrain; col
 interface Props { companyId: string; }
 
 export function ConsumptionDashboard({ companyId }: Props) {
+    const navigate = useNavigate();
     const [credits, setCredits] = useState<CompanyCredits[]>([]);
     const [storage, setStorage] = useState<StorageQuota | null>(null);
     const [recentUsage, setRecentUsage] = useState<UsageLog[]>([]);
@@ -467,7 +469,10 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                         </Group>
                                     </Card>
                                     <Button fullWidth size="md" color="violet" leftSection={<IconShoppingCart size={18} />}
-                                        onClick={() => { console.log('Comprar avulso:', { service: buyService.service_type, quantity: buyQuantity, price: calcPrice() }); setBuyModalOpen(false); }}>
+                                        onClick={() => {
+                                            setBuyModalOpen(false);
+                                            navigate(`/checkout?tipo=creditos&servico=${buyService.service_type}&quantidade=${buyQuantity}&ciclo=avulso&valor=${calcPrice().toFixed(2)}`);
+                                        }}>
                                         Comprar por {fmt(calcPrice())}
                                     </Button>
                                 </Stack>
@@ -492,7 +497,10 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                         <Text size="xs" c="dimmed" mt={2}>Será adicionado à sua próxima fatura</Text>
                                     </Card>
                                     <Button fullWidth size="md" variant="filled" color="violet" leftSection={<IconRefresh size={18} />}
-                                        onClick={() => { console.log('Adicionar recorrente:', { service: buyService.service_type, quantity: buyQuantity, price: calcPrice() }); setBuyModalOpen(false); }}>
+                                        onClick={() => {
+                                            setBuyModalOpen(false);
+                                            navigate(`/checkout?tipo=creditos&servico=${buyService.service_type}&quantidade=${buyQuantity}&ciclo=recorrente&valor=${calcPrice().toFixed(2)}`);
+                                        }}>
                                         Adicionar +{fmt(calcPrice())}/mês
                                     </Button>
                                 </Stack>
@@ -559,7 +567,11 @@ export function ConsumptionDashboard({ companyId }: Props) {
                     </Card>
 
                     <Button fullWidth size="md" color="teal" leftSection={<IconDatabase size={18} />}
-                        onClick={() => { console.log('Comprar storage:', { type: storageType, gb: storageGb }); setStorageModalOpen(false); }}>
+                        onClick={() => {
+                            setStorageModalOpen(false);
+                            const pricePerGb = storageType === 'stream' ? 2.50 : 0.50;
+                            navigate(`/checkout?tipo=storage&subtipo=${storageType}&gb=${storageGb}&ciclo=recorrente&valor=${(storageGb * pricePerGb).toFixed(2)}`);
+                        }}>
                         Adicionar {storageGb} GB por +{fmt(storageGb * (storageType === 'stream' ? 2.50 : 0.50))}/mês
                     </Button>
 

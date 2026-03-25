@@ -18,6 +18,7 @@ import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import {
     createSubscription,
+    createAddonPayment,
     checkPixPaymentStatus,
     validateDocument,
     detectCardBrand,
@@ -122,8 +123,17 @@ export function CheckoutPage() {
     const productId = searchParams.get('produto') || '';
     const planSlug = searchParams.get('plano') || '';
     const initialCycle = searchParams.get('ciclo') || 'monthly';
-    const returnTo = `/painel/assinaturas?produto=${productId}`;
-    const successReturnTo = `/painel/assinaturas?produto=${productId}&sucesso=true`;
+
+    // Add-on params (créditos/storage)
+    const addonType = searchParams.get('tipo') as 'creditos' | 'storage' | null;
+    const addonService = searchParams.get('servico') || searchParams.get('subtipo') || '';
+    const addonQuantity = parseInt(searchParams.get('quantidade') || searchParams.get('gb') || '0');
+    const addonValue = parseFloat(searchParams.get('valor') || '0');
+    const addonCycle = (searchParams.get('ciclo') || 'avulso') as 'avulso' | 'recorrente';
+    const isAddon = !!addonType;
+
+    const returnTo = isAddon ? '/painel/assinaturas' : `/painel/assinaturas?produto=${productId}`;
+    const successReturnTo = isAddon ? '/painel/assinaturas' : `/painel/assinaturas?produto=${productId}&sucesso=true`;
 
     // Data
     const [product, setProduct] = useState<ProductInfo | null>(null);
@@ -207,6 +217,11 @@ export function CheckoutPage() {
     }, []);
 
     const loadCheckoutData = async () => {
+        // Add-on não precisa buscar plano
+        if (isAddon) {
+            setLoadingData(false);
+            return;
+        }
         if (!productId || !planSlug) {
             navigate('/painel/assinaturas');
             return;
@@ -338,43 +353,83 @@ export function CheckoutPage() {
     };
 
     const handleSubmit = async () => {
-        if (!validateForm() || !plan || !currentCompany) return;
+        if (!validateForm() || !currentCompany) return;
+        if (!isAddon && !plan) return;
 
         setLoading(true);
         setError(null);
 
         try {
             const [expiryMonth, expiryYear] = cardExpiry.split('/');
-            const cycle = selectedCycle === 'annual' ? 'YEARLY' as const : 'MONTHLY' as const;
+            const cardData = paymentMethod === 'CREDIT_CARD' ? {
+                creditCard: {
+                    holderName: cardName,
+                    number: cardNumber.replace(/\D/g, ''),
+                    expiryMonth: expiryMonth?.padStart(2, '0') || '',
+                    expiryYear: expiryYear?.length === 2 ? `20${expiryYear}` : expiryYear || '',
+                    ccv: cardCvv,
+                },
+                creditCardHolderInfo: {
+                    name: cardName,
+                    email: user?.email || '',
+                    cpfCnpj: cpfCnpj.replace(/\D/g, ''),
+                    postalCode: cep.replace(/\D/g, ''),
+                    addressNumber: addressData.numero || '0',
+                    phone: phone.replace(/\D/g, ''),
+                },
+            } : {};
 
-            const result = await createSubscription({
-                planId: plan.id,
-                productId,
-                companyId: currentCompany.id,
-                billingType: paymentMethod,
-                cycle,
-                customerName: user?.user_metadata?.full_name || user?.email || '',
-                customerEmail: user?.email || '',
-                customerCpfCnpj: cpfCnpj.replace(/\D/g, ''),
-                customerPhone: phone.replace(/\D/g, ''),
-                ...(paymentMethod === 'CREDIT_CARD' ? {
-                    creditCard: {
-                        holderName: cardName,
-                        number: cardNumber.replace(/\D/g, ''),
-                        expiryMonth: expiryMonth?.padStart(2, '0') || '',
-                        expiryYear: expiryYear?.length === 2 ? `20${expiryYear}` : expiryYear || '',
-                        ccv: cardCvv,
-                    },
-                    creditCardHolderInfo: {
-                        name: cardName,
-                        email: user?.email || '',
-                        cpfCnpj: cpfCnpj.replace(/\D/g, ''),
-                        postalCode: cep.replace(/\D/g, ''),
-                        addressNumber: addressData.numero || '0',
-                        phone: phone.replace(/\D/g, ''),
-                    },
-                } : {}),
-            });
+            let result;
+
+            if (isAddon) {
+                // Add-on: créditos ou storage
+                result = await createAddonPayment({
+                    companyId: currentCompany.id,
+                    billingType: paymentMethod,
+                    addonType: addonType!,
+                    subType: addonService,
+                    quantity: addonQuantity,
+                    value: addonValue,
+                    cycle: addonCycle,
+                    customerName: user?.user_metadata?.full_name || user?.email || '',
+                    customerEmail: user?.email || '',
+                    customerCpfCnpj: cpfCnpj.replace(/\D/g, ''),
+                    customerPhone: phone.replace(/\D/g, ''),
+                    ...cardData,
+                });
+
+                // Registrar compra em credit_purchases após sucesso
+                if (result.success) {
+                    await supabase.from('credit_purchases').insert({
+                        company_id: currentCompany.id,
+                        service_type: addonType === 'storage' ? 'storage' : addonService,
+                        credits_amount: addonQuantity,
+                        price_paid_brl: addonValue,
+                        purchase_type: addonCycle === 'recorrente' ? 'recurring' : 'one_time',
+                        payment_gateway: 'asaas',
+                        payment_id: result.paymentId || result.subscriptionId || null,
+                        expires_at: addonCycle === 'avulso'
+                            ? new Date(Date.now() + 30 * 86400000).toISOString()
+                            : null,
+                        metadata: { addon_type: addonType, sub_type: addonService },
+                    });
+                }
+            } else {
+                // Plano normal
+                const cycle = selectedCycle === 'annual' ? 'YEARLY' as const : 'MONTHLY' as const;
+                result = await createSubscription({
+                    planId: plan!.id,
+                    productId,
+                    companyId: currentCompany.id,
+                    billingType: paymentMethod,
+                    cycle,
+                    customerName: user?.user_metadata?.full_name || user?.email || '',
+                    customerEmail: user?.email || '',
+                    customerCpfCnpj: cpfCnpj.replace(/\D/g, ''),
+                    customerPhone: phone.replace(/\D/g, ''),
+                    ...cardData,
+                });
+            }
 
             if (!result.success) {
                 throw new Error(result.error || 'Erro ao processar pagamento');
@@ -398,8 +453,18 @@ export function CheckoutPage() {
         }
     };
 
-    const price = plan ? (selectedCycle === 'annual' ? (plan.price_yearly || plan.price_monthly * 12) : plan.price_monthly) : 0;
-    const color = product?.brand_color || '#228be6';
+    const price = plan ? (selectedCycle === 'annual' ? (plan.price_yearly || plan.price_monthly * 12) : plan.price_monthly) : addonValue;
+    const color = product?.brand_color || (isAddon ? '#7c3aed' : '#228be6');
+
+    // Add-on labels
+    const addonLabels: Record<string, string> = {
+        ai: 'Créditos de IA',
+        notification_email: 'Créditos de Email',
+        notification_whatsapp: 'Créditos de WhatsApp',
+        storage: 'Storage CDN',
+        stream: 'Storage Stream (Vídeos)',
+    };
+    const addonLabel = addonLabels[addonService] || addonService;
 
     // ===== LOADING =====
     if (loadingData) {
@@ -414,7 +479,7 @@ export function CheckoutPage() {
     }
 
     // ===== NOT FOUND =====
-    if (!plan || !product) {
+    if (!isAddon && !plan || !isAddon && !product) {
         return (
             <div className={styles.page}>
                 <div className={styles.loadingFull}>
@@ -436,9 +501,9 @@ export function CheckoutPage() {
                         <IconCheck size={36} />
                     </div>
                     <h2>Pagamento confirmado!</h2>
-                    <p>Sua assinatura foi processada com sucesso.</p>
+                    <p>{isAddon ? 'Seus créditos foram adicionados com sucesso.' : 'Sua assinatura foi processada com sucesso.'}</p>
                     <div className={styles.successDetails}>
-                        <span>{plan.name}</span>
+                        <span>{isAddon ? addonLabel : plan?.name}</span>
                         <span className={styles.successPrice}>{formatCurrency(price)}</span>
                     </div>
                     <p className={styles.redirectMsg}>Redirecionando...</p>
@@ -467,7 +532,7 @@ export function CheckoutPage() {
                 {/* Left — Summary */}
                 <div className={styles.summary}>
                     <button className={styles.summaryBack} onClick={() => navigate(returnTo)}>
-                        <IconArrowLeft size={14} /> {product.name}
+                        <IconArrowLeft size={14} /> {isAddon ? 'Voltar às Assinaturas' : product?.name}
                     </button>
 
                     {/* Company confirmation banner */}
@@ -476,7 +541,7 @@ export function CheckoutPage() {
                             <IconBuilding size={18} />
                         </div>
                         <div className={styles.companyBannerContent}>
-                            <span className={styles.companyBannerLabel}>Assinando para:</span>
+                            <span className={styles.companyBannerLabel}>{isAddon ? 'Comprando para:' : 'Assinando para:'}</span>
                             {companies.length > 1 ? (
                                 <select
                                     className={styles.companySelect}
@@ -503,7 +568,10 @@ export function CheckoutPage() {
                     <div style={{ marginBottom: 4 }}>
                         <span className={styles.priceMain}>{formatCurrency(price)}</span>
                         <span className={styles.pricePeriod}>
-                            por {selectedCycle === 'annual' ? 'ano' : 'mês'}
+                            {isAddon
+                                ? (addonCycle === 'recorrente' ? '/mês' : ' (pagamento único)')
+                                : `por ${selectedCycle === 'annual' ? 'ano' : 'mês'}`
+                            }
                         </span>
                     </div>
 
@@ -512,9 +580,12 @@ export function CheckoutPage() {
                             <IconCreditCard size={20} />
                         </div>
                         <div className={styles.lineItemDetails}>
-                            <strong>{plan.name}</strong>
+                            <strong>{isAddon ? addonLabel : plan?.name}</strong>
                             <span className={styles.lineItemDesc}>
-                                {selectedCycle === 'annual' ? 'Plano Anual' : 'Plano Mensal'}
+                                {isAddon
+                                    ? `${addonQuantity}x — ${addonCycle === 'recorrente' ? 'Recorrente mensal' : 'Avulso (30 dias)'}`
+                                    : (selectedCycle === 'annual' ? 'Plano Anual' : 'Plano Mensal')
+                                }
                             </span>
                         </div>
                         <div className={styles.lineItemPrice}>
@@ -522,8 +593,8 @@ export function CheckoutPage() {
                         </div>
                     </div>
 
-                    {/* Cycle toggle */}
-                    {plan.price_yearly > 0 && (
+                    {/* Cycle toggle — only for plans */}
+                    {!isAddon && plan && plan.price_yearly > 0 && (
                         <div className={styles.cycleToggle}>
                             <span
                                 className={`${styles.cycleLabel} ${selectedCycle === 'monthly' ? styles.cycleLabelActive : styles.cycleLabelInactive}`}
@@ -543,6 +614,12 @@ export function CheckoutPage() {
                             {selectedCycle === 'annual' && plan.discount_yearly_percent > 0 && (
                                 <span className={styles.discountBadge}>{plan.discount_yearly_percent}% OFF</span>
                             )}
+                        </div>
+                    )}
+
+                    {isAddon && addonCycle === 'avulso' && (
+                        <div style={{ marginTop: 12, padding: '8px 12px', background: '#fff3cd', borderRadius: 6, fontSize: '0.8rem', color: '#856404' }}>
+                            ⏱️ Créditos avulsos expiram em <strong>30 dias</strong> após confirmação.
                         </div>
                     )}
 
