@@ -197,10 +197,18 @@ Deno.serve(async (req) => {
                     case 'email':
                         await sendEmail(supabase, payload)
                         results.push({ channel: 'email', success: true })
+                        // Metering: logar envio de email para billing
+                        if (payload.company_id) {
+                            await logServiceUsage(supabase, payload.company_id, 'notification_email', payload.source_tool || 'hub')
+                        }
                         break
                     case 'whatsapp':
                         await sendWhatsapp(supabase, payload)
                         results.push({ channel: 'whatsapp', success: true })
+                        // Metering: logar envio de whatsapp para billing
+                        if (payload.company_id) {
+                            await logServiceUsage(supabase, payload.company_id, 'notification_whatsapp', payload.source_tool || 'hub')
+                        }
                         break
                     case 'in_app':
                         await sendInApp(supabase, payload)
@@ -384,6 +392,33 @@ async function logNotification(supabase: any, data: {
         })
     } catch (err) {
         console.error('[Notification] Erro ao logar notificação:', err)
+    }
+}
+
+// =============================================
+// Service Usage Tracking (Billing)
+// =============================================
+
+// Custo real e revenda por unidade
+const NOTIFICATION_COSTS: Record<string, { cost: number; resale: number }> = {
+    notification_email: { cost: 0.002, resale: 0.003 },     // R$ 2.00/1k → R$ 3.00/1k
+    notification_whatsapp: { cost: 0.015, resale: 0.025 },  // R$ 15.00/1k → R$ 25.00/1k
+}
+
+async function logServiceUsage(supabase: any, companyId: string, serviceType: string, toolId: string) {
+    try {
+        const costs = NOTIFICATION_COSTS[serviceType] || { cost: 0, resale: 0 }
+        await supabase.from('service_usage_log').insert({
+            company_id: companyId,
+            service_type: serviceType,
+            sub_type: serviceType.replace('notification_', ''),
+            tool_id: toolId,
+            quantity: 1,
+            unit_cost_brl: costs.cost,
+            resale_cost_brl: costs.resale,
+        })
+    } catch (err) {
+        console.error('[Notification] Erro ao logar service_usage:', err)
     }
 }
 
