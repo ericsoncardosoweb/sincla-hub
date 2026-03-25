@@ -16,6 +16,7 @@ import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
 import { redirectToProduct } from '../../shared/services/cross-auth';
+import { ConsumptionDashboard } from './components/ConsumptionDashboard';
 
 // ============================
 // Types
@@ -593,6 +594,19 @@ export function Subscriptions() {
                         </Table>
                     </Card>
                 )}
+
+                {/* ═══ Consumo de Serviços ═══ */}
+                <Divider my="lg" />
+                <Group gap="sm" mb="md">
+                    <ThemeIcon size="md" radius="md" variant="light" color="violet">
+                        <IconChartBar size={16} />
+                    </ThemeIcon>
+                    <div>
+                        <Text fw={600}>Consumo de Serviços</Text>
+                        <Text size="xs" c="dimmed">IA, Storage e Notificações — uso e créditos da sua empresa</Text>
+                    </div>
+                </Group>
+                <ConsumptionDashboard companyId={currentCompany.id} />
             </Stack>
 
             {/* Modal de Sucesso */}
