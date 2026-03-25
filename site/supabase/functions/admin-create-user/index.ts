@@ -22,13 +22,11 @@ interface RequestBody {
 }
 
 Deno.serve(async (req) => {
-    // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
-        // Get the authorization header
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
             return new Response(
@@ -37,17 +35,11 @@ Deno.serve(async (req) => {
             )
         }
 
-        // Create admin client with service role
         const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-        // Create user-scoped client to verify caller identity
         const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-            global: {
-                headers: { Authorization: authHeader },
-            },
+            global: { headers: { Authorization: authHeader } },
         })
 
-        // Get the calling user
         const { data: { user: callerUser }, error: userError } = await userClient.auth.getUser()
         if (userError || !callerUser) {
             return new Response(
@@ -56,7 +48,6 @@ Deno.serve(async (req) => {
             )
         }
 
-        // Verify caller is admin
         const { data: adminData } = await adminClient
             .from('admin_users')
             .select('is_active')
@@ -71,7 +62,6 @@ Deno.serve(async (req) => {
             )
         }
 
-        // Parse request body
         const { email, name }: RequestBody = await req.json()
         if (!email || !name) {
             return new Response(
@@ -80,38 +70,28 @@ Deno.serve(async (req) => {
             )
         }
 
-        // Check if user already exists by email
-        const { data: existingUsers } = await adminClient.auth.admin.listUsers()
-        const existingUser = existingUsers?.users?.find(
-            (u: any) => u.email?.toLowerCase() === email.toLowerCase()
-        )
+        // 1. Check if subscriber already exists (fast, reliable, no pagination issues)
+        const { data: existingSub } = await adminClient
+            .from('subscribers')
+            .select('id, email')
+            .ilike('email', email.trim())
+            .maybeSingle()
 
-        if (existingUser) {
-            // User already exists — ensure subscriber record exists
-            const { error: upsertErr } = await adminClient
+        if (existingSub) {
+            await adminClient
                 .from('subscribers')
-                .upsert({
-                    id: existingUser.id,
-                    email: existingUser.email,
-                    name: name,
-                }, { onConflict: 'id' })
-
-            if (upsertErr) {
-                console.error('Error upserting subscriber:', upsertErr)
-            }
+                .update({ name })
+                .eq('id', existingSub.id)
 
             return new Response(
-                JSON.stringify({
-                    user_id: existingUser.id,
-                    already_existed: true,
-                }),
+                JSON.stringify({ user_id: existingSub.id, already_existed: true }),
                 { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
-        // Create new auth user with standard password
+        // 2. Create new auth user (trigger handle_new_user creates subscriber automatically)
         const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-            email,
+            email: email.trim(),
             password: DEFAULT_PASSWORD,
             email_confirm: true,
             user_metadata: { name, must_change_password: true },
@@ -119,14 +99,31 @@ Deno.serve(async (req) => {
 
         if (createError || !newUser?.user) {
             console.error('Error creating user:', createError)
+
+            // Edge case: user exists in auth.users but not in subscribers
+            if (createError?.message?.includes('already been registered') || createError?.message?.includes('already exists')) {
+                const { data: fallbackSub } = await adminClient
+                    .from('subscribers')
+                    .select('id')
+                    .ilike('email', email.trim())
+                    .maybeSingle()
+
+                if (fallbackSub) {
+                    return new Response(
+                        JSON.stringify({ user_id: fallbackSub.id, already_existed: true }),
+                        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
+            }
+
             return new Response(
                 JSON.stringify({ error: 'Falha ao criar usuário: ' + (createError?.message || 'Erro desconhecido') }),
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
-        // Send welcome email with credentials via send-notification service
-        const loginUrl = `https://app.sincla.com.br/login?welcome=1`
+        // 3. Send welcome email with credentials via send-notification service
+        const loginUrl = 'https://app.sincla.com.br/login?welcome=1'
         const credentialsContent = `
             <p>Sua conta no <strong>Sincla Hub</strong> foi criada com sucesso!</p>
             <p>Aqui estão seus dados de acesso:</p>
@@ -166,14 +163,10 @@ Deno.serve(async (req) => {
             })
         } catch (emailErr) {
             console.error('Error sending welcome email:', emailErr)
-            // Non-blocking — user was created, email is best-effort
         }
 
         return new Response(
-            JSON.stringify({
-                user_id: newUser.user.id,
-                already_existed: false,
-            }),
+            JSON.stringify({ user_id: newUser.user.id, already_existed: false }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
 
@@ -185,4 +178,3 @@ Deno.serve(async (req) => {
         )
     }
 })
-
