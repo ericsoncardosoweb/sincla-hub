@@ -90,6 +90,19 @@
     min-height: 32px;
 }
 
+/* ---- Connected Badge ---- */
+.connectedBadge {
+    background-color: #ff8c00 !important;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 6px 14px;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.25);
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
     .toolsCarousel {
@@ -99,5 +112,14 @@
     .toolCard {
         min-width: 220px;
         max-width: 260px;
+    }
+
+    .connectedBadge {
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+
+    .greeting {
+        margin-bottom: 16px;
     }
 }

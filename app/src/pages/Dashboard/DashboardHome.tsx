@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Container,
@@ -15,7 +15,9 @@ import {
     ScrollArea,
     ActionIcon,
     Tooltip,
+    Modal,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
     IconUsers,
     IconSchool,
@@ -37,6 +39,7 @@ import {
     IconSwitchHorizontal,
     IconShare,
     IconCheck,
+    IconAlertCircle,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
@@ -88,9 +91,22 @@ export function DashboardHome() {
     const [loading, setLoading] = useState(true);
     const [copiedToolId, setCopiedToolId] = useState<string | null>(null);
 
+    // Modal de troca de empresa
+    const [editModalOpened, { open: openEditModal, close: closeEditModal }] = useDisclosure(false);
+    const [pendingEditCompany, setPendingEditCompany] = useState<{ id: string; name: string } | null>(null);
+
     useEffect(() => {
         loadProducts();
     }, [currentCompany]);
+
+    // Redirect pós-troca de empresa
+    useEffect(() => {
+        const pendingRedirect = localStorage.getItem('sincla_pending_redirect');
+        if (pendingRedirect && !loading) {
+            localStorage.removeItem('sincla_pending_redirect');
+            navigate(pendingRedirect);
+        }
+    }, [loading, navigate]);
 
     const loadProducts = async () => {
         setLoading(true);
@@ -186,6 +202,25 @@ export function DashboardHome() {
     const activeProducts = products.filter(p => p.subscription && ['active', 'trial'].includes(p.subscription.status));
     const allTools = products;
 
+    // Handler de edição de empresa com verificação de empresa ativa
+    const handleEditCompany = useCallback((company: { id: string; name: string }) => {
+        if (currentCompany?.id === company.id) {
+            // Empresa já ativa — navegar direto
+            navigate('/painel/configuracoes');
+        } else {
+            // Empresa inativa — abrir modal de confirmação
+            setPendingEditCompany(company);
+            openEditModal();
+        }
+    }, [currentCompany, navigate, openEditModal]);
+
+    const handleConfirmSwitchAndEdit = useCallback(() => {
+        if (!pendingEditCompany) return;
+        localStorage.setItem('sincla_pending_redirect', '/painel/configuracoes');
+        setCurrentCompany(pendingEditCompany.id);
+        closeEditModal();
+    }, [pendingEditCompany, setCurrentCompany, closeEditModal]);
+
     // Quick access links
     const quickLinks = [
         { icon: IconRocket, label: 'Meu Onboarding', path: '/painel/onboarding', color: '#f50057' },
@@ -197,14 +232,63 @@ export function DashboardHome() {
 
     return (
         <Container size="xl" py="md">
+            {/* Modal de confirmação de troca de empresa */}
+            <Modal
+                opened={editModalOpened}
+                onClose={closeEditModal}
+                title={
+                    <Group gap="xs">
+                        <IconAlertCircle size={20} color="#ff8c00" />
+                        <Text fw={600}>Trocar de empresa</Text>
+                    </Group>
+                }
+                centered
+                radius="md"
+            >
+                <Stack gap="md">
+                    <Text size="sm">
+                        Você está conectado à empresa <strong>{currentCompany?.name}</strong>, mas está tentando editar a empresa <strong>{pendingEditCompany?.name}</strong>.
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                        Para editar, é necessário mudar para essa empresa. Deseja continuar?
+                    </Text>
+                    <Group justify="flex-end" gap="sm">
+                        <Button variant="default" onClick={closeEditModal}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            style={{ backgroundColor: '#ff8c00' }}
+                            onClick={handleConfirmSwitchAndEdit}
+                            leftSection={<IconSwitchHorizontal size={16} />}
+                        >
+                            Mudar e Editar
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
             {/* Greeting */}
             <div className={styles.greeting}>
-                <Title order={2}>
-                    {getGreeting()}, {firstName}! 👋
-                </Title>
-                <Text c="dimmed" size="sm">
-                    Gerencie seus produtos e empresas no Sincla Hub
-                </Text>
+                <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
+                    <div>
+                        <Title order={2}>
+                            {getGreeting()}, {firstName}! 👋
+                        </Title>
+                        <Text c="dimmed" size="sm">
+                            Gerencie seus produtos e empresas no Sincla Hub
+                        </Text>
+                    </div>
+                    {currentCompany && (
+                        <Badge
+                            size="lg"
+                            radius="md"
+                            className={styles.connectedBadge}
+                            leftSection={<IconBuilding size={14} />}
+                        >
+                            Conectado como: {currentCompany.name}
+                        </Badge>
+                    )}
+                </Group>
             </div>
 
             {/* 3 Main Cards */}
@@ -351,7 +435,7 @@ export function DashboardHome() {
                                                     color="gray"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate('/painel/configuracoes');
+                                                        handleEditCompany(company);
                                                     }}
                                                 >
                                                     <IconEdit size={14} />

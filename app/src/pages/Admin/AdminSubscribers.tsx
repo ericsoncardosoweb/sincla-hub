@@ -2,10 +2,14 @@ import { useEffect, useState, useCallback } from 'react';
 import {
     Container, Title, Text, Card, Group, Badge, Stack, Skeleton,
     Table, Avatar, TextInput, SimpleGrid, ThemeIcon, Collapse, Box,
+    Button, Modal, Select, ActionIcon, Tooltip, Divider,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { notifications } from '@mantine/notifications';
 import {
     IconSearch, IconUsers, IconBuilding, IconUserPlus,
     IconChevronDown, IconChevronRight, IconPhone,
+    IconPlus, IconTrash, IconCheck, IconX,
 } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
 
@@ -31,12 +35,37 @@ interface OverviewStats {
     withoutCompany: number;
 }
 
+interface ProductOption {
+    value: string;
+    label: string;
+}
+
+interface PlanOption {
+    value: string;
+    label: string;
+    productId: string;
+    slug: string;
+}
+
+interface ToolAssignment {
+    productId: string | null;
+    planSlug: string | null;
+    duration: string;
+}
+
 // ============================
 // Helpers
 // ============================
 
 const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('pt-BR');
+
+const DURATION_OPTIONS = [
+    { value: '0', label: 'Vitalício' },
+    { value: '30', label: '30 dias' },
+    { value: '60', label: '60 dias' },
+    { value: '90', label: '90 dias' },
+];
 
 // ============================
 // Component
@@ -48,6 +77,20 @@ export function AdminSubscribers() {
     const [search, setSearch] = useState('');
     const [stats, setStats] = useState<OverviewStats | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
+
+    // Create modal state
+    const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
+    const [createLoading, setCreateLoading] = useState(false);
+    const [newEmail, setNewEmail] = useState('');
+    const [newName, setNewName] = useState('');
+    const [newCompanyName, setNewCompanyName] = useState('');
+    const [toolAssignments, setToolAssignments] = useState<ToolAssignment[]>([
+        { productId: null, planSlug: null, duration: '0' },
+    ]);
+
+    // Product & Plan options for the repeater
+    const [products, setProducts] = useState<ProductOption[]>([]);
+    const [allPlans, setAllPlans] = useState<PlanOption[]>([]);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -110,21 +153,182 @@ export function AdminSubscribers() {
         }
     }, [search]);
 
+    const loadProductsAndPlans = useCallback(async () => {
+        const { data: prods } = await supabase
+            .from('products')
+            .select('id, name')
+            .eq('is_active', true)
+            .order('name');
+        setProducts((prods || []).map(p => ({ value: p.id, label: p.name })));
+
+        const { data: plans } = await supabase
+            .from('product_plans')
+            .select('id, name, slug, product_id')
+            .eq('is_active', true)
+            .order('sort_order');
+        setAllPlans((plans || []).map(p => ({
+            value: p.slug,
+            label: p.name,
+            productId: p.product_id,
+            slug: p.slug,
+        })));
+    }, []);
+
     useEffect(() => {
         loadData();
+        loadProductsAndPlans();
     }, []);
 
     const handleSearch = () => {
         loadData();
     };
 
+    // ============================
+    // Tool Assignment Repeater
+    // ============================
+    const addToolRow = () => {
+        setToolAssignments(prev => [...prev, { productId: null, planSlug: null, duration: '0' }]);
+    };
+
+    const removeToolRow = (index: number) => {
+        setToolAssignments(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const updateToolRow = (index: number, field: keyof ToolAssignment, value: string | null) => {
+        setToolAssignments(prev => prev.map((row, i) => {
+            if (i !== index) return row;
+            const updated = { ...row, [field]: value };
+            // Reset plan when product changes
+            if (field === 'productId') updated.planSlug = null;
+            return updated;
+        }));
+    };
+
+    const getPlansForProduct = (productId: string | null) => {
+        if (!productId) return [];
+        return allPlans
+            .filter(p => p.productId === productId)
+            .map(p => ({ value: p.slug, label: p.label }));
+    };
+
+    // Get products already selected (to avoid duplicates)
+    const getAvailableProducts = (currentIndex: number) => {
+        const selectedIds = toolAssignments
+            .filter((_, i) => i !== currentIndex)
+            .map(t => t.productId)
+            .filter(Boolean);
+        return products.filter(p => !selectedIds.includes(p.value));
+    };
+
+    // ============================
+    // Create Subscriber Handler
+    // ============================
+    const handleCreateSubscriber = async () => {
+        if (!newEmail.trim() || !newName.trim() || !newCompanyName.trim()) {
+            notifications.show({
+                title: 'Campos obrigatórios',
+                message: 'Preencha email, nome e nome da empresa.',
+                color: 'red',
+            });
+            return;
+        }
+
+        const validTools = toolAssignments.filter(t => t.productId);
+        if (validTools.length === 0) {
+            notifications.show({
+                title: 'Selecione ao menos uma ferramenta',
+                message: 'Adicione pelo menos uma ferramenta com plano para o assinante.',
+                color: 'red',
+            });
+            return;
+        }
+
+        setCreateLoading(true);
+        try {
+            // Step 1: Create auth user via Edge Function
+            const { data: createData, error: createError } = await supabase.functions.invoke('admin-create-user', {
+                body: { email: newEmail.trim(), name: newName.trim() },
+            });
+
+            if (createError || !createData?.user_id) {
+                throw new Error(createError?.message || createData?.error || 'Falha ao criar usuário');
+            }
+
+            const userId = createData.user_id;
+            const alreadyExisted = createData.already_existed;
+
+            // Step 2: Create company via RPC
+            const { data: companyId, error: companyError } = await supabase
+                .rpc('admin_provision_company', {
+                    p_subscriber_id: userId,
+                    p_company_name: newCompanyName.trim(),
+                });
+
+            if (companyError) {
+                throw new Error('Falha ao criar empresa: ' + companyError.message);
+            }
+
+            // Step 3: Grant subscriptions for each tool
+            for (const tool of validTools) {
+                const { error: grantError } = await supabase
+                    .rpc('admin_grant_subscription', {
+                        p_company_id: companyId,
+                        p_product_ids: [tool.productId],
+                        p_duration_days: parseInt(tool.duration) || 0,
+                        p_plan: tool.planSlug || 'enterprise',
+                    });
+
+                if (grantError) {
+                    console.error(`Error granting ${tool.productId}:`, grantError);
+                }
+            }
+
+            notifications.show({
+                title: 'Assinante criado com sucesso! ✅',
+                message: alreadyExisted
+                    ? `Usuário já existia. Empresa "${newCompanyName}" criada e ferramentas atribuídas.`
+                    : `Conta criada para ${newEmail}. Email com credenciais enviado.`,
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+
+            // Reset form
+            setNewEmail('');
+            setNewName('');
+            setNewCompanyName('');
+            setToolAssignments([{ productId: null, planSlug: null, duration: '0' }]);
+            closeCreate();
+            loadData();
+
+        } catch (error: any) {
+            console.error('Error creating subscriber:', error);
+            notifications.show({
+                title: 'Erro ao criar assinante',
+                message: error.message || 'Falha desconhecida.',
+                color: 'red',
+                icon: <IconX size={16} />,
+            });
+        } finally {
+            setCreateLoading(false);
+        }
+    };
+
     return (
         <Container size="xl" py="md">
             <Stack gap="lg">
-                <div>
-                    <Title order={2}>Assinantes</Title>
-                    <Text c="dimmed">Todos os usuários cadastrados na plataforma Sincla Hub</Text>
-                </div>
+                <Group justify="space-between">
+                    <div>
+                        <Title order={2}>Assinantes</Title>
+                        <Text c="dimmed">Todos os usuários cadastrados na plataforma Sincla Hub</Text>
+                    </div>
+                    <Button
+                        leftSection={<IconPlus size={16} />}
+                        color="violet"
+                        onClick={openCreate}
+                    >
+                        Novo Assinante
+                    </Button>
+                </Group>
 
                 {/* KPIs */}
                 {loading ? (
@@ -301,6 +505,137 @@ export function AdminSubscribers() {
                     Exibindo {subscribers.length} assinantes (máx. 200)
                 </Text>
             </Stack>
+
+            {/* ============================
+                Modal: Criar Novo Assinante
+            ============================ */}
+            <Modal
+                opened={createOpened}
+                onClose={() => !createLoading && closeCreate()}
+                title={
+                    <Group gap="xs">
+                        <IconUserPlus size={20} color="var(--mantine-color-violet-6)" />
+                        <Title order={4}>Novo Assinante</Title>
+                    </Group>
+                }
+                centered
+                size="lg"
+                radius="md"
+            >
+                <Stack gap="md">
+                    <Text size="sm" c="dimmed">
+                        Crie uma conta de assinante com empresa e atribua ferramentas com seus respectivos planos.
+                        O usuário receberá um email com seus dados de acesso e a senha <strong>!Sincla1000</strong>.
+                    </Text>
+
+                    <Divider label="Dados do Assinante" labelPosition="left" />
+
+                    <TextInput
+                        label="Email"
+                        placeholder="usuario@empresa.com"
+                        required
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.currentTarget.value)}
+                        disabled={createLoading}
+                    />
+
+                    <TextInput
+                        label="Nome completo"
+                        placeholder="João da Silva"
+                        required
+                        value={newName}
+                        onChange={(e) => setNewName(e.currentTarget.value)}
+                        disabled={createLoading}
+                    />
+
+                    <Divider label="Empresa" labelPosition="left" />
+
+                    <TextInput
+                        label="Nome da empresa"
+                        placeholder="Empresa XYZ"
+                        required
+                        value={newCompanyName}
+                        onChange={(e) => setNewCompanyName(e.currentTarget.value)}
+                        disabled={createLoading}
+                        description="O slug será gerado automaticamente a partir do nome."
+                    />
+
+                    <Divider label="Ferramentas & Planos" labelPosition="left" />
+
+                    <Stack gap="sm">
+                        {toolAssignments.map((assignment, index) => (
+                            <Group key={index} gap="xs" align="flex-end" wrap="nowrap">
+                                <Select
+                                    label={index === 0 ? 'Produto' : undefined}
+                                    placeholder="Selecione..."
+                                    data={getAvailableProducts(index)}
+                                    value={assignment.productId}
+                                    onChange={(val) => updateToolRow(index, 'productId', val)}
+                                    searchable
+                                    disabled={createLoading}
+                                    style={{ flex: 2 }}
+                                />
+                                <Select
+                                    label={index === 0 ? 'Plano' : undefined}
+                                    placeholder="Plano..."
+                                    data={getPlansForProduct(assignment.productId)}
+                                    value={assignment.planSlug}
+                                    onChange={(val) => updateToolRow(index, 'planSlug', val)}
+                                    disabled={!assignment.productId || createLoading}
+                                    style={{ flex: 1.5 }}
+                                />
+                                <Select
+                                    label={index === 0 ? 'Duração' : undefined}
+                                    data={DURATION_OPTIONS}
+                                    value={assignment.duration}
+                                    onChange={(val) => updateToolRow(index, 'duration', val || '0')}
+                                    disabled={createLoading}
+                                    style={{ flex: 1 }}
+                                />
+                                {toolAssignments.length > 1 && (
+                                    <Tooltip label="Remover" withArrow>
+                                        <ActionIcon
+                                            variant="subtle"
+                                            color="red"
+                                            onClick={() => removeToolRow(index)}
+                                            disabled={createLoading}
+                                            size="lg"
+                                        >
+                                            <IconTrash size={16} />
+                                        </ActionIcon>
+                                    </Tooltip>
+                                )}
+                            </Group>
+                        ))}
+
+                        <Button
+                            variant="light"
+                            size="xs"
+                            leftSection={<IconPlus size={14} />}
+                            onClick={addToolRow}
+                            disabled={createLoading || toolAssignments.length >= products.length}
+                        >
+                            Adicionar Ferramenta
+                        </Button>
+                    </Stack>
+
+                    <Divider />
+
+                    <Group justify="flex-end" gap="sm">
+                        <Button variant="subtle" onClick={closeCreate} disabled={createLoading}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            color="violet"
+                            onClick={handleCreateSubscriber}
+                            loading={createLoading}
+                            leftSection={<IconCheck size={16} />}
+                        >
+                            Criar Assinante
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
         </Container>
     );
 }

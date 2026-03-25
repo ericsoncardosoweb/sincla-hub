@@ -7,6 +7,7 @@ import {
     IconSearch, IconCreditCard, IconTrendingUp,
     IconClock, IconX, IconCrown, IconGift,
 } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { supabase } from '../../shared/lib/supabase';
 
 // ============================
@@ -82,6 +83,7 @@ export function AdminSubscriptions() {
     const [companies, setCompanies] = useState<{ value: string; label: string }[]>([]);
     const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+    const [grantDuration, setGrantDuration] = useState<string>('0');
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -356,7 +358,7 @@ export function AdminSubscriptions() {
             >
                 <Stack gap="md">
                     <Text size="sm" c="dimmed">
-                        Forneça acesso vitalício com limite máximo de licenças sem a necessidade de passar pelo Checkout (Asaas). A assinatura será registrada como Plano Enterprise com valor R$ 0,00.
+                        Conceda acesso com limite máximo de licenças sem a necessidade de passar pelo Checkout (Asaas). A assinatura será registrada como Plano Enterprise com valor R$ 0,00.
                     </Text>
 
                     <Select
@@ -380,6 +382,19 @@ export function AdminSubscriptions() {
                         description="Se você não selecionar um produto, todas as ferramentas do Hub serão concedidas de uma vez."
                     />
 
+                    <Select
+                        label="Duração do acesso"
+                        data={[
+                            { value: '0', label: 'Vitalício (ilimitado)' },
+                            { value: '30', label: '30 dias' },
+                            { value: '60', label: '60 dias' },
+                            { value: '90', label: '90 dias' },
+                        ]}
+                        value={grantDuration}
+                        onChange={(val) => setGrantDuration(val || '0')}
+                        description="Vitalício concede acesso por tempo indeterminado."
+                    />
+
                     <Group justify="flex-end" mt="md">
                         <Button variant="subtle" onClick={() => setGrantModalOpened(false)} disabled={grantLoading}>
                             Cancelar
@@ -400,7 +415,9 @@ export function AdminSubscriptions() {
                                     const { error } = await supabase
                                         .rpc('admin_grant_subscription', {
                                             p_company_id: selectedCompany,
-                                            p_product_ids: productsToGrant.map(p => p.value)
+                                            p_product_ids: productsToGrant.map(p => p.value),
+                                            p_duration_days: parseInt(grantDuration) || 0,
+                                            p_plan: 'enterprise',
                                         });
 
                                     if (error) throw error;
@@ -408,7 +425,13 @@ export function AdminSubscriptions() {
                                     setGrantModalOpened(false);
                                     setSelectedCompany(null);
                                     setSelectedProduct(null);
+                                    setGrantDuration('0');
                                     loadData();
+                                    notifications.show({
+                                        title: 'Acesso concedido! ✅',
+                                        message: `Assinatura concedida com sucesso.${parseInt(grantDuration) > 0 ? ` Duração: ${grantDuration} dias.` : ' Acesso vitalício.'}`,
+                                        color: 'green',
+                                    });
                                 } catch (error: any) {
                                     console.error(error);
                                     alert('Erro ao conceder assinatura: ' + (error.message || 'Falha desconhecida.'));
