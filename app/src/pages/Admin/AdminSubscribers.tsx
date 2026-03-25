@@ -586,6 +586,7 @@ export function AdminSubscribers() {
                                     searchable
                                     disabled={createLoading}
                                     style={{ flex: 2 }}
+                                    comboboxProps={{ zIndex: 1000 }}
                                 />
                                 <Select
                                     label={index === 0 ? 'Plano' : undefined}
@@ -595,6 +596,7 @@ export function AdminSubscribers() {
                                     onChange={(val) => updateToolRow(index, 'planSlug', val)}
                                     disabled={!assignment.productId || createLoading}
                                     style={{ flex: 1.5 }}
+                                    comboboxProps={{ zIndex: 1000 }}
                                 />
                                 <Select
                                     label={index === 0 ? 'Duração' : undefined}
@@ -603,6 +605,7 @@ export function AdminSubscribers() {
                                     onChange={(val) => updateToolRow(index, 'duration', val || '0')}
                                     disabled={createLoading}
                                     style={{ flex: 1 }}
+                                    comboboxProps={{ zIndex: 1000 }}
                                 />
                                 {toolAssignments.length > 1 && (
                                     <Tooltip label="Remover" withArrow>
