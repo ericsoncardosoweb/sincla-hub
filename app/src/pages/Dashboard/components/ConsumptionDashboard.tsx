@@ -1,20 +1,24 @@
 /**
- * ConsumptionDashboard — Painel de Consumo de Serviços
- * 
- * Exibe consumo de IA, Storage e Notificações da empresa.
- * Integrado na página de Assinaturas do Hub.
+ * ConsumptionDashboard v2 — Painel de Consumo
+ *
+ * Integrado na tab "Consumo & Créditos" da tela de Assinaturas.
+ * Cards visuais de IA, Storage (CDN+Stream) e Notificações.
+ * Modais de compra de créditos e storage com experiência premium.
  */
 
 import { useEffect, useState } from 'react';
 import {
     Card, Text, Group, Stack, SimpleGrid, Progress, Badge,
     ThemeIcon, Skeleton, Button, Modal, Slider, Divider,
-    Table, SegmentedControl, Alert,
+    Table, SegmentedControl, Alert, Box, Paper, NumberInput,
+    Tabs,
 } from '@mantine/core';
 import {
     IconBrain, IconCloud, IconMail, IconBrandWhatsapp,
     IconBell, IconShoppingCart, IconSparkles, IconRefresh,
     IconTrendingUp, IconAlertCircle, IconHistory, IconPlus,
+    IconCoin, IconDatabase, IconVideo, IconFile,
+    IconCheck, IconGauge,
 } from '@tabler/icons-react';
 import { supabase } from '../../../shared/lib/supabase';
 
@@ -67,53 +71,52 @@ interface ServicePricing {
 // Helpers
 // ==============================
 
-const formatCurrency = (v: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
-const formatNumber = (n: number) =>
+const fmtNum = (n: number) =>
     n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` :
         n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : n.toString();
 
-const formatBytes = (bytes: number) => {
+const fmtBytes = (bytes: number) => {
     if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(2)} GB`;
     if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
     if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
     return `${bytes} B`;
 };
 
-const serviceLabels: Record<string, { label: string; icon: typeof IconBrain; color: string }> = {
-    ai: { label: 'Créditos de IA', icon: IconBrain, color: 'violet' },
-    notification_email: { label: 'Emails', icon: IconMail, color: 'blue' },
-    notification_whatsapp: { label: 'WhatsApp', icon: IconBrandWhatsapp, color: 'green' },
-    notification_push: { label: 'Push', icon: IconBell, color: 'orange' },
-};
+const toolLabels: Record<string, string> = { hub: 'Hub', rh: 'RH', ead: 'EAD', agenda: 'Agenda', crm: 'CRM' };
 
-const toolLabels: Record<string, string> = {
-    hub: 'Hub', rh: 'RH', ead: 'EAD', agenda: 'Agenda', crm: 'CRM',
+const serviceConfig: Record<string, { label: string; icon: typeof IconBrain; color: string; gradient: string }> = {
+    ai: { label: 'IA', icon: IconBrain, color: 'violet', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+    notification_email: { label: 'Emails', icon: IconMail, color: 'blue', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+    notification_whatsapp: { label: 'WhatsApp', icon: IconBrandWhatsapp, color: 'green', gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+    notification_push: { label: 'Push', icon: IconBell, color: 'orange', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
 };
 
 // ==============================
 // Component
 // ==============================
 
-interface ConsumptionDashboardProps {
-    companyId: string;
-}
+interface Props { companyId: string; }
 
-export function ConsumptionDashboard({ companyId }: ConsumptionDashboardProps) {
+export function ConsumptionDashboard({ companyId }: Props) {
     const [credits, setCredits] = useState<CompanyCredits[]>([]);
     const [storage, setStorage] = useState<StorageQuota | null>(null);
     const [recentUsage, setRecentUsage] = useState<UsageLog[]>([]);
     const [pricing, setPricing] = useState<ServicePricing[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Buy credits modal
+    // Modais
     const [buyModalOpen, setBuyModalOpen] = useState(false);
     const [buyService, setBuyService] = useState<ServicePricing | null>(null);
     const [buyQuantity, setBuyQuantity] = useState(1);
-    const [buyType, setBuyType] = useState<'one_time' | 'recurring'>('one_time');
+    const [buyTab, setBuyTab] = useState<string | null>('avulso');
 
-    // History filter
+    const [storageModalOpen, setStorageModalOpen] = useState(false);
+    const [storageGb, setStorageGb] = useState(5);
+    const [storageType, setStorageType] = useState<'storage' | 'stream'>('storage');
+
+    // Histórico
     const [historyFilter, setHistoryFilter] = useState('all');
 
     useEffect(() => {
@@ -129,314 +132,252 @@ export function ConsumptionDashboard({ companyId }: ConsumptionDashboardProps) {
                 supabase.from('service_usage_log')
                     .select('id, service_type, sub_type, tool_id, quantity, total_resale_brl, created_at')
                     .eq('company_id', companyId)
-                    .order('created_at', { ascending: false })
-                    .limit(20),
+                    .order('created_at', { ascending: false }).limit(20),
                 supabase.from('service_pricing').select('*').eq('is_active', true).order('sort_order'),
             ]);
-
             setCredits(creditsRes.data || []);
             setStorage(storageRes.data);
             setRecentUsage(usageRes.data || []);
             setPricing(pricingRes.data || []);
         } catch (err) {
-            console.error('[Consumption] Error loading:', err);
-        } finally {
-            setLoading(false);
-        }
+            console.error('[Consumption] Error:', err);
+        } finally { setLoading(false); }
     };
 
     const getCredit = (type: string) => credits.find(c => c.service_type === type);
 
-    const handleOpenBuy = (servicePricing: ServicePricing) => {
-        setBuyService(servicePricing);
-        setBuyQuantity(1);
-        setBuyType('one_time');
-        setBuyModalOpen(true);
+    const handleOpenBuy = (svcType: string) => {
+        const p = pricing.find(p => p.service_type === svcType);
+        if (p) { setBuyService(p); setBuyQuantity(1); setBuyTab('avulso'); setBuyModalOpen(true); }
     };
 
-    const calculatePrice = () => {
+    const calcPrice = () => {
         if (!buyService) return 0;
         const base = buyService.price_brl * buyQuantity;
-        const discountSteps = Math.floor(buyQuantity / buyService.volume_discount_threshold);
-        const discountPercent = Math.min(
-            discountSteps * buyService.volume_discount_percent,
-            buyService.max_discount_percent
-        );
-        return base * (1 - discountPercent / 100);
+        const steps = Math.floor(buyQuantity / buyService.volume_discount_threshold);
+        const disc = Math.min(steps * buyService.volume_discount_percent, buyService.max_discount_percent);
+        return base * (1 - disc / 100);
     };
 
-    const getDiscountPercent = () => {
+    const calcDiscount = () => {
         if (!buyService) return 0;
-        const discountSteps = Math.floor(buyQuantity / buyService.volume_discount_threshold);
-        return Math.min(
-            discountSteps * buyService.volume_discount_percent,
-            buyService.max_discount_percent
-        );
+        const steps = Math.floor(buyQuantity / buyService.volume_discount_threshold);
+        return Math.min(steps * buyService.volume_discount_percent, buyService.max_discount_percent);
     };
 
     // ── Loading ──
     if (loading) {
         return (
-            <Stack gap="md">
-                <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
-                    {[1, 2, 3].map(i => <Skeleton key={i} height={160} radius="md" />)}
-                </SimpleGrid>
-            </Stack>
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+                {[1, 2, 3].map(i => <Skeleton key={i} height={180} radius="md" />)}
+            </SimpleGrid>
         );
     }
 
-    // Se não tem créditos configurados, mostrar mensagem
     if (credits.length === 0 && !storage) {
         return (
-            <Alert variant="light" color="blue" icon={<IconSparkles size={18} />}>
-                Nenhum serviço de consumo configurado. Os créditos serão habilitados quando sua assinatura incluir serviços de IA, Storage ou Notificações.
-            </Alert>
+            <Card withBorder radius="md" p="xl" style={{ textAlign: 'center' }}>
+                <ThemeIcon size={60} radius="xl" variant="light" color="violet" mx="auto"><IconSparkles size={30} /></ThemeIcon>
+                <Text fw={600} size="lg" mt="md">Serviços de consumo não configurados</Text>
+                <Text c="dimmed" size="sm" mt="xs">Os créditos serão habilitados quando sua assinatura incluir serviços de IA, Storage ou Notificações.</Text>
+            </Card>
         );
     }
 
     const aiCredits = getCredit('ai');
     const emailCredits = getCredit('notification_email');
     const whatsappCredits = getCredit('notification_whatsapp');
+    const filteredUsage = historyFilter === 'all' ? recentUsage : recentUsage.filter(u => u.service_type === historyFilter);
 
-    const filteredUsage = historyFilter === 'all'
-        ? recentUsage
-        : recentUsage.filter(u => u.service_type === historyFilter);
+    const usagePercent = (used: number, total: number) => total > 0 ? Math.min((used / total) * 100, 100) : 0;
+    const bytesPercent = (used: number, quota: number) => quota > 0 ? Math.min((used / quota) * 100, 100) : 0;
 
     return (
         <Stack gap="lg">
-            {/* ═══ Seção: Créditos de IA ═══ */}
-            {aiCredits && (
-                <Card withBorder radius="md" padding="lg">
-                    <Group justify="space-between" mb="md">
-                        <Group gap="sm">
-                            <ThemeIcon size="lg" radius="md" variant="light" color="violet">
-                                <IconBrain size={20} />
-                            </ThemeIcon>
-                            <div>
-                                <Text fw={600}>Créditos de Inteligência Artificial</Text>
+            {/* ═══ Cards de Créditos ═══ */}
+            <SimpleGrid cols={{ base: 1, sm: 2, md: aiCredits ? 3 : 2 }} spacing="md">
+                {/* IA */}
+                {aiCredits && (
+                    <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
+                        <Box style={{ background: serviceConfig.ai.gradient, padding: '14px 16px' }}>
+                            <Group justify="space-between">
+                                <Group gap="xs">
+                                    <IconBrain size={20} color="#fff" />
+                                    <Text fw={700} c="white" size="sm">Créditos de IA</Text>
+                                </Group>
+                                <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+                                    {fmtNum(aiCredits.balance)} disponíveis
+                                </Badge>
+                            </Group>
+                        </Box>
+                        <Box p="md">
+                            <Group justify="space-between" mb={6}>
+                                <Text size="xs" c="dimmed">Consumido</Text>
+                                <Text size="xs" fw={500}>{fmtNum(aiCredits.period_usage)} / {fmtNum(aiCredits.monthly_allowance + aiCredits.monthly_bonus)}</Text>
+                            </Group>
+                            <Progress value={usagePercent(aiCredits.period_usage, aiCredits.monthly_allowance + aiCredits.monthly_bonus)} color="violet" size="md" radius="xl" />
+                            <Group justify="space-between" mt="sm">
                                 <Text size="xs" c="dimmed">
-                                    Alimenta IA em todas as ferramentas (RH, EAD, Agenda)
+                                    Reset: {aiCredits.next_reset_at ? new Date(aiCredits.next_reset_at).toLocaleDateString('pt-BR') : '—'}
                                 </Text>
-                            </div>
-                        </Group>
-                        <Button
-                            variant="light"
-                            color="violet"
-                            leftSection={<IconShoppingCart size={16} />}
-                            size="sm"
-                            onClick={() => {
-                                const p = pricing.find(p => p.service_type === 'ai');
-                                if (p) handleOpenBuy(p);
-                            }}
-                        >
-                            Comprar Créditos
-                        </Button>
-                    </Group>
+                                <Button variant="light" size="xs" color="violet" leftSection={<IconPlus size={14} />}
+                                    onClick={() => handleOpenBuy('ai')}>
+                                    Comprar
+                                </Button>
+                            </Group>
+                            {aiCredits.balance <= 0 && (
+                                <Alert variant="light" color="red" icon={<IconAlertCircle size={14} />} mt="xs" p="xs">
+                                    <Text size="xs">Créditos esgotados — IA desabilitada</Text>
+                                </Alert>
+                            )}
+                        </Box>
+                    </Card>
+                )}
 
-                    <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
-                        <div>
-                            <Text size="xs" c="dimmed">Saldo Disponível</Text>
-                            <Text size="xl" fw={700} c="violet">{formatNumber(aiCredits.balance)} tokens</Text>
-                            <Text size="xs" c="dimmed">
-                                Incluso no plano: {formatNumber(aiCredits.monthly_allowance)}
-                                {aiCredits.monthly_bonus > 0 && ` + ${formatNumber(aiCredits.monthly_bonus)} recorrente`}
-                            </Text>
-                        </div>
-                        <div>
-                            <Text size="xs" c="dimmed">Consumido este mês</Text>
-                            <Text size="xl" fw={700}>{formatNumber(aiCredits.period_usage)} tokens</Text>
-                            <Progress
-                                value={aiCredits.monthly_allowance > 0 ? (aiCredits.period_usage / (aiCredits.monthly_allowance + aiCredits.monthly_bonus)) * 100 : 0}
-                                color="violet"
-                                size="sm"
-                                mt={4}
-                            />
-                        </div>
-                        <div>
-                            <Text size="xs" c="dimmed">Próximo Reset</Text>
-                            <Text size="lg" fw={600}>
-                                {aiCredits.next_reset_at
-                                    ? new Date(aiCredits.next_reset_at).toLocaleDateString('pt-BR')
-                                    : '—'}
-                            </Text>
-                        </div>
-                    </SimpleGrid>
+                {/* Email */}
+                {emailCredits && (
+                    <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
+                        <Box style={{ background: serviceConfig.notification_email.gradient, padding: '14px 16px' }}>
+                            <Group justify="space-between">
+                                <Group gap="xs">
+                                    <IconMail size={20} color="#fff" />
+                                    <Text fw={700} c="white" size="sm">Emails</Text>
+                                </Group>
+                                <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+                                    {fmtNum(emailCredits.balance)} restantes
+                                </Badge>
+                            </Group>
+                        </Box>
+                        <Box p="md">
+                            <Group justify="space-between" mb={6}>
+                                <Text size="xs" c="dimmed">Enviados este mês</Text>
+                                <Text size="xs" fw={500}>{fmtNum(emailCredits.period_usage)}</Text>
+                            </Group>
+                            <Progress value={usagePercent(emailCredits.period_usage, emailCredits.monthly_allowance)} color="blue" size="md" radius="xl" />
+                            <Group justify="flex-end" mt="sm">
+                                <Button variant="light" size="xs" color="blue" leftSection={<IconPlus size={14} />}
+                                    onClick={() => handleOpenBuy('notification_email')}>
+                                    Comprar
+                                </Button>
+                            </Group>
+                        </Box>
+                    </Card>
+                )}
 
-                    {aiCredits.balance <= 0 && (
-                        <Alert variant="light" color="red" icon={<IconAlertCircle size={16} />} mt="sm">
-                            Créditos esgotados! Recursos de IA estão desabilitados. Compre mais créditos para reativar.
-                        </Alert>
-                    )}
-                </Card>
-            )}
+                {/* WhatsApp */}
+                {whatsappCredits && (
+                    <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
+                        <Box style={{ background: serviceConfig.notification_whatsapp.gradient, padding: '14px 16px' }}>
+                            <Group justify="space-between">
+                                <Group gap="xs">
+                                    <IconBrandWhatsapp size={20} color="#fff" />
+                                    <Text fw={700} c="white" size="sm">WhatsApp</Text>
+                                </Group>
+                                <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+                                    {fmtNum(whatsappCredits.balance)} restantes
+                                </Badge>
+                            </Group>
+                        </Box>
+                        <Box p="md">
+                            <Group justify="space-between" mb={6}>
+                                <Text size="xs" c="dimmed">Enviados este mês</Text>
+                                <Text size="xs" fw={500}>{fmtNum(whatsappCredits.period_usage)}</Text>
+                            </Group>
+                            <Progress value={usagePercent(whatsappCredits.period_usage, whatsappCredits.monthly_allowance)} color="green" size="md" radius="xl" />
+                            <Group justify="flex-end" mt="sm">
+                                <Button variant="light" size="xs" color="green" leftSection={<IconPlus size={14} />}
+                                    onClick={() => handleOpenBuy('notification_whatsapp')}>
+                                    Comprar
+                                </Button>
+                            </Group>
+                        </Box>
+                    </Card>
+                )}
+            </SimpleGrid>
 
-            {/* ═══ Seção: Storage ═══ */}
+            {/* ═══ Storage ═══ */}
             {storage && (
-                <Card withBorder radius="md" padding="lg">
-                    <Group justify="space-between" mb="md">
-                        <Group gap="sm">
-                            <ThemeIcon size="lg" radius="md" variant="light" color="teal">
-                                <IconCloud size={20} />
-                            </ThemeIcon>
-                            <div>
-                                <Text fw={600}>Armazenamento</Text>
-                                <Text size="xs" c="dimmed">CDN (arquivos, imagens) + Stream (vídeos)</Text>
-                            </div>
+                <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
+                    <Box style={{ background: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)', padding: '14px 20px' }}>
+                        <Group justify="space-between">
+                            <Group gap="sm">
+                                <IconCloud size={22} color="#fff" />
+                                <div>
+                                    <Text fw={700} c="white" size="sm">Armazenamento</Text>
+                                    <Text size="xs" style={{ color: 'rgba(255,255,255,0.6)' }}>CDN (arquivos) + Stream (vídeos)</Text>
+                                </div>
+                            </Group>
+                            <Button variant="white" size="xs" leftSection={<IconPlus size={14} />}
+                                onClick={() => setStorageModalOpen(true)}>
+                                Expandir Storage
+                            </Button>
                         </Group>
-                        <Button
-                            variant="light"
-                            color="teal"
-                            leftSection={<IconPlus size={16} />}
-                            size="sm"
-                            onClick={() => {
-                                const p = pricing.find(p => p.service_type === 'storage');
-                                if (p) handleOpenBuy(p);
-                            }}
-                        >
-                            Comprar Storage
-                        </Button>
-                    </Group>
-
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                        {/* CDN Storage */}
-                        <Card withBorder radius="md" padding="md" bg="var(--mantine-color-gray-0)">
-                            <Group justify="space-between" mb="xs">
-                                <Text size="sm" fw={600}>📁 Arquivos (CDN)</Text>
-                                <Badge variant="light" size="sm">
-                                    {storage.storage_files_count} arquivos
-                                </Badge>
-                            </Group>
-                            <Group gap="xs" align="baseline">
-                                <Text size="lg" fw={700}>{formatBytes(storage.storage_bytes)}</Text>
-                                <Text size="xs" c="dimmed">/ {formatBytes(storage.storage_quota_bytes)}</Text>
-                            </Group>
-                            <Progress
-                                value={storage.storage_quota_bytes > 0
-                                    ? (storage.storage_bytes / storage.storage_quota_bytes) * 100 : 0}
-                                color={storage.storage_bytes > storage.storage_quota_bytes * 0.9 ? 'red' : 'teal'}
-                                size="sm"
-                                mt={4}
-                            />
-                            {/* Breakdown por tool */}
-                            {Object.keys(storage.storage_by_tool || {}).length > 0 && (
-                                <Group gap="xs" mt="xs">
-                                    {Object.entries(storage.storage_by_tool).map(([tool, bytes]) => (
-                                        <Badge key={tool} variant="dot" size="xs">
-                                            {toolLabels[tool] || tool}: {formatBytes(bytes as number)}
-                                        </Badge>
-                                    ))}
+                    </Box>
+                    <Box p="md">
+                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                            {/* CDN */}
+                            <Paper withBorder radius="md" p="md">
+                                <Group gap="sm" mb="sm">
+                                    <ThemeIcon size="sm" variant="light" color="teal"><IconFile size={14} /></ThemeIcon>
+                                    <Text size="sm" fw={600}>Arquivos (CDN)</Text>
+                                    <Badge variant="light" size="xs" ml="auto">{storage.storage_files_count} arquivos</Badge>
                                 </Group>
-                            )}
-                        </Card>
-
-                        {/* Stream Storage */}
-                        <Card withBorder radius="md" padding="md" bg="var(--mantine-color-gray-0)">
-                            <Group justify="space-between" mb="xs">
-                                <Text size="sm" fw={600}>🎬 Vídeos (Stream)</Text>
-                                <Badge variant="light" size="sm">
-                                    {storage.stream_files_count} vídeos
-                                </Badge>
-                            </Group>
-                            <Group gap="xs" align="baseline">
-                                <Text size="lg" fw={700}>{formatBytes(storage.stream_bytes)}</Text>
-                                <Text size="xs" c="dimmed">/ {formatBytes(storage.stream_quota_bytes)}</Text>
-                            </Group>
-                            <Progress
-                                value={storage.stream_quota_bytes > 0
-                                    ? (storage.stream_bytes / storage.stream_quota_bytes) * 100 : 0}
-                                color={storage.stream_bytes > storage.stream_quota_bytes * 0.9 ? 'red' : 'blue'}
-                                size="sm"
-                                mt={4}
-                            />
-                            {Object.keys(storage.stream_by_tool || {}).length > 0 && (
-                                <Group gap="xs" mt="xs">
-                                    {Object.entries(storage.stream_by_tool).map(([tool, bytes]) => (
-                                        <Badge key={tool} variant="dot" size="xs">
-                                            {toolLabels[tool] || tool}: {formatBytes(bytes as number)}
-                                        </Badge>
-                                    ))}
+                                <Group gap="xs" align="baseline" mb={6}>
+                                    <Text size="lg" fw={700}>{fmtBytes(storage.storage_bytes)}</Text>
+                                    <Text size="xs" c="dimmed">/ {fmtBytes(storage.storage_quota_bytes)}</Text>
                                 </Group>
-                            )}
-                        </Card>
-                    </SimpleGrid>
+                                <Progress
+                                    value={bytesPercent(storage.storage_bytes, storage.storage_quota_bytes)}
+                                    color={storage.storage_bytes > storage.storage_quota_bytes * 0.9 ? 'red' : 'teal'}
+                                    size="md" radius="xl"
+                                />
+                                {Object.keys(storage.storage_by_tool || {}).length > 0 && (
+                                    <Group gap="xs" mt="xs" wrap="wrap">
+                                        {Object.entries(storage.storage_by_tool).map(([tool, bytes]) => (
+                                            <Badge key={tool} variant="dot" size="xs">{toolLabels[tool] || tool}: {fmtBytes(bytes as number)}</Badge>
+                                        ))}
+                                    </Group>
+                                )}
+                            </Paper>
+
+                            {/* Stream */}
+                            <Paper withBorder radius="md" p="md">
+                                <Group gap="sm" mb="sm">
+                                    <ThemeIcon size="sm" variant="light" color="blue"><IconVideo size={14} /></ThemeIcon>
+                                    <Text size="sm" fw={600}>Vídeos (Stream)</Text>
+                                    <Badge variant="light" size="xs" ml="auto">{storage.stream_files_count} vídeos</Badge>
+                                </Group>
+                                <Group gap="xs" align="baseline" mb={6}>
+                                    <Text size="lg" fw={700}>{fmtBytes(storage.stream_bytes)}</Text>
+                                    <Text size="xs" c="dimmed">/ {fmtBytes(storage.stream_quota_bytes)}</Text>
+                                </Group>
+                                <Progress
+                                    value={bytesPercent(storage.stream_bytes, storage.stream_quota_bytes)}
+                                    color={storage.stream_bytes > storage.stream_quota_bytes * 0.9 ? 'red' : 'blue'}
+                                    size="md" radius="xl"
+                                />
+                                {Object.keys(storage.stream_by_tool || {}).length > 0 && (
+                                    <Group gap="xs" mt="xs" wrap="wrap">
+                                        {Object.entries(storage.stream_by_tool).map(([tool, bytes]) => (
+                                            <Badge key={tool} variant="dot" size="xs">{toolLabels[tool] || tool}: {fmtBytes(bytes as number)}</Badge>
+                                        ))}
+                                    </Group>
+                                )}
+                            </Paper>
+                        </SimpleGrid>
+                    </Box>
                 </Card>
             )}
 
-            {/* ═══ Seção: Notificações ═══ */}
-            {(emailCredits || whatsappCredits) && (
-                <Card withBorder radius="md" padding="lg">
-                    <Group gap="sm" mb="md">
-                        <ThemeIcon size="lg" radius="md" variant="light" color="blue">
-                            <IconBell size={20} />
-                        </ThemeIcon>
-                        <div>
-                            <Text fw={600}>Notificações</Text>
-                            <Text size="xs" c="dimmed">Envios de Email e WhatsApp</Text>
-                        </div>
-                    </Group>
-
-                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                        {emailCredits && (
-                            <Card withBorder radius="md" padding="md" bg="var(--mantine-color-gray-0)">
-                                <Group gap="sm" mb="xs">
-                                    <IconMail size={16} color="var(--mantine-color-blue-6)" />
-                                    <Text size="sm" fw={600}>Emails</Text>
-                                </Group>
-                                <Group gap="xs" align="baseline">
-                                    <Text size="lg" fw={700}>{formatNumber(emailCredits.balance)}</Text>
-                                    <Text size="xs" c="dimmed">restantes</Text>
-                                </Group>
-                                <Text size="xs" c="dimmed">
-                                    Consumidos: {formatNumber(emailCredits.period_usage)} este mês
-                                </Text>
-                                <Progress
-                                    value={emailCredits.monthly_allowance > 0 ? (emailCredits.period_usage / emailCredits.monthly_allowance) * 100 : 0}
-                                    color="blue"
-                                    size="xs"
-                                    mt={4}
-                                />
-                            </Card>
-                        )}
-
-                        {whatsappCredits && (
-                            <Card withBorder radius="md" padding="md" bg="var(--mantine-color-gray-0)">
-                                <Group gap="sm" mb="xs">
-                                    <IconBrandWhatsapp size={16} color="var(--mantine-color-green-6)" />
-                                    <Text size="sm" fw={600}>WhatsApp</Text>
-                                </Group>
-                                <Group gap="xs" align="baseline">
-                                    <Text size="lg" fw={700}>{formatNumber(whatsappCredits.balance)}</Text>
-                                    <Text size="xs" c="dimmed">restantes</Text>
-                                </Group>
-                                <Text size="xs" c="dimmed">
-                                    Consumidos: {formatNumber(whatsappCredits.period_usage)} este mês
-                                </Text>
-                                <Progress
-                                    value={whatsappCredits.monthly_allowance > 0 ? (whatsappCredits.period_usage / whatsappCredits.monthly_allowance) * 100 : 0}
-                                    color="green"
-                                    size="xs"
-                                    mt={4}
-                                />
-                            </Card>
-                        )}
-                    </SimpleGrid>
-                </Card>
-            )}
-
-            {/* ═══ Seção: Histórico ═══ */}
+            {/* ═══ Histórico ═══ */}
             {recentUsage.length > 0 && (
-                <Card withBorder radius="md" padding="lg">
+                <Card withBorder radius="md" p="md">
                     <Group justify="space-between" mb="md">
                         <Group gap="sm">
-                            <ThemeIcon size="lg" radius="md" variant="light" color="gray">
-                                <IconHistory size={20} />
-                            </ThemeIcon>
+                            <ThemeIcon size="md" radius="md" variant="light" color="gray"><IconHistory size={18} /></ThemeIcon>
                             <Text fw={600}>Histórico de Consumo</Text>
                         </Group>
-                        <SegmentedControl
-                            size="xs"
-                            value={historyFilter}
-                            onChange={setHistoryFilter}
+                        <SegmentedControl size="xs" value={historyFilter} onChange={setHistoryFilter}
                             data={[
                                 { label: 'Todos', value: 'all' },
                                 { label: '🧠 IA', value: 'ai' },
@@ -446,175 +387,184 @@ export function ConsumptionDashboard({ companyId }: ConsumptionDashboardProps) {
                             ]}
                         />
                     </Group>
-
-                    <Table striped highlightOnHover withTableBorder>
-                        <Table.Thead>
-                            <Table.Tr>
-                                <Table.Th>Serviço</Table.Th>
-                                <Table.Th>Ferramenta</Table.Th>
-                                <Table.Th ta="right">Quantidade</Table.Th>
-                                <Table.Th ta="right">Valor</Table.Th>
-                                <Table.Th ta="right">Data</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                            {filteredUsage.map(log => {
-                                const meta = serviceLabels[log.service_type];
-                                const IconComp = meta?.icon || IconTrendingUp;
-                                return (
-                                    <Table.Tr key={log.id}>
-                                        <Table.Td>
-                                            <Group gap="xs">
-                                                <IconComp size={14} color={`var(--mantine-color-${meta?.color || 'gray'}-6)`} />
-                                                <Text size="sm">{meta?.label || log.service_type}</Text>
-                                                {log.sub_type && (
-                                                    <Badge variant="dot" size="xs">{log.sub_type}</Badge>
-                                                )}
-                                            </Group>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Badge variant="light" size="xs">
-                                                {toolLabels[log.tool_id] || log.tool_id}
-                                            </Badge>
-                                        </Table.Td>
-                                        <Table.Td ta="right">
-                                            <Text size="sm">{formatNumber(log.quantity)}</Text>
-                                        </Table.Td>
-                                        <Table.Td ta="right">
-                                            <Text size="sm" fw={500}>
-                                                {log.total_resale_brl > 0 ? formatCurrency(log.total_resale_brl) : '—'}
-                                            </Text>
-                                        </Table.Td>
-                                        <Table.Td ta="right">
-                                            <Text size="xs" c="dimmed">
-                                                {new Date(log.created_at).toLocaleString('pt-BR', {
-                                                    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-                                                })}
-                                            </Text>
-                                        </Table.Td>
-                                    </Table.Tr>
-                                );
-                            })}
-                        </Table.Tbody>
-                    </Table>
+                    <Box style={{ overflowX: 'auto' }}>
+                        <Table striped highlightOnHover withTableBorder>
+                            <Table.Thead>
+                                <Table.Tr>
+                                    <Table.Th>Serviço</Table.Th>
+                                    <Table.Th>Ferramenta</Table.Th>
+                                    <Table.Th ta="right">Qtd</Table.Th>
+                                    <Table.Th ta="right">Valor</Table.Th>
+                                    <Table.Th ta="right">Data</Table.Th>
+                                </Table.Tr>
+                            </Table.Thead>
+                            <Table.Tbody>
+                                {filteredUsage.map(log => {
+                                    const meta = serviceConfig[log.service_type];
+                                    const IconComp = meta?.icon || IconTrendingUp;
+                                    return (
+                                        <Table.Tr key={log.id}>
+                                            <Table.Td>
+                                                <Group gap="xs">
+                                                    <IconComp size={14} color={`var(--mantine-color-${meta?.color || 'gray'}-6)`} />
+                                                    <Text size="sm">{meta?.label || log.service_type}</Text>
+                                                    {log.sub_type && log.sub_type !== log.service_type && <Badge variant="dot" size="xs">{log.sub_type}</Badge>}
+                                                </Group>
+                                            </Table.Td>
+                                            <Table.Td><Badge variant="light" size="xs">{toolLabels[log.tool_id] || log.tool_id}</Badge></Table.Td>
+                                            <Table.Td ta="right"><Text size="sm">{fmtNum(log.quantity)}</Text></Table.Td>
+                                            <Table.Td ta="right"><Text size="sm" fw={500}>{log.total_resale_brl > 0 ? fmt(log.total_resale_brl) : '—'}</Text></Table.Td>
+                                            <Table.Td ta="right">
+                                                <Text size="xs" c="dimmed">{new Date(log.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</Text>
+                                            </Table.Td>
+                                        </Table.Tr>
+                                    );
+                                })}
+                            </Table.Tbody>
+                        </Table>
+                    </Box>
                 </Card>
             )}
 
             {/* ═══ Modal: Comprar Créditos ═══ */}
-            <Modal
-                opened={buyModalOpen}
-                onClose={() => setBuyModalOpen(false)}
-                title={
-                    <Group gap="xs">
-                        <IconShoppingCart size={20} />
-                        <Text fw={600}>Comprar {buyService?.name}</Text>
-                    </Group>
-                }
-                centered
-                size="md"
+            <Modal opened={buyModalOpen} onClose={() => setBuyModalOpen(false)} centered size="md"
+                title={<Group gap="xs"><IconCoin size={20} /><Text fw={600}>Comprar {buyService?.name}</Text></Group>}
             >
                 {buyService && (
                     <Stack gap="md">
-                        <Alert variant="light" color="violet" icon={<IconSparkles size={16} />}>
-                            <Text size="sm" fw={500}>
-                                Mais recursos = mais inteligência para seu negócio.
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                                Compre avulso ou adicione como crédito recorrente na sua assinatura.
-                            </Text>
-                        </Alert>
+                        <Tabs value={buyTab} onChange={setBuyTab}>
+                            <Tabs.List grow>
+                                <Tabs.Tab value="avulso" leftSection={<IconShoppingCart size={14} />}>Créditos Avulsos</Tabs.Tab>
+                                <Tabs.Tab value="recorrente" leftSection={<IconRefresh size={14} />}>Recorrente (+/mês)</Tabs.Tab>
+                            </Tabs.List>
 
-                        <div>
-                            <Text size="sm" fw={500} mb="xs">Quantidade</Text>
-                            <Text size="xl" fw={700} ta="center" c="violet">
-                                {buyQuantity}x {buyService.unit_label}
-                            </Text>
-                            <Slider
-                                value={buyQuantity}
-                                onChange={setBuyQuantity}
-                                min={1}
-                                max={100}
-                                step={1}
-                                marks={[
-                                    { value: 1, label: '1' },
-                                    { value: 10, label: '10' },
-                                    { value: 30, label: '30' },
-                                    { value: 50, label: '50' },
-                                    { value: 100, label: '100' },
-                                ]}
-                                color="violet"
-                                mt="sm"
-                            />
-                        </div>
+                            <Tabs.Panel value="avulso" pt="md">
+                                <Stack gap="sm">
+                                    <Alert variant="light" color="orange" icon={<IconGauge size={16} />} p="xs">
+                                        <Text size="xs">Créditos avulsos expiram em <strong>30 dias</strong> após a compra.</Text>
+                                    </Alert>
+                                    <div>
+                                        <Text size="sm" fw={500} mb={4}>Quantidade: <strong>{buyQuantity}x {buyService.unit_label}</strong></Text>
+                                        <Slider value={buyQuantity} onChange={setBuyQuantity} min={1} max={100} step={1} color="violet"
+                                            marks={[{ value: 1, label: '1' }, { value: 25, label: '25' }, { value: 50, label: '50' }, { value: 100, label: '100' }]}
+                                        />
+                                    </div>
+                                    <Card withBorder radius="md" p="sm" mt="xs">
+                                        <Group justify="space-between">
+                                            <Text size="xs" c="dimmed">Subtotal</Text>
+                                            <Text size="sm">{fmt(buyService.price_brl * buyQuantity)}</Text>
+                                        </Group>
+                                        {calcDiscount() > 0 && (
+                                            <Group justify="space-between" mt={4}>
+                                                <Badge variant="light" color="green" size="xs">-{calcDiscount()}% volume</Badge>
+                                                <Text size="sm" c="green">-{fmt(buyService.price_brl * buyQuantity - calcPrice())}</Text>
+                                            </Group>
+                                        )}
+                                        <Divider my="xs" />
+                                        <Group justify="space-between">
+                                            <Text fw={700}>Total</Text>
+                                            <Text size="lg" fw={800} c="violet">{fmt(calcPrice())}</Text>
+                                        </Group>
+                                    </Card>
+                                    <Button fullWidth size="md" color="violet" leftSection={<IconShoppingCart size={18} />}
+                                        onClick={() => { console.log('Comprar avulso:', { service: buyService.service_type, quantity: buyQuantity, price: calcPrice() }); setBuyModalOpen(false); }}>
+                                        Comprar por {fmt(calcPrice())}
+                                    </Button>
+                                </Stack>
+                            </Tabs.Panel>
 
-                        <Card withBorder radius="md" padding="md">
-                            <Stack gap="xs">
-                                <Group justify="space-between">
-                                    <Text size="sm" c="dimmed">
-                                        Preço base ({buyQuantity}x {buyService.unit_label} × {formatCurrency(buyService.price_brl)})
-                                    </Text>
-                                    <Text size="sm">{formatCurrency(buyService.price_brl * buyQuantity)}</Text>
-                                </Group>
-
-                                {getDiscountPercent() > 0 && (
-                                    <Group justify="space-between">
-                                        <Badge variant="light" color="green" size="sm">
-                                            -{getDiscountPercent()}% Desconto volume
-                                        </Badge>
-                                        <Text size="sm" c="green" fw={500}>
-                                            -{formatCurrency(buyService.price_brl * buyQuantity - calculatePrice())}
-                                        </Text>
-                                    </Group>
-                                )}
-
-                                <Divider />
-
-                                <Group justify="space-between">
-                                    <Text fw={700}>Total</Text>
-                                    <Text size="lg" fw={700} c="violet">{formatCurrency(calculatePrice())}</Text>
-                                </Group>
-
-                                <Text size="xs" c="dimmed" ta="center">
-                                    {formatCurrency(calculatePrice() / buyQuantity)}/{buyService.unit_label}
-                                </Text>
-                            </Stack>
-                        </Card>
-
-                        <Button
-                            fullWidth
-                            size="md"
-                            color="violet"
-                            leftSection={<IconShoppingCart size={18} />}
-                            onClick={() => {
-                                // TODO: Integrar com gateway de pagamento
-                                console.log('Comprar:', { service: buyService, quantity: buyQuantity, type: buyType, price: calculatePrice() });
-                                setBuyModalOpen(false);
-                            }}
-                        >
-                            Comprar {buyQuantity}x {buyService.unit_label} por {formatCurrency(calculatePrice())}
-                        </Button>
-
-                        <Button
-                            fullWidth
-                            variant="subtle"
-                            color="violet"
-                            leftSection={<IconRefresh size={16} />}
-                            onClick={() => {
-                                setBuyType('recurring');
-                                // TODO: Adicionar à assinatura
-                                console.log('Adicionar recorrente:', { service: buyService, quantity: buyQuantity, price: calculatePrice() });
-                                setBuyModalOpen(false);
-                            }}
-                        >
-                            Ou adicionar +{formatCurrency(calculatePrice())}/mês na assinatura
-                        </Button>
-
-                        <Text size="xs" c="dimmed" ta="center">
-                            O botão principal compra créditos avulsos (expiram em 30 dias).
-                            A opção mensal adiciona recarga automática à sua assinatura.
-                        </Text>
+                            <Tabs.Panel value="recorrente" pt="md">
+                                <Stack gap="sm">
+                                    <Alert variant="light" color="violet" icon={<IconSparkles size={16} />} p="xs">
+                                        <Text size="xs">Créditos recorrentes são renovados <strong>automaticamente todo mês</strong> junto com sua assinatura.</Text>
+                                    </Alert>
+                                    <div>
+                                        <Text size="sm" fw={500} mb={4}>Quantidade mensal: <strong>{buyQuantity}x {buyService.unit_label}</strong></Text>
+                                        <Slider value={buyQuantity} onChange={setBuyQuantity} min={1} max={100} step={1} color="violet"
+                                            marks={[{ value: 1, label: '1' }, { value: 25, label: '25' }, { value: 50, label: '50' }, { value: 100, label: '100' }]}
+                                        />
+                                    </div>
+                                    <Card withBorder radius="md" p="sm" mt="xs" style={{ background: 'var(--mantine-color-violet-0)' }}>
+                                        <Group justify="space-between">
+                                            <Text fw={700}>Acréscimo mensal</Text>
+                                            <Text size="lg" fw={800} c="violet">+{fmt(calcPrice())}/mês</Text>
+                                        </Group>
+                                        <Text size="xs" c="dimmed" mt={2}>Será adicionado à sua próxima fatura</Text>
+                                    </Card>
+                                    <Button fullWidth size="md" variant="filled" color="violet" leftSection={<IconRefresh size={18} />}
+                                        onClick={() => { console.log('Adicionar recorrente:', { service: buyService.service_type, quantity: buyQuantity, price: calcPrice() }); setBuyModalOpen(false); }}>
+                                        Adicionar +{fmt(calcPrice())}/mês
+                                    </Button>
+                                </Stack>
+                            </Tabs.Panel>
+                        </Tabs>
                     </Stack>
                 )}
+            </Modal>
+
+            {/* ═══ Modal: Comprar Storage ═══ */}
+            <Modal opened={storageModalOpen} onClose={() => setStorageModalOpen(false)} centered size="md"
+                title={<Group gap="xs"><IconDatabase size={20} /><Text fw={600}>Expandir Armazenamento</Text></Group>}
+            >
+                <Stack gap="md">
+                    <SegmentedControl fullWidth value={storageType} onChange={(v) => setStorageType(v as 'storage' | 'stream')}
+                        data={[
+                            { label: '📁 Arquivos (CDN)', value: 'storage' },
+                            { label: '🎬 Vídeos (Stream)', value: 'stream' },
+                        ]}
+                    />
+
+                    {storage && (
+                        <Card withBorder radius="md" p="sm" bg="var(--mantine-color-gray-0)">
+                            <Text size="xs" c="dimmed" mb={4}>Uso atual ({storageType === 'stream' ? 'Stream' : 'CDN'})</Text>
+                            <Group gap="xs" align="baseline">
+                                <Text size="md" fw={700}>
+                                    {fmtBytes(storageType === 'stream' ? storage.stream_bytes : storage.storage_bytes)}
+                                </Text>
+                                <Text size="xs" c="dimmed">
+                                    / {fmtBytes(storageType === 'stream' ? storage.stream_quota_bytes : storage.storage_quota_bytes)}
+                                </Text>
+                            </Group>
+                            <Progress
+                                value={bytesPercent(
+                                    storageType === 'stream' ? storage.stream_bytes : storage.storage_bytes,
+                                    storageType === 'stream' ? storage.stream_quota_bytes : storage.storage_quota_bytes
+                                )}
+                                color={storageType === 'stream' ? 'blue' : 'teal'}
+                                size="sm" radius="xl" mt={4}
+                            />
+                        </Card>
+                    )}
+
+                    <div>
+                        <Text size="sm" fw={500} mb={4}>Adicionar: <strong>{storageGb} GB</strong></Text>
+                        <Slider value={storageGb} onChange={setStorageGb} min={1} max={100} step={1} color="teal"
+                            marks={[{ value: 1, label: '1 GB' }, { value: 10, label: '10' }, { value: 25, label: '25' }, { value: 50, label: '50' }, { value: 100, label: '100' }]}
+                        />
+                    </div>
+
+                    <Card withBorder radius="md" p="sm">
+                        <Group justify="space-between">
+                            <div>
+                                <Text size="xs" c="dimmed">Preço por GB/{storageType === 'stream' ? 'Stream' : 'CDN'}</Text>
+                                <Text size="sm" fw={500}>{fmt(storageType === 'stream' ? 2.50 : 0.50)}/mês</Text>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <Text size="xs" c="dimmed">Acréscimo mensal</Text>
+                                <Text size="lg" fw={800} c="teal">
+                                    +{fmt(storageGb * (storageType === 'stream' ? 2.50 : 0.50))}/mês
+                                </Text>
+                            </div>
+                        </Group>
+                    </Card>
+
+                    <Button fullWidth size="md" color="teal" leftSection={<IconDatabase size={18} />}
+                        onClick={() => { console.log('Comprar storage:', { type: storageType, gb: storageGb }); setStorageModalOpen(false); }}>
+                        Adicionar {storageGb} GB por +{fmt(storageGb * (storageType === 'stream' ? 2.50 : 0.50))}/mês
+                    </Button>
+
+                    <Text size="xs" c="dimmed" ta="center">O valor será adicionado à sua assinatura mensal.</Text>
+                </Stack>
             </Modal>
         </Stack>
     );

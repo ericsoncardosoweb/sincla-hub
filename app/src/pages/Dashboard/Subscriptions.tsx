@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Container, Text, Card, Group, Badge, Stack, Skeleton,
-    Table, ThemeIcon, SimpleGrid, Button, Divider, Loader,
+    ThemeIcon, SimpleGrid, Button, Divider, Loader,
     ActionIcon, Title, Modal, Tooltip, SegmentedControl,
+    Box, Paper, Progress, rem, Tabs,
 } from '@mantine/core';
 import {
     IconCreditCard, IconCalendar, IconReceipt, IconUsers,
     IconStar, IconCheck, IconArrowLeft, IconRocket,
     IconSchool, IconTarget, IconBuildingCommunity, IconShoppingCart,
     IconMessage, IconChartBar, IconArrowsExchange, IconArrowUp,
-    IconArrowDown, IconBrandWhatsapp,
+    IconArrowDown, IconBrandWhatsapp, IconSparkles, IconBrain,
+    IconCloud, IconExternalLink, IconCrown, IconTrendingUp,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
@@ -36,7 +38,7 @@ interface SubscriptionRow {
     trial_ends_at: string | null;
     canceled_at: string | null;
     created_at: string;
-    product: { name: string } | null;
+    product: { name: string; brand_color?: string; icon?: string; base_url?: string } | null;
     name: string;
 }
 
@@ -88,26 +90,18 @@ const formatDate = (date: string) =>
     new Date(date).toLocaleDateString('pt-BR');
 
 const statusLabels: Record<string, string> = {
-    active: 'Ativa',
-    trial: 'Trial',
-    past_due: 'Em atraso',
-    canceled: 'Cancelada',
-    suspended: 'Suspensa',
+    active: 'Ativa', trial: 'Em Trial', past_due: 'Em atraso',
+    canceled: 'Cancelada', suspended: 'Suspensa',
 };
 
 const statusColors: Record<string, string> = {
-    active: 'green',
-    trial: 'blue',
-    past_due: 'orange',
-    canceled: 'red',
-    suspended: 'gray',
+    active: 'green', trial: 'blue', past_due: 'orange',
+    canceled: 'red', suspended: 'gray',
 };
 
 const planLabels: Record<string, string> = {
-    starter: 'Starter',
-    pro: 'Pro',
-    business: 'Business',
-    enterprise: 'Enterprise',
+    starter: 'Starter', pro: 'Pro', business: 'Business',
+    enterprise: 'Enterprise', free: 'Gratuito', team: 'Team',
 };
 
 // ============================
@@ -120,11 +114,14 @@ export function Subscriptions() {
     const { currentCompany } = useAuth();
     const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<string | null>('assinaturas');
 
     // Plan selection state
     const productId = searchParams.get('produto');
     const isSuccess = searchParams.get('sucesso') === 'true';
     const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
+    const [plans, setPlans] = useState<PlanOption[]>([]);
+    const [loadingPlans, setLoadingPlans] = useState(false);
 
     // Change plan modal state
     const [changePlanModalOpen, setChangePlanModalOpen] = useState(false);
@@ -134,6 +131,8 @@ export function Subscriptions() {
     const [changePlanSaving, _setChangePlanSaving] = useState(false);
     const [selectedNewPlan, setSelectedNewPlan] = useState<PlanOption | null>(null);
     const [changeBillingCycle, setChangeBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+
+    const [platformWhatsapp, setPlatformWhatsapp] = useState('');
 
     const handleCloseSuccessModal = () => {
         searchParams.delete('sucesso');
@@ -153,9 +152,6 @@ export function Subscriptions() {
             window.open('https://app.sincla.com.br', '_blank');
         }
     };
-    const [plans, setPlans] = useState<PlanOption[]>([]);
-    const [loadingPlans, setLoadingPlans] = useState(false);
-    const [platformWhatsapp, setPlatformWhatsapp] = useState('');
 
     useEffect(() => {
         if (currentCompany) loadData();
@@ -180,7 +176,7 @@ export function Subscriptions() {
                     id, product_id, plan, status, seats_limit, seats_used,
                     billing_cycle, monthly_amount, current_period_start, current_period_end,
                     trial_ends_at, canceled_at, created_at,
-                    product:products!product_id (name)
+                    product:products!product_id (name, brand_color, icon, base_url)
                 `)
                 .eq('company_id', currentCompany.id)
                 .order('created_at', { ascending: false });
@@ -204,9 +200,7 @@ export function Subscriptions() {
                 supabase.from('products').select('id, name, brand_color, icon, base_url').eq('id', pid).single(),
                 supabase.from('product_plans')
                     .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days')
-                    .eq('product_id', pid)
-                    .eq('is_active', true)
-                    .order('sort_order'),
+                    .eq('product_id', pid).eq('is_active', true).order('sort_order'),
             ]);
             setProductInfo(productRes.data);
             setPlans(plansRes.data || []);
@@ -217,7 +211,6 @@ export function Subscriptions() {
         }
     };
 
-    // ── Change Plan Logic ──
     const handleOpenChangePlan = async (sub: SubscriptionRow) => {
         setSelectedSub(sub);
         setSelectedNewPlan(null);
@@ -228,9 +221,7 @@ export function Subscriptions() {
             const { data } = await supabase
                 .from('product_plans')
                 .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days')
-                .eq('product_id', sub.product_id)
-                .eq('is_active', true)
-                .order('sort_order');
+                .eq('product_id', sub.product_id).eq('is_active', true).order('sort_order');
             setChangePlans(data || []);
         } catch (err) {
             console.error('Error loading plans for change:', err);
@@ -241,12 +232,9 @@ export function Subscriptions() {
 
     const handleConfirmPlanChange = async () => {
         if (!selectedSub || !selectedNewPlan || !currentCompany) return;
-        // Redirecionar para o checkout com o novo plano
-        const productId = selectedSub.product_id;
-        const planSlug = selectedNewPlan.slug;
         const cycle = changeBillingCycle === 'yearly' ? 'annual' : 'monthly';
         setChangePlanModalOpen(false);
-        navigate(`/checkout?produto=${productId}&plano=${planSlug}&ciclo=${cycle}`);
+        navigate(`/checkout?produto=${selectedSub.product_id}&plano=${selectedNewPlan.slug}&ciclo=${cycle}`);
     };
 
     const getPlanDirection = (currentPlan: string, newPlan: PlanOption): 'upgrade' | 'downgrade' | 'same' => {
@@ -258,26 +246,19 @@ export function Subscriptions() {
         return 'same';
     };
 
+    // ---- No company ----
     if (!currentCompany) {
         return (
             <Container size="xl" py="md">
-                <PageHeader
-                    title="Minhas Assinaturas"
-                    subtitle="Gerencie as assinaturas de produtos"
-                    helpContent="Aqui você visualiza todas as assinaturas de produtos da sua empresa."
-                />
-                <EmptyState
-                    icon={<IconCreditCard size={28} />}
-                    title="Nenhuma empresa selecionada"
-                    description="Selecione ou crie uma empresa para ver suas assinaturas."
-                    actionLabel="Ir para Empresas"
-                    onAction={() => navigate('/painel/empresas')}
-                />
+                <PageHeader title="Minhas Assinaturas" subtitle="Gerencie as assinaturas de produtos" helpContent="Aqui você visualiza todas as assinaturas de produtos da sua empresa." />
+                <EmptyState icon={<IconCreditCard size={28} />} title="Nenhuma empresa selecionada" description="Selecione ou crie uma empresa." actionLabel="Ir para Empresas" onAction={() => navigate('/painel/empresas')} />
             </Container>
         );
     }
 
-    const color = productInfo?.brand_color || '#0087ff';
+    const color = productInfo?.brand_color || '#0047CC';
+    const activeCount = subscriptions.filter(s => s.status === 'active').length;
+    const totalAmount = subscriptions.filter(s => ['active', 'trial'].includes(s.status)).reduce((sum, s) => sum + (s.monthly_amount || 0), 0);
 
     // ---- Plan Selection View ----
     if (productId && !isSuccess) {
@@ -286,32 +267,22 @@ export function Subscriptions() {
                 <Stack gap="lg">
                     <Group justify="space-between">
                         <Group>
-                            <ActionIcon
-                                variant="subtle"
-                                onClick={() => setSearchParams({})}
-                            >
+                            <ActionIcon variant="subtle" onClick={() => setSearchParams({})}>
                                 <IconArrowLeft size={20} />
                             </ActionIcon>
                             <div>
                                 <Title order={3}>Escolha um plano</Title>
                                 {productInfo && (
-                                    <Group gap="xs" mt={4}>
-                                        <Badge variant="light" style={{ backgroundColor: `${color}18`, color }}>
-                                            {productInfo.name}
-                                        </Badge>
-                                    </Group>
+                                    <Badge variant="light" mt={4} style={{ backgroundColor: `${color}18`, color }}>
+                                        {productInfo.name}
+                                    </Badge>
                                 )}
                             </div>
                         </Group>
                         {productInfo && (() => {
                             const IconComp = iconMap[productInfo.icon] || IconRocket;
                             return (
-                                <ThemeIcon
-                                    size={56}
-                                    radius="md"
-                                    variant="light"
-                                    style={{ backgroundColor: `${color}18`, color }}
-                                >
+                                <ThemeIcon size={56} radius="md" variant="light" style={{ backgroundColor: `${color}18`, color }}>
                                     <IconComp size={28} />
                                 </ThemeIcon>
                             );
@@ -319,88 +290,35 @@ export function Subscriptions() {
                     </Group>
 
                     {loadingPlans ? (
-                        <Stack align="center" py="xl">
-                            <Loader />
-                            <Text c="dimmed">Carregando planos...</Text>
-                        </Stack>
+                        <Stack align="center" py="xl"><Loader /><Text c="dimmed">Carregando planos...</Text></Stack>
                     ) : plans.length === 0 ? (
-                        <EmptyState
-                            icon={<IconRocket size={28} />}
-                            title="Nenhum plano disponível"
-                            description="Este produto ainda não possui planos configurados."
-                            actionLabel="Voltar"
-                            onAction={() => setSearchParams({})}
-                        />
+                        <EmptyState icon={<IconRocket size={28} />} title="Nenhum plano disponível" description="Este produto ainda não possui planos configurados." actionLabel="Voltar" onAction={() => setSearchParams({})} />
                     ) : (
                         <SimpleGrid cols={{ base: 1, sm: 2, lg: plans.length >= 4 ? 4 : plans.length >= 3 ? 3 : 2 }} spacing="md">
                             {plans.map((plan) => (
-                                <Card
-                                    key={plan.id}
-                                    withBorder
-                                    radius="md"
-                                    padding="lg"
-                                    style={{
-                                        borderColor: plan.is_popular ? color : undefined,
-                                        borderWidth: plan.is_popular ? 2 : 1,
-                                        position: 'relative',
-                                        overflow: 'visible',
-                                        marginTop: plan.is_popular ? 12 : 0,
-                                        transition: 'all 0.25s ease',
-                                        cursor: 'pointer',
-                                    }}
-                                    onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
-                                        e.currentTarget.style.transform = 'translateY(-4px)';
-                                        e.currentTarget.style.boxShadow = `0 12px 24px ${color}20`;
-                                        e.currentTarget.style.borderColor = color;
-                                    }}
-                                    onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = 'none';
-                                        e.currentTarget.style.borderColor = plan.is_popular ? color : '';
-                                    }}
+                                <Card key={plan.id} withBorder radius="md" padding="lg" style={{
+                                    borderColor: plan.is_popular ? color : undefined,
+                                    borderWidth: plan.is_popular ? 2 : 1,
+                                    position: 'relative', overflow: 'visible',
+                                    marginTop: plan.is_popular ? 12 : 0,
+                                    transition: 'all 0.25s ease', cursor: 'pointer',
+                                }}
+                                    onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 12px 24px ${color}20`; e.currentTarget.style.borderColor = color; }}
+                                    onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = plan.is_popular ? color : ''; }}
                                 >
                                     {plan.is_popular && (
-                                        <Badge
-                                            variant="filled"
-                                            leftSection={<IconStar size={12} />}
-                                            style={{ position: 'absolute', top: -10, right: 12, backgroundColor: color }}
-                                        >
-                                            Recomendado
-                                        </Badge>
+                                        <Badge variant="filled" leftSection={<IconStar size={12} />} style={{ position: 'absolute', top: -10, right: 12, backgroundColor: color }}>Recomendado</Badge>
                                     )}
-
                                     <Text fw={700} size="lg" mb={4}>{plan.name}</Text>
-                                    {plan.description && (
-                                        <Text size="xs" c="dimmed" mb="sm">{plan.description}</Text>
-                                    )}
-
+                                    {plan.description && <Text size="xs" c="dimmed" mb="sm">{plan.description}</Text>}
                                     <Group gap={4} align="baseline" mb={4}>
-                                        <Text size="xl" fw={800} style={{ color }}>
-                                            {plan.price_monthly === 0 && plan.price_yearly === 0 ? 'Sob Consulta' : formatCurrency(plan.price_monthly)}
-                                        </Text>
+                                        <Text size="xl" fw={800} style={{ color }}>{plan.price_monthly === 0 && plan.price_yearly === 0 ? 'Sob Consulta' : formatCurrency(plan.price_monthly)}</Text>
                                         {plan.price_monthly > 0 && <Text size="xs" c="dimmed">/mês</Text>}
                                     </Group>
-
-                                    {plan.price_yearly > 0 && (
-                                        <Text size="xs" c="dimmed" mb="xs">
-                                            ou {formatCurrency(plan.price_yearly)}/ano ({plan.discount_yearly_percent}% off)
-                                        </Text>
-                                    )}
-
-                                    {plan.trial_days > 0 && (
-                                        <Badge variant="light" color="green" size="sm" mb="sm">
-                                            {plan.trial_days} dias grátis
-                                        </Badge>
-                                    )}
-
-                                    {plan.price_setup > 0 && (
-                                        <Badge variant="light" color="orange" size="sm" mb="sm" ml={4}>
-                                            + {formatCurrency(plan.price_setup)} setup
-                                        </Badge>
-                                    )}
-
+                                    {plan.price_yearly > 0 && <Text size="xs" c="dimmed" mb="xs">ou {formatCurrency(plan.price_yearly)}/ano ({plan.discount_yearly_percent}% off)</Text>}
+                                    {plan.trial_days > 0 && <Badge variant="light" color="green" size="sm" mb="sm">{plan.trial_days} dias grátis</Badge>}
+                                    {plan.price_setup > 0 && <Badge variant="light" color="orange" size="sm" mb="sm" ml={4}>+ {formatCurrency(plan.price_setup)} setup</Badge>}
                                     <Divider my="sm" />
-
                                     <Stack gap={6} mb="md">
                                         {plan.features.slice(0, 5).map((f: string, i: number) => (
                                             <Group key={i} gap={6} wrap="nowrap">
@@ -408,14 +326,9 @@ export function Subscriptions() {
                                                 <Text size="xs">{f}</Text>
                                             </Group>
                                         ))}
-                                        {plan.features.length > 5 && (
-                                            <Text size="xs" c="dimmed">+{plan.features.length - 5} mais...</Text>
-                                        )}
+                                        {plan.features.length > 5 && <Text size="xs" c="dimmed">+{plan.features.length - 5} mais...</Text>}
                                     </Stack>
-
-                                    <Button
-                                        fullWidth
-                                        variant={plan.is_popular ? 'filled' : 'light'}
+                                    <Button fullWidth variant={plan.is_popular ? 'filled' : 'light'}
                                         onClick={() => {
                                             if (plan.slug === 'enterprise') {
                                                 const num = platformWhatsapp.replace(/\D/g, '');
@@ -426,10 +339,7 @@ export function Subscriptions() {
                                         }}
                                         leftSection={plan.slug === 'enterprise' ? <IconBrandWhatsapp size={16} /> : undefined}
                                         color={plan.slug === 'enterprise' ? 'green' : undefined}
-                                        style={{
-                                            ...(plan.slug !== 'enterprise' && plan.is_popular ? { backgroundColor: color } : plan.slug !== 'enterprise' ? { color } : {}),
-                                            transition: 'all 0.2s ease',
-                                        }}
+                                        style={{ ...(plan.slug !== 'enterprise' && plan.is_popular ? { backgroundColor: color } : plan.slug !== 'enterprise' ? { color } : {}), transition: 'all 0.2s ease' }}
                                     >
                                         {plan.slug === 'enterprise' ? 'Falar com Consultor' : 'Quero Ativar'}
                                     </Button>
@@ -442,311 +352,252 @@ export function Subscriptions() {
         );
     }
 
-    // ---- Subscriptions List View ----
-    const activeCount = subscriptions.filter(s => s.status === 'active').length;
-    const totalAmount = subscriptions
-        .filter(s => ['active', 'trial'].includes(s.status))
-        .reduce((sum, s) => sum + (s.monthly_amount || 0), 0);
+    // ============================
+    // Main View (Tabs)
+    // ============================
 
     return (
         <Container size="xl" py="md">
             <Stack gap="lg">
                 <PageHeader
-                    title="Minhas Assinaturas"
-                    subtitle={`Assinaturas de produtos para ${currentCompany.name}`}
+                    title="Gestão da Assinatura"
+                    subtitle={`Assinaturas e consumo de ${currentCompany.name}`}
                     helpContent={
-                        <>
-                            <Text size="sm">Aqui você visualiza todas as assinaturas de produtos da sua empresa. Cada assinatura representa um produto contratado com seus respectivos planos e períodos.</Text>
-                        </>
+                        <Text size="sm">Gerencie suas assinaturas, monitore o consumo de serviços (IA, Storage, Notificações) e adquira créditos adicionais.</Text>
                     }
                 />
 
-                {/* KPIs */}
+                {/* ── Hero KPIs ── */}
                 {loading ? (
                     <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
-                        {Array(4).fill(0).map((_, i) => <Skeleton key={i} height={85} radius="md" />)}
+                        {Array(4).fill(0).map((_, i) => <Skeleton key={i} height={100} radius="md" />)}
                     </SimpleGrid>
                 ) : (
                     <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
-                        <Card withBorder padding="md" radius="md">
+                        <Paper radius="md" p="md" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff' }}>
                             <Group gap="xs">
-                                <ThemeIcon size="md" radius="md" variant="light" color="blue">
-                                    <IconCreditCard size={16} />
-                                </ThemeIcon>
-                                <Text size="xs" c="dimmed">Total</Text>
+                                <IconCreditCard size={18} style={{ opacity: 0.8 }} />
+                                <Text size="xs" style={{ opacity: 0.85 }}>Assinaturas</Text>
                             </Group>
-                            <Text size="xl" fw={700} mt="xs">{subscriptions.length}</Text>
-                        </Card>
-                        <Card withBorder padding="md" radius="md">
+                            <Text size="xl" fw={800} mt={4}>{subscriptions.length}</Text>
+                            <Text size="xs" style={{ opacity: 0.7 }}>{activeCount} ativa{activeCount !== 1 ? 's' : ''}</Text>
+                        </Paper>
+
+                        <Paper radius="md" p="md" style={{ background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', color: '#fff' }}>
                             <Group gap="xs">
-                                <ThemeIcon size="md" radius="md" variant="light" color="green">
-                                    <IconCreditCard size={16} />
-                                </ThemeIcon>
-                                <Text size="xs" c="dimmed">Ativas</Text>
+                                <IconReceipt size={18} style={{ opacity: 0.8 }} />
+                                <Text size="xs" style={{ opacity: 0.85 }}>Valor Mensal</Text>
                             </Group>
-                            <Text size="xl" fw={700} mt="xs" c="green">{activeCount}</Text>
-                        </Card>
-                        <Card withBorder padding="md" radius="md">
+                            <Text size="xl" fw={800} mt={4}>{formatCurrency(totalAmount)}</Text>
+                            <Text size="xs" style={{ opacity: 0.7 }}>planos ativos</Text>
+                        </Paper>
+
+                        <Paper radius="md" p="md" style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: '#fff' }}>
                             <Group gap="xs">
-                                <ThemeIcon size="md" radius="md" variant="light" color="teal">
-                                    <IconReceipt size={16} />
-                                </ThemeIcon>
-                                <Text size="xs" c="dimmed">Valor Mensal</Text>
+                                <IconUsers size={18} style={{ opacity: 0.8 }} />
+                                <Text size="xs" style={{ opacity: 0.85 }}>Seats em Uso</Text>
                             </Group>
-                            <Text size="xl" fw={700} mt="xs" c="teal">{formatCurrency(totalAmount)}</Text>
-                        </Card>
-                        <Card withBorder padding="md" radius="md">
-                            <Group gap="xs">
-                                <ThemeIcon size="md" radius="md" variant="light" color="violet">
-                                    <IconUsers size={16} />
-                                </ThemeIcon>
-                                <Text size="xs" c="dimmed">Seats em Uso</Text>
-                            </Group>
-                            <Text size="xl" fw={700} mt="xs">
+                            <Text size="xl" fw={800} mt={4}>
                                 {subscriptions.reduce((acc, s) => acc + (s.seats_used || 0), 0)}
                             </Text>
-                        </Card>
+                            <Text size="xs" style={{ opacity: 0.7 }}>
+                                de {subscriptions.reduce((acc, s) => acc + (s.seats_limit || 0), 0)} disponíveis
+                            </Text>
+                        </Paper>
+
+                        <Paper radius="md" p="md" style={{ background: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', color: '#fff' }}>
+                            <Group gap="xs">
+                                <IconTrendingUp size={18} style={{ opacity: 0.8 }} />
+                                <Text size="xs" style={{ opacity: 0.85 }}>Economia Anual</Text>
+                            </Group>
+                            <Text size="xl" fw={800} mt={4}>
+                                {formatCurrency(subscriptions.filter(s => s.billing_cycle === 'yearly').reduce((acc, s) => acc + (s.monthly_amount || 0) * 2, 0))}
+                            </Text>
+                            <Text size="xs" style={{ opacity: 0.7 }}>com planos anuais</Text>
+                        </Paper>
                     </SimpleGrid>
                 )}
 
-                {/* Table */}
-                {loading ? (
-                    <Stack gap="sm">
-                        {[1, 2].map(i => <Skeleton key={i} height={55} radius="md" />)}
-                    </Stack>
-                ) : subscriptions.length === 0 ? (
-                    <EmptyState
-                        icon={<IconCreditCard size={28} />}
-                        title="Nenhuma assinatura encontrada"
-                        description="Quando você contratar um produto, suas assinaturas aparecerão aqui com detalhes de plano, período e valor."
-                    />
-                ) : (
-                    <Card shadow="sm" padding={0} radius="md" withBorder>
-                        <Table striped highlightOnHover>
-                            <Table.Thead>
-                                <Table.Tr>
-                                    <Table.Th>Produto</Table.Th>
-                                    <Table.Th>Plano</Table.Th>
-                                    <Table.Th>Status</Table.Th>
-                                    <Table.Th>Seats</Table.Th>
-                                    <Table.Th>Valor/mês</Table.Th>
-                                    <Table.Th>Ciclo</Table.Th>
-                                    <Table.Th>Período</Table.Th>
-                                    <Table.Th ta="center">Ações</Table.Th>
-                                </Table.Tr>
-                            </Table.Thead>
-                            <Table.Tbody>
-                                {subscriptions.map(sub => (
-                                    <Table.Tr key={sub.id}>
-                                        <Table.Td>
-                                            <Text size="sm" fw={500}>{sub.product?.name || sub.product_id}</Text>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Badge variant="dot" size="sm">{planLabels[sub.plan] || sub.plan}</Badge>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Badge color={statusColors[sub.status] || 'gray'} variant="light" size="sm">
-                                                {statusLabels[sub.status] || sub.status}
-                                            </Badge>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Text size="sm">{sub.seats_used}/{sub.seats_limit}</Text>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Text size="sm" fw={600}>
-                                                {sub.monthly_amount > 0 ? formatCurrency(sub.monthly_amount) : '—'}
-                                            </Text>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Text size="sm">{sub.billing_cycle === 'yearly' ? 'Anual' : 'Mensal'}</Text>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            {sub.current_period_end ? (
-                                                <Group gap={4}>
-                                                    <IconCalendar size={12} />
-                                                    <Text size="sm">até {formatDate(sub.current_period_end)}</Text>
-                                                </Group>
-                                            ) : (
-                                                <Text size="sm" c="dimmed">—</Text>
-                                            )}
-                                            {sub.status === 'trial' && sub.trial_ends_at && (
-                                                <Text size="xs" c="blue">Trial até {formatDate(sub.trial_ends_at)}</Text>
-                                            )}
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <Group gap={4} justify="center">
-                                                <Tooltip label="Mudar plano" withArrow>
-                                                    <ActionIcon
-                                                        variant="light"
-                                                        color="blue"
-                                                        size="sm"
-                                                        onClick={() => handleOpenChangePlan(sub)}
-                                                        disabled={sub.status === 'canceled'}
-                                                    >
-                                                        <IconArrowsExchange size={14} />
-                                                    </ActionIcon>
-                                                </Tooltip>
-                                            </Group>
-                                        </Table.Td>
-                                    </Table.Tr>
-                                ))}
-                            </Table.Tbody>
-                        </Table>
-                    </Card>
-                )}
+                {/* ── Tabs ── */}
+                <Tabs value={activeTab} onChange={setActiveTab}>
+                    <Tabs.List>
+                        <Tabs.Tab value="assinaturas" leftSection={<IconCreditCard size={16} />} style={{ fontWeight: 600 }}>
+                            Minhas Ferramentas
+                        </Tabs.Tab>
+                        <Tabs.Tab value="consumo" leftSection={<IconSparkles size={16} />} style={{ fontWeight: 600 }}>
+                            Consumo & Créditos
+                        </Tabs.Tab>
+                    </Tabs.List>
 
-                {/* ═══ Consumo de Serviços ═══ */}
-                <Divider my="lg" />
-                <Group gap="sm" mb="md">
-                    <ThemeIcon size="md" radius="md" variant="light" color="violet">
-                        <IconChartBar size={16} />
-                    </ThemeIcon>
-                    <div>
-                        <Text fw={600}>Consumo de Serviços</Text>
-                        <Text size="xs" c="dimmed">IA, Storage e Notificações — uso e créditos da sua empresa</Text>
-                    </div>
-                </Group>
-                <ConsumptionDashboard companyId={currentCompany.id} />
+                    {/* ═══ Tab: Assinaturas ═══ */}
+                    <Tabs.Panel value="assinaturas" pt="lg">
+                        {loading ? (
+                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                {[1, 2].map(i => <Skeleton key={i} height={200} radius="md" />)}
+                            </SimpleGrid>
+                        ) : subscriptions.length === 0 ? (
+                            <EmptyState
+                                icon={<IconRocket size={28} />}
+                                title="Nenhuma assinatura ativa"
+                                description="Quando você contratar um produto, ele aparecerá aqui com todos os detalhes. Explore nosso catálogo de ferramentas."
+                                actionLabel="Ver Ferramentas"
+                                onAction={() => navigate('/painel')}
+                            />
+                        ) : (
+                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                {subscriptions.map(sub => {
+                                    const subColor = sub.product?.brand_color || '#0047CC';
+                                    const IconComp = iconMap[sub.product?.icon || ''] || IconRocket;
+                                    const daysLeft = sub.current_period_end
+                                        ? Math.max(0, Math.ceil((new Date(sub.current_period_end).getTime() - Date.now()) / 86400000))
+                                        : null;
+                                    const seatPercent = sub.seats_limit > 0 ? (sub.seats_used / sub.seats_limit) * 100 : 0;
+
+                                    return (
+                                        <Card key={sub.id} withBorder radius="md" padding={0} style={{ overflow: 'hidden', transition: 'all 0.2s ease' }}
+                                            onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = `0 8px 24px ${subColor}20`; }}
+                                            onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = 'none'; }}
+                                        >
+                                            {/* Header gradient */}
+                                            <Box style={{ background: `linear-gradient(135deg, ${subColor}, ${subColor}cc)`, padding: '16px 20px' }}>
+                                                <Group justify="space-between">
+                                                    <Group gap="sm">
+                                                        <ThemeIcon size="lg" radius="md" variant="white" color="dark" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                                                            <IconComp size={20} color="#fff" />
+                                                        </ThemeIcon>
+                                                        <div>
+                                                            <Text fw={700} c="white" size="md">{sub.product?.name || sub.product_id}</Text>
+                                                            <Group gap={6}>
+                                                                <Badge size="xs" variant="white" style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}>
+                                                                    <IconCrown size={10} style={{ marginRight: 4 }} />{planLabels[sub.plan] || sub.plan}
+                                                                </Badge>
+                                                            </Group>
+                                                        </div>
+                                                    </Group>
+                                                    <Badge color={statusColors[sub.status] || 'gray'} variant="filled" size="sm" style={{ textTransform: 'capitalize' }}>
+                                                        {statusLabels[sub.status] || sub.status}
+                                                    </Badge>
+                                                </Group>
+                                            </Box>
+
+                                            {/* Body */}
+                                            <Box p="md">
+                                                <SimpleGrid cols={3} spacing="xs" mb="sm">
+                                                    <div style={{ textAlign: 'center' }}>
+                                                        <Text size="xs" c="dimmed">Valor</Text>
+                                                        <Text size="sm" fw={700}>{sub.monthly_amount > 0 ? formatCurrency(sub.monthly_amount) : 'Grátis'}</Text>
+                                                        <Text size="xs" c="dimmed">/{sub.billing_cycle === 'yearly' ? 'ano' : 'mês'}</Text>
+                                                    </div>
+                                                    <div style={{ textAlign: 'center' }}>
+                                                        <Text size="xs" c="dimmed">Seats</Text>
+                                                        <Text size="sm" fw={700}>{sub.seats_used}/{sub.seats_limit}</Text>
+                                                        <Progress value={seatPercent} size={4} color={seatPercent > 90 ? 'red' : subColor} mt={4} />
+                                                    </div>
+                                                    <div style={{ textAlign: 'center' }}>
+                                                        <Text size="xs" c="dimmed">Renova em</Text>
+                                                        <Text size="sm" fw={700}>{daysLeft !== null ? `${daysLeft}d` : '—'}</Text>
+                                                        {sub.status === 'trial' && sub.trial_ends_at && (
+                                                            <Text size="xs" c="blue">Trial até {formatDate(sub.trial_ends_at)}</Text>
+                                                        )}
+                                                    </div>
+                                                </SimpleGrid>
+
+                                                <Divider my="xs" />
+
+                                                <Group justify="space-between">
+                                                    <Tooltip label="Mudar plano" withArrow>
+                                                        <Button variant="subtle" size="xs" leftSection={<IconArrowsExchange size={14} />}
+                                                            onClick={() => handleOpenChangePlan(sub)} disabled={sub.status === 'canceled'}
+                                                        >
+                                                            Alterar Plano
+                                                        </Button>
+                                                    </Tooltip>
+                                                    <Button variant="light" size="xs" rightSection={<IconExternalLink size={14} />}
+                                                        style={{ color: subColor }}
+                                                        onClick={async () => {
+                                                            try {
+                                                                await redirectToProduct(
+                                                                    { id: sub.product_id, base_url: sub.product?.base_url } as any,
+                                                                    currentCompany as any
+                                                                );
+                                                            } catch { /* silent */ }
+                                                        }}
+                                                    >
+                                                        Acessar
+                                                    </Button>
+                                                </Group>
+                                            </Box>
+                                        </Card>
+                                    );
+                                })}
+                            </SimpleGrid>
+                        )}
+                    </Tabs.Panel>
+
+                    {/* ═══ Tab: Consumo ═══ */}
+                    <Tabs.Panel value="consumo" pt="lg">
+                        <ConsumptionDashboard companyId={currentCompany.id} />
+                    </Tabs.Panel>
+                </Tabs>
             </Stack>
 
-            {/* Modal de Sucesso */}
-            <Modal
-                opened={isSuccess && !!productInfo}
-                onClose={handleCloseSuccessModal}
-                title="Assinatura Confirmada!"
-                centered
-                size="lg"
-            >
+            {/* ═══ Modal de Sucesso ═══ */}
+            <Modal opened={isSuccess && !!productInfo} onClose={handleCloseSuccessModal} title="Assinatura Confirmada!" centered size="lg">
                 <Stack align="center" ta="center" py="xl">
-                    <ThemeIcon size={80} radius="100%" color="green" variant="light">
-                        <IconCheck size={40} />
-                    </ThemeIcon>
-                    <Title order={3} mt="md">
-                        Parabéns pela sua nova assinatura!
-                    </Title>
+                    <ThemeIcon size={80} radius="100%" color="green" variant="light"><IconCheck size={40} /></ThemeIcon>
+                    <Title order={3} mt="md">Parabéns pela sua nova assinatura!</Title>
                     <Text c="dimmed" size="md">
                         O <strong>{productInfo?.name}</strong> foi ativado com sucesso para a empresa <strong>{currentCompany.name}</strong>.
-                        Você já pode começar a utilizar todas as funcionalidades da ferramenta.
                     </Text>
-                    <Button
-                        size="md"
-                        mt="lg"
-                        fullWidth
-                        rightSection={<IconRocket size={18} />}
-                        onClick={handleAccessTool}
-                        style={{ backgroundColor: color }}
-                    >
+                    <Button size="md" mt="lg" fullWidth rightSection={<IconRocket size={18} />} onClick={handleAccessTool} style={{ backgroundColor: color }}>
                         Acessar a Ferramenta Agora
                     </Button>
-                    <Button variant="subtle" fullWidth onClick={handleCloseSuccessModal}>
-                        Voltar para minhas Assinaturas
-                    </Button>
+                    <Button variant="subtle" fullWidth onClick={handleCloseSuccessModal}>Voltar para minhas Assinaturas</Button>
                 </Stack>
             </Modal>
 
-            {/* Modal de Mudança de Plano */}
-            <Modal
-                opened={changePlanModalOpen}
-                onClose={() => setChangePlanModalOpen(false)}
-                title={
-                    <Group gap="xs">
-                        <IconArrowsExchange size={20} />
-                        <Text fw={600}>Mudar Plano — {selectedSub?.product?.name || selectedSub?.product_id}</Text>
-                    </Group>
-                }
-                centered
-                size="xl"
+            {/* ═══ Modal de Mudança de Plano ═══ */}
+            <Modal opened={changePlanModalOpen} onClose={() => setChangePlanModalOpen(false)} centered size="xl"
+                title={<Group gap="xs"><IconArrowsExchange size={20} /><Text fw={600}>Mudar Plano — {selectedSub?.product?.name || selectedSub?.product_id}</Text></Group>}
             >
                 {changePlanLoading ? (
-                    <Stack align="center" py="xl">
-                        <Loader />
-                        <Text c="dimmed" size="sm">Carregando planos disponíveis...</Text>
-                    </Stack>
+                    <Stack align="center" py="xl"><Loader /><Text c="dimmed" size="sm">Carregando...</Text></Stack>
                 ) : (
                     <Stack gap="md">
-                        {/* Ciclo de cobrança */}
                         <Group justify="center">
-                            <SegmentedControl
-                                value={changeBillingCycle}
-                                onChange={(v) => setChangeBillingCycle(v as 'monthly' | 'yearly')}
-                                data={[
-                                    { label: 'Mensal', value: 'monthly' },
-                                    { label: 'Anual (desconto)', value: 'yearly' },
-                                ]}
-                                size="sm"
-                            />
+                            <SegmentedControl value={changeBillingCycle} onChange={(v) => setChangeBillingCycle(v as 'monthly' | 'yearly')}
+                                data={[{ label: 'Mensal', value: 'monthly' }, { label: 'Anual (desconto)', value: 'yearly' }]} size="sm" />
                         </Group>
 
-                        {/* Cards dos planos */}
                         <SimpleGrid cols={{ base: 1, sm: 2, md: changePlans.length >= 4 ? 4 : changePlans.length >= 3 ? 3 : 2 }} spacing="sm">
                             {changePlans.map((plan) => {
                                 const isCurrent = plan.slug === selectedSub?.plan;
                                 const isEnterprise = plan.slug === 'enterprise';
                                 const isSelected = selectedNewPlan?.id === plan.id;
                                 const direction = selectedSub ? getPlanDirection(selectedSub.plan, plan) : 'same';
-                                const displayPrice = changeBillingCycle === 'yearly' && plan.price_yearly > 0
-                                    ? plan.price_yearly / 12
-                                    : plan.price_monthly;
+                                const displayPrice = changeBillingCycle === 'yearly' && plan.price_yearly > 0 ? plan.price_yearly / 12 : plan.price_monthly;
 
                                 return (
-                                    <Card
-                                        key={plan.id}
-                                        withBorder
-                                        radius="md"
-                                        padding="md"
-                                        style={{
-                                            borderColor: isCurrent ? 'var(--mantine-color-green-5)' : isSelected ? 'var(--mantine-color-blue-5)' : undefined,
-                                            borderWidth: isCurrent || isSelected ? 2 : 1,
-                                            cursor: (isCurrent || isEnterprise) ? 'default' : 'pointer',
-                                            opacity: isCurrent ? 0.7 : 1,
-                                            transition: 'all 0.2s ease',
-                                            position: 'relative',
-                                        }}
-                                        onClick={() => {
-                                            if (!isCurrent && !isEnterprise) setSelectedNewPlan(plan);
-                                        }}
-                                    >
-                                        {isCurrent && (
-                                            <Badge
-                                                variant="filled"
-                                                color="green"
-                                                size="xs"
-                                                style={{ position: 'absolute', top: 8, right: 8 }}
-                                            >
-                                                Atual
-                                            </Badge>
-                                        )}
-                                        {isSelected && !isCurrent && (
-                                            <Badge
-                                                variant="filled"
-                                                color="blue"
-                                                size="xs"
-                                                style={{ position: 'absolute', top: 8, right: 8 }}
-                                            >
-                                                Selecionado
-                                            </Badge>
-                                        )}
-
+                                    <Card key={plan.id} withBorder radius="md" padding="md" style={{
+                                        borderColor: isCurrent ? 'var(--mantine-color-green-5)' : isSelected ? 'var(--mantine-color-blue-5)' : undefined,
+                                        borderWidth: isCurrent || isSelected ? 2 : 1,
+                                        cursor: (isCurrent || isEnterprise) ? 'default' : 'pointer',
+                                        opacity: isCurrent ? 0.7 : 1, transition: 'all 0.2s ease', position: 'relative',
+                                    }} onClick={() => { if (!isCurrent && !isEnterprise) setSelectedNewPlan(plan); }}>
+                                        {isCurrent && <Badge variant="filled" color="green" size="xs" style={{ position: 'absolute', top: 8, right: 8 }}>Atual</Badge>}
+                                        {isSelected && !isCurrent && <Badge variant="filled" color="blue" size="xs" style={{ position: 'absolute', top: 8, right: 8 }}>Selecionado</Badge>}
                                         <Text fw={700} size="md">{plan.name}</Text>
-                                        {plan.description && (
-                                            <Text size="xs" c="dimmed" lineClamp={2}>{plan.description}</Text>
-                                        )}
-
+                                        {plan.description && <Text size="xs" c="dimmed" lineClamp={2}>{plan.description}</Text>}
                                         <Group gap={4} align="baseline" mt="xs">
                                             <Text size="lg" fw={800} c={isCurrent ? 'green' : isSelected ? 'blue' : undefined}>
                                                 {plan.price_monthly === 0 && plan.price_yearly === 0 ? 'Sob Consulta' : formatCurrency(displayPrice)}
                                             </Text>
                                             {plan.price_monthly > 0 && <Text size="xs" c="dimmed">/mês</Text>}
                                         </Group>
-
                                         {changeBillingCycle === 'yearly' && plan.discount_yearly_percent > 0 && (
-                                            <Badge variant="light" color="green" size="xs" mt={4}>
-                                                {plan.discount_yearly_percent}% de desconto
-                                            </Badge>
+                                            <Badge variant="light" color="green" size="xs" mt={4}>{plan.discount_yearly_percent}% de desconto</Badge>
                                         )}
-
                                         <Divider my="xs" />
-
                                         <Stack gap={3}>
                                             {plan.features.slice(0, 4).map((f: string, i: number) => (
                                                 <Group key={i} gap={4} wrap="nowrap">
@@ -754,37 +605,17 @@ export function Subscriptions() {
                                                     <Text size="xs">{f}</Text>
                                                 </Group>
                                             ))}
-                                            {plan.features.length > 4 && (
-                                                <Text size="xs" c="dimmed">+{plan.features.length - 4} mais</Text>
-                                            )}
+                                            {plan.features.length > 4 && <Text size="xs" c="dimmed">+{plan.features.length - 4} mais</Text>}
                                         </Stack>
-
                                         {!isCurrent && !isEnterprise && direction !== 'same' && (
-                                            <Badge
-                                                variant="light"
-                                                color={direction === 'upgrade' ? 'blue' : 'orange'}
-                                                size="xs"
-                                                mt="xs"
-                                                leftSection={direction === 'upgrade' ? <IconArrowUp size={10} /> : <IconArrowDown size={10} />}
-                                            >
+                                            <Badge variant="light" color={direction === 'upgrade' ? 'blue' : 'orange'} size="xs" mt="xs"
+                                                leftSection={direction === 'upgrade' ? <IconArrowUp size={10} /> : <IconArrowDown size={10} />}>
                                                 {direction === 'upgrade' ? 'Upgrade' : 'Downgrade'}
                                             </Badge>
                                         )}
-
                                         {isEnterprise && !isCurrent && (
-                                            <Button
-                                                fullWidth
-                                                variant="filled"
-                                                color="green"
-                                                size="xs"
-                                                mt="xs"
-                                                leftSection={<IconBrandWhatsapp size={14} />}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const num = platformWhatsapp.replace(/\D/g, '');
-                                                    window.open(`https://wa.me/55${num}?text=${encodeURIComponent(`Olá! Gostaria de saber mais sobre o plano Enterprise do ${selectedSub?.product?.name || 'Sincla'}.`)}`, '_blank');
-                                                }}
-                                            >
+                                            <Button fullWidth variant="filled" color="green" size="xs" mt="xs" leftSection={<IconBrandWhatsapp size={14} />}
+                                                onClick={(e) => { e.stopPropagation(); const num = platformWhatsapp.replace(/\D/g, ''); window.open(`https://wa.me/55${num}?text=${encodeURIComponent(`Olá! Gostaria do plano Enterprise.`)}`, '_blank'); }}>
                                                 Falar com Consultor
                                             </Button>
                                         )}
@@ -793,7 +624,6 @@ export function Subscriptions() {
                             })}
                         </SimpleGrid>
 
-                        {/* Resumo da mudança */}
                         {selectedNewPlan && (
                             <Card withBorder radius="md" padding="md" bg="var(--mantine-color-blue-0)">
                                 <Group justify="space-between" align="center">
@@ -803,14 +633,10 @@ export function Subscriptions() {
                                         </Text>
                                         <Text size="xs" c="dimmed">
                                             Novo valor: {formatCurrency(changeBillingCycle === 'yearly' ? selectedNewPlan.price_yearly / 12 : selectedNewPlan.price_monthly)}/mês
-                                            {changeBillingCycle === 'yearly' ? ` (${formatCurrency(selectedNewPlan.price_yearly)}/ano)` : ''}
                                         </Text>
                                     </div>
-                                    <Button
-                                        onClick={handleConfirmPlanChange}
-                                        loading={changePlanSaving}
-                                        color={getPlanDirection(selectedSub?.plan || '', selectedNewPlan) === 'upgrade' ? 'blue' : 'orange'}
-                                    >
+                                    <Button onClick={handleConfirmPlanChange} loading={changePlanSaving}
+                                        color={getPlanDirection(selectedSub?.plan || '', selectedNewPlan) === 'upgrade' ? 'blue' : 'orange'}>
                                         Confirmar Mudança
                                     </Button>
                                 </Group>
