@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         // Verify user has access to the company
         const { data: membership, error: memberError } = await supabaseClient
             .from('company_members')
-            .select('id, role')
+            .select('id, role, user_type')
             .eq('user_id', user.id)
             .eq('company_id', company_id)
             .eq('status', 'active')
@@ -170,6 +170,7 @@ Deno.serve(async (req) => {
             product_id: product_id,
             plan_code: subscription?.product_plans?.slug || subscription?.plan || 'pro',
             plan_limits: subscription?.product_plans?.limits || {},
+            user_type: membership.user_type || 'collaborator',
             branding: {
                 logo_url: company.logo_url,
                 favicon_url: company.favicon_url,

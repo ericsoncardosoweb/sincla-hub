@@ -30,6 +30,7 @@ interface TeamMember {
     id: string;
     user_id: string;
     role: 'owner' | 'admin' | 'manager' | 'member';
+    user_type: string;
     created_at: string;
     user: {
         id: string;
@@ -65,6 +66,22 @@ const roleDescriptions: Record<string, string> = {
     member: 'Acesso aos recursos básicos das ferramentas ou modo leitura',
 };
 
+const userTypeLabels: Record<string, string> = {
+    collaborator: 'Colaborador',
+    manager: 'Gestor',
+    external: 'Externo',
+    student: 'Aluno',
+    customer: 'Cliente',
+};
+
+const userTypeColors: Record<string, string> = {
+    collaborator: 'blue',
+    manager: 'violet',
+    external: 'orange',
+    student: 'teal',
+    customer: 'pink',
+};
+
 export function Team() {
     const navigate = useNavigate();
     const { currentCompany, subscriber } = useAuth();
@@ -82,6 +99,7 @@ export function Team() {
         initialValues: {
             email: '',
             role: 'member',
+            user_type: 'collaborator',
         },
     });
 
@@ -103,6 +121,7 @@ export function Team() {
           id,
           user_id,
           role,
+          user_type,
           created_at,
           user:subscribers!company_members_user_id_fkey (
             id,
@@ -132,12 +151,18 @@ export function Team() {
     };
 
     const loadProducts = async () => {
-        const { data } = await supabase
-            .from('products')
-            .select('id, name, icon')
-            .eq('is_active', true)
-            .order('name');
-        setProducts((data || []) as Product[]);
+        if (!currentCompany) return;
+        // Carregar apenas produtos com assinatura ativa nesta empresa
+        const { data: subs } = await supabase
+            .from('subscriptions')
+            .select('product_id, product:products!product_id (id, name, icon)')
+            .eq('company_id', currentCompany.id)
+            .in('status', ['active', 'trial']);
+
+        const prods = (subs || [])
+            .map((s: any) => (Array.isArray(s.product) ? s.product[0] : s.product))
+            .filter(Boolean);
+        setProducts(prods as Product[]);
     };
 
     const initToolPermissions = (memberSettings?: Record<string, unknown>) => {
@@ -156,14 +181,28 @@ export function Team() {
         setModalOpen(true);
     };
 
-    const openEditModal = (member: TeamMember) => {
+    const openEditModal = async (member: TeamMember) => {
         setEditingMember(member);
         form.setValues({
             email: member.user.email,
             role: member.role,
+            user_type: member.user_type || 'collaborator',
         });
-        // Load existing tool permissions from member settings (if stored)
-        initToolPermissions();
+        // Load existing tool permissions from member_product_access
+        if (currentCompany) {
+            const { data: accessData } = await supabase
+                .from('member_product_access')
+                .select('product_id, access_level')
+                .eq('company_member_id', member.id);
+            const perms: Record<string, 'basic' | 'advanced'> = {};
+            products.forEach(p => {
+                const found = (accessData || []).find((a: any) => a.product_id === p.id);
+                perms[p.id] = found ? (found.access_level === 'admin' || found.access_level === 'manager' ? 'advanced' : 'basic') : 'basic';
+            });
+            setToolPermissions(perms);
+        } else {
+            initToolPermissions();
+        }
         setModalOpen(true);
     };
 
@@ -180,13 +219,19 @@ export function Team() {
 
             if (existingUser) {
                 // Add to company
-                const { error } = await supabase.from('company_members').insert({
+                const { data: newMember, error } = await supabase.from('company_members').insert({
                     company_id: currentCompany.id,
                     user_id: existingUser.id,
                     role: values.role,
-                });
+                    user_type: values.user_type,
+                }).select('id').single();
 
                 if (error) throw error;
+
+                // Persist tool permissions in member_product_access
+                if (newMember) {
+                    await saveToolPermissions(newMember.id);
+                }
 
                 notifications.show({
                     title: 'Sucesso',
@@ -215,13 +260,19 @@ export function Team() {
                     }, { onConflict: 'id' });
 
                     // Add to company
-                    const { error: memberError } = await supabase.from('company_members').insert({
+                    const { data: newMember, error: memberError } = await supabase.from('company_members').insert({
                         company_id: currentCompany.id,
                         user_id: signUpData.user.id,
                         role: values.role,
-                    });
+                        user_type: values.user_type,
+                    }).select('id').single();
 
                     if (memberError) throw memberError;
+
+                    // Persist tool permissions
+                    if (newMember) {
+                        await saveToolPermissions(newMember.id);
+                    }
 
                     // Send password reset so the user can set their own password
                     await supabase.auth.resetPasswordForEmail(values.email, {
@@ -254,10 +305,13 @@ export function Team() {
         try {
             const { error } = await supabase
                 .from('company_members')
-                .update({ role: values.role })
+                .update({ role: values.role, user_type: values.user_type })
                 .eq('id', editingMember.id);
 
             if (error) throw error;
+
+            // Persist tool permissions
+            await saveToolPermissions(editingMember.id);
 
             notifications.show({
                 title: 'Sucesso',
@@ -317,6 +371,30 @@ export function Team() {
     };
 
     const canManage = isOwner || isAdmin;
+
+    // Persist member_product_access entries
+    const saveToolPermissions = async (memberId: string) => {
+        const entries = Object.entries(toolPermissions).map(([productId, level]) => ({
+            company_member_id: memberId,
+            product_id: productId,
+            access_level: level === 'advanced' ? 'admin' : 'user',
+            granted_by: subscriber?.id,
+        }));
+
+        if (entries.length === 0) return;
+
+        // Delete existing and re-insert
+        await supabase
+            .from('member_product_access')
+            .delete()
+            .eq('company_member_id', memberId);
+
+        const { error } = await supabase
+            .from('member_product_access')
+            .insert(entries);
+
+        if (error) console.error('Error saving tool permissions:', error);
+    };
 
     const filteredMembers = useMemo(() => {
         return members.filter(m => {
@@ -419,6 +497,7 @@ export function Team() {
                             <Table.Th>Membro</Table.Th>
                             <Table.Th>Email</Table.Th>
                             <Table.Th>Função</Table.Th>
+                            <Table.Th>Tipo</Table.Th>
                             <Table.Th>Desde</Table.Th>
                             {canManage && <Table.Th>Ações</Table.Th>}
                         </Table.Tr>
@@ -447,6 +526,11 @@ export function Team() {
                                 <Table.Td>
                                     <Badge color={roleColors[member.role]} variant="light">
                                         {roleLabels[member.role]}
+                                    </Badge>
+                                </Table.Td>
+                                <Table.Td>
+                                    <Badge color={userTypeColors[member.user_type] || 'gray'} variant="dot" size="sm">
+                                        {userTypeLabels[member.user_type] || member.user_type}
                                     </Badge>
                                 </Table.Td>
                                 <Table.Td>
@@ -515,6 +599,20 @@ export function Team() {
                             ]}
                             required
                             {...form.getInputProps('role')}
+                        />
+
+                        <Select
+                            label="Tipo de Acesso"
+                            description="Define o perfil do membro dentro da empresa"
+                            data={[
+                                { value: 'collaborator', label: 'Colaborador — Funcionário operacional' },
+                                { value: 'manager', label: 'Gestor — Configura ferramentas' },
+                                { value: 'external', label: 'Externo — Consultor, contador' },
+                                { value: 'student', label: 'Aluno — Aprendiz, treinando' },
+                                { value: 'customer', label: 'Cliente — B2C promovido' },
+                            ]}
+                            required
+                            {...form.getInputProps('user_type')}
                         />
 
                         {/* Role description */}
