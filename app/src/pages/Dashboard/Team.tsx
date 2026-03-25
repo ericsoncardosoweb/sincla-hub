@@ -21,7 +21,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconMail, IconSearch, IconUsers, IconShieldCheck } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconMail, IconSearch, IconUsers, IconShieldCheck, IconRefresh } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
@@ -396,6 +396,45 @@ export function Team() {
         if (error) console.error('Error saving tool permissions:', error);
     };
 
+    // Provision member to satellite tools
+    const handleProvision = async (member: TeamMember) => {
+        try {
+            notifications.show({
+                id: `provision-${member.id}`,
+                title: 'Sincronizando...',
+                message: 'Provisionando acesso nas ferramentas...',
+                loading: true,
+                autoClose: false,
+            });
+
+            const response = await supabase.functions.invoke('provision-tool-user', {
+                body: { action: 'provision', member_id: member.id },
+            });
+
+            if (response.error) throw response.error;
+
+            const result = response.data;
+            notifications.update({
+                id: `provision-${member.id}`,
+                title: result.errors > 0 ? 'Sincronização parcial' : 'Sincronizado!',
+                message: `${result.provisioned} ferramenta(s) sincronizada(s)${result.errors > 0 ? `, ${result.errors} erro(s)` : ''}`,
+                color: result.errors > 0 ? 'yellow' : 'green',
+                loading: false,
+                autoClose: 4000,
+            });
+        } catch (error: any) {
+            console.error('Provision error:', error);
+            notifications.update({
+                id: `provision-${member.id}`,
+                title: 'Erro ao sincronizar',
+                message: error.message || 'Falha ao provisionar nas ferramentas',
+                color: 'red',
+                loading: false,
+                autoClose: 4000,
+            });
+        }
+    };
+
     const filteredMembers = useMemo(() => {
         return members.filter(m => {
             if (!m.user) return false; // skip membros sem user
@@ -560,6 +599,13 @@ export function Team() {
                                                         onClick={() => handleRemove(member)}
                                                     >
                                                         Remover
+                                                    </Menu.Item>
+                                                    <Menu.Divider />
+                                                    <Menu.Item
+                                                        leftSection={<IconRefresh style={{ width: rem(14), height: rem(14) }} />}
+                                                        onClick={() => handleProvision(member)}
+                                                    >
+                                                        Sincronizar
                                                     </Menu.Item>
                                                 </Menu.Dropdown>
                                             </Menu>
