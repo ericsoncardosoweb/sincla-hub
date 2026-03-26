@@ -21,6 +21,51 @@ interface RequestBody {
     name: string
 }
 
+// ── Helper: envia email de boas-vindas ──
+async function sendWelcomeEmail(email: string, name: string) {
+    const loginUrl = 'https://app.sincla.com.br/login?welcome=1'
+    const credentialsContent = `
+        <p>Sua conta no <strong>Sincla Hub</strong> foi criada com sucesso!</p>
+        <p>Aqui estão seus dados de acesso:</p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:16px 20px;margin:16px 0;border-left:4px solid #0047CC;">
+            <p style="margin:0 0 8px;font-size:14px;color:#666;">
+                <strong>Email:</strong> ${email}
+            </p>
+            <p style="margin:0;font-size:14px;color:#666;">
+                <strong>Senha:</strong> <code style="background:#e9ecef;padding:2px 8px;border-radius:4px;font-size:15px;font-weight:600;color:#1a1a2e;">${DEFAULT_PASSWORD}</code>
+            </p>
+        </div>
+        <div style="background:#fff3cd;border-radius:8px;padding:12px 16px;margin:16px 0;border-left:4px solid #ff8c00;">
+            <p style="margin:0;font-size:13px;color:#856404;">
+                ⚠️ <strong>Importante:</strong> Esta é uma senha temporária. Por segurança, altere-a assim que acessar o painel pela primeira vez em <strong>Perfil e Senha</strong>.
+            </p>
+        </div>
+    `
+
+    try {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-notification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+                channel: 'email',
+                to: email,
+                subject: `Bem-vindo ao Sincla, ${name}! 🚀 Seus dados de acesso`,
+                message: credentialsContent,
+                template: 'custom',
+                data: {
+                    action_url: loginUrl,
+                    action_label: 'Acessar meu Painel',
+                },
+            }),
+        })
+    } catch (emailErr) {
+        console.error('Error sending welcome email:', emailErr)
+    }
+}
+
 Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -70,7 +115,7 @@ Deno.serve(async (req) => {
             )
         }
 
-        // 1. Check if subscriber already exists (fast, reliable, no pagination issues)
+        // 1. Check if subscriber already exists
         const { data: existingSub } = await adminClient
             .from('subscribers')
             .select('id, email')
@@ -82,6 +127,9 @@ Deno.serve(async (req) => {
                 .from('subscribers')
                 .update({ name })
                 .eq('id', existingSub.id)
+
+            // Envia email mesmo para usuário existente (admin pode não ter enviado antes)
+            await sendWelcomeEmail(email.trim(), name)
 
             return new Response(
                 JSON.stringify({ user_id: existingSub.id, already_existed: true }),
@@ -102,7 +150,7 @@ Deno.serve(async (req) => {
 
             // Edge case: user exists in auth.users but not in subscribers
             if (createError?.message?.includes('already been registered') || createError?.message?.includes('already exists')) {
-                // Try to find existing auth user by email
+                // Find existing auth user by email
                 const { data: { users } } = await adminClient.auth.admin.listUsers()
                 const existingAuthUser = users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase())
 
@@ -115,6 +163,9 @@ Deno.serve(async (req) => {
                             email: email.trim(),
                             name,
                         }, { onConflict: 'id' })
+
+                    // Envia email
+                    await sendWelcomeEmail(email.trim(), name)
 
                     return new Response(
                         JSON.stringify({ user_id: existingAuthUser.id, already_existed: true }),
@@ -138,48 +189,8 @@ Deno.serve(async (req) => {
                 name,
             }, { onConflict: 'id' })
 
-        // 3. Send welcome email with credentials via send-notification service
-        const loginUrl = 'https://app.sincla.com.br/login?welcome=1'
-        const credentialsContent = `
-            <p>Sua conta no <strong>Sincla Hub</strong> foi criada com sucesso!</p>
-            <p>Aqui estão seus dados de acesso:</p>
-            <div style="background:#f8f9fa;border-radius:8px;padding:16px 20px;margin:16px 0;border-left:4px solid #0047CC;">
-                <p style="margin:0 0 8px;font-size:14px;color:#666;">
-                    <strong>Email:</strong> ${email}
-                </p>
-                <p style="margin:0;font-size:14px;color:#666;">
-                    <strong>Senha:</strong> <code style="background:#e9ecef;padding:2px 8px;border-radius:4px;font-size:15px;font-weight:600;color:#1a1a2e;">${DEFAULT_PASSWORD}</code>
-                </p>
-            </div>
-            <div style="background:#fff3cd;border-radius:8px;padding:12px 16px;margin:16px 0;border-left:4px solid #ff8c00;">
-                <p style="margin:0;font-size:13px;color:#856404;">
-                    ⚠️ <strong>Importante:</strong> Esta é uma senha temporária. Por segurança, altere-a assim que acessar o painel pela primeira vez em <strong>Perfil e Senha</strong>.
-                </p>
-            </div>
-        `
-
-        try {
-            await fetch(`${SUPABASE_URL}/functions/v1/send-notification`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                },
-                body: JSON.stringify({
-                    channel: 'email',
-                    to: email,
-                    subject: `Bem-vindo ao Sincla, ${name}! 🚀 Seus dados de acesso`,
-                    message: credentialsContent,
-                    template: 'custom',
-                    data: {
-                        action_url: loginUrl,
-                        action_label: 'Acessar meu Painel',
-                    },
-                }),
-            })
-        } catch (emailErr) {
-            console.error('Error sending welcome email:', emailErr)
-        }
+        // 3. Send welcome email with credentials
+        await sendWelcomeEmail(email.trim(), name)
 
         return new Response(
             JSON.stringify({ user_id: newUser.user.id, already_existed: false }),
