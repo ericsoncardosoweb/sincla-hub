@@ -281,6 +281,7 @@ export function AdminSubscribers() {
             }
 
             // Step 3: Grant subscriptions for each tool
+            const grantErrors: string[] = [];
             for (const tool of validTools) {
                 const { error: grantError } = await supabase
                     .rpc('admin_grant_subscription', {
@@ -292,7 +293,17 @@ export function AdminSubscribers() {
 
                 if (grantError) {
                     console.error(`Error granting ${tool.productId}:`, grantError);
+                    grantErrors.push(`${tool.productId}: ${grantError.message}`);
                 }
+            }
+
+            if (grantErrors.length > 0) {
+                notifications.show({
+                    title: '⚠️ Assinante criado, mas erro na assinatura',
+                    message: `Empresa criada, porém falha ao atribuir ferramentas: ${grantErrors.join('; ')}`,
+                    color: 'orange',
+                    autoClose: 10000,
+                });
             }
 
             notifications.show({
