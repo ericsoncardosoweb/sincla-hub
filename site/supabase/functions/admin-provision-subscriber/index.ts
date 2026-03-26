@@ -202,36 +202,53 @@ Deno.serve(async (req) => {
             }, { onConflict: 'id' })
         }
 
-        // ── Step 2: Create company ──
-        const slug = await generateUniqueSlug(adminClient, companyName)
+        // ── Step 2: Get or create company (prevent duplicates) ──
+        let companyId: string
 
-        const { data: company, error: companyError } = await adminClient
+        // Check if subscriber already has a company
+        const { data: existingCompany } = await adminClient
             .from('companies')
-            .insert({
-                subscriber_id: userId!,
-                name: companyName.trim(),
-                slug,
-            })
             .select('id')
-            .single()
+            .eq('subscriber_id', userId!)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle()
 
-        if (companyError || !company) {
-            return new Response(
-                JSON.stringify({ error: 'Falha ao criar empresa: ' + (companyError?.message || 'Sem retorno') }),
-                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
+        if (existingCompany) {
+            // Reuse existing company
+            companyId = existingCompany.id
+        } else {
+            // Create new company
+            const slug = await generateUniqueSlug(adminClient, companyName)
+
+            const { data: company, error: companyError } = await adminClient
+                .from('companies')
+                .insert({
+                    subscriber_id: userId!,
+                    name: companyName.trim(),
+                    slug,
+                })
+                .select('id')
+                .single()
+
+            if (companyError || !company) {
+                return new Response(
+                    JSON.stringify({ error: 'Falha ao criar empresa: ' + (companyError?.message || 'Sem retorno') }),
+                    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                )
+            }
+
+            companyId = company.id
+
+            // Create company member (owner) - trigger should handle this, but ensure
+            await adminClient.from('company_members').upsert({
+                company_id: companyId,
+                user_id: userId!,
+                role: 'owner',
+                status: 'active',
+                joined_at: new Date().toISOString(),
+            }, { onConflict: 'company_id,user_id' })
         }
-
-        const companyId = company.id
-
-        // Create company member (owner) - trigger should handle this, but ensure
-        await adminClient.from('company_members').upsert({
-            company_id: companyId,
-            user_id: userId!,
-            role: 'owner',
-            status: 'active',
-            joined_at: new Date().toISOString(),
-        }, { onConflict: 'company_id,user_id' })
 
         // ── Step 3: Create subscriptions (direct INSERT, no RPC) ──
         const subscriptionErrors: string[] = []
