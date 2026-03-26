@@ -102,15 +102,22 @@ Deno.serve(async (req) => {
 
             // Edge case: user exists in auth.users but not in subscribers
             if (createError?.message?.includes('already been registered') || createError?.message?.includes('already exists')) {
-                const { data: fallbackSub } = await adminClient
-                    .from('subscribers')
-                    .select('id')
-                    .ilike('email', email.trim())
-                    .maybeSingle()
+                // Try to find existing auth user by email
+                const { data: { users } } = await adminClient.auth.admin.listUsers()
+                const existingAuthUser = users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase())
 
-                if (fallbackSub) {
+                if (existingAuthUser) {
+                    // Ensure subscriber record exists (trigger may have failed before)
+                    await adminClient
+                        .from('subscribers')
+                        .upsert({
+                            id: existingAuthUser.id,
+                            email: email.trim(),
+                            name,
+                        }, { onConflict: 'id' })
+
                     return new Response(
-                        JSON.stringify({ user_id: fallbackSub.id, already_existed: true }),
+                        JSON.stringify({ user_id: existingAuthUser.id, already_existed: true }),
                         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                     )
                 }
@@ -121,6 +128,15 @@ Deno.serve(async (req) => {
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
+
+        // Guarantee subscriber record exists (in case trigger failed)
+        await adminClient
+            .from('subscribers')
+            .upsert({
+                id: newUser.user.id,
+                email: email.trim(),
+                name,
+            }, { onConflict: 'id' })
 
         // 3. Send welcome email with credentials via send-notification service
         const loginUrl = 'https://app.sincla.com.br/login?welcome=1'
