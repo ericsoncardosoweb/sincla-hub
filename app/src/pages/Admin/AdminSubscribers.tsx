@@ -257,50 +257,29 @@ export function AdminSubscribers() {
 
         setCreateLoading(true);
         try {
-            // Step 1: Create auth user via Edge Function
-            const { data: createData, error: createError } = await supabase.functions.invoke('admin-create-user', {
-                body: { email: newEmail.trim(), name: newName.trim() },
+            // Provisão completa via Edge Function (user + company + subscriptions + email)
+            const { data, error } = await supabase.functions.invoke('admin-provision-subscriber', {
+                body: {
+                    email: newEmail.trim(),
+                    name: newName.trim(),
+                    companyName: newCompanyName.trim(),
+                    tools: validTools.map(t => ({
+                        productId: t.productId,
+                        planSlug: t.planSlug || 'enterprise',
+                        durationDays: parseInt(t.duration) || 0,
+                    })),
+                },
             });
 
-            if (createError || !createData?.user_id) {
-                throw new Error(createError?.message || createData?.error || 'Falha ao criar usuário');
+            if (error || data?.error) {
+                throw new Error(error?.message || data?.error || 'Falha desconhecida');
             }
 
-            const userId = createData.user_id;
-            const alreadyExisted = createData.already_existed;
-
-            // Step 2: Create company via RPC
-            const { data: companyId, error: companyError } = await supabase
-                .rpc('admin_provision_company', {
-                    p_subscriber_id: userId,
-                    p_company_name: newCompanyName.trim(),
-                });
-
-            if (companyError) {
-                throw new Error('Falha ao criar empresa: ' + companyError.message);
-            }
-
-            // Step 3: Grant subscriptions for each tool
-            const grantErrors: string[] = [];
-            for (const tool of validTools) {
-                const { error: grantError } = await supabase
-                    .rpc('admin_grant_subscription', {
-                        p_company_id: companyId,
-                        p_product_ids: [tool.productId],
-                        p_duration_days: parseInt(tool.duration) || 0,
-                        p_plan: tool.planSlug || 'enterprise',
-                    });
-
-                if (grantError) {
-                    console.error(`Error granting ${tool.productId}:`, grantError);
-                    grantErrors.push(`${tool.productId}: ${grantError.message}`);
-                }
-            }
-
-            if (grantErrors.length > 0) {
+            // Check for subscription-specific errors
+            if (data?.subscription_errors?.length > 0) {
                 notifications.show({
                     title: '⚠️ Assinante criado, mas erro na assinatura',
-                    message: `Empresa criada, porém falha ao atribuir ferramentas: ${grantErrors.join('; ')}`,
+                    message: `Empresa criada, porém falha ao atribuir ferramentas: ${data.subscription_errors.join('; ')}`,
                     color: 'orange',
                     autoClose: 10000,
                 });
@@ -308,7 +287,7 @@ export function AdminSubscribers() {
 
             notifications.show({
                 title: 'Assinante criado com sucesso! ✅',
-                message: alreadyExisted
+                message: data?.already_existed
                     ? `Usuário já existia. Empresa "${newCompanyName}" criada e ferramentas atribuídas.`
                     : `Conta criada para ${newEmail}. Email com credenciais enviado.`,
                 color: 'green',
