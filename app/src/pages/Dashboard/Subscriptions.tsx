@@ -4,15 +4,15 @@ import {
     Container, Text, Card, Group, Badge, Stack, Skeleton,
     ThemeIcon, SimpleGrid, Button, Divider, Loader,
     ActionIcon, Title, Modal, Tooltip, SegmentedControl,
-    Box, Paper, Progress, rem, Tabs,
+    Box, Paper, Progress, Tabs,
 } from '@mantine/core';
 import {
     IconCreditCard, IconCalendar, IconReceipt, IconUsers,
     IconStar, IconCheck, IconArrowLeft, IconRocket,
     IconSchool, IconTarget, IconBuildingCommunity, IconShoppingCart,
     IconMessage, IconChartBar, IconArrowsExchange, IconArrowUp,
-    IconArrowDown, IconBrandWhatsapp, IconSparkles, IconBrain,
-    IconCloud, IconExternalLink, IconCrown, IconTrendingUp,
+    IconArrowDown, IconBrandWhatsapp, IconSparkles,
+    IconExternalLink, IconCrown, IconTrendingUp,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
