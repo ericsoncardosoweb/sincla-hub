@@ -9,13 +9,31 @@ import { notifications } from '@mantine/notifications';
 import {
     IconSearch, IconUsers, IconBuilding, IconUserPlus,
     IconChevronDown, IconChevronRight, IconPhone,
-    IconPlus, IconTrash, IconCheck, IconX,
+    IconPlus, IconTrash, IconCheck, IconX, IconEdit, IconDeviceFloppy,
+    IconCrown,
 } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
 
 // ============================
 // Types
 // ============================
+
+interface CompanySubscription {
+    id: string;
+    product_id: string;
+    plan: string;
+    status: string;
+    current_period_end: string | null;
+    monthly_amount?: number | null;
+}
+
+interface CompanyRow {
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    subscriptions?: CompanySubscription[];
+}
 
 interface SubscriberRow {
     id: string;
@@ -25,7 +43,7 @@ interface SubscriberRow {
     cpf_cnpj: string | null;
     avatar_url: string | null;
     created_at: string;
-    companies?: { id: string; name: string; slug: string; status: string }[];
+    companies?: CompanyRow[];
 }
 
 interface OverviewStats {
@@ -78,6 +96,11 @@ export function AdminSubscribers() {
     const [stats, setStats] = useState<OverviewStats | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
+    // Edit state
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editForm, setEditForm] = useState<{ name: string; phone: string; cpf_cnpj: string }>({ name: '', phone: '', cpf_cnpj: '' });
+    const [editLoading, setEditLoading] = useState(false);
+
     // Create modal state
     const [createOpened, { open: openCreate, close: closeCreate }] = useDisclosure(false);
     const [createLoading, setCreateLoading] = useState(false);
@@ -108,9 +131,9 @@ export function AdminSubscribers() {
             const { data: subsData } = await query;
             const subs = subsData || [];
 
-            // Load companies for all subscribers
+            // Load companies + subscriptions for all subscribers
             const subIds = subs.map(s => s.id);
-            let companiesMap: Record<string, { id: string; name: string; slug: string; status: string }[]> = {};
+            let companiesMap: Record<string, CompanyRow[]> = {};
 
             if (subIds.length > 0) {
                 const { data: comps } = await supabase
@@ -118,9 +141,27 @@ export function AdminSubscribers() {
                     .select('id, name, slug, status, subscriber_id')
                     .in('subscriber_id', subIds);
 
+                const companyIds = (comps || []).map(c => c.id);
+                let subsMap: Record<string, CompanySubscription[]> = {};
+
+                if (companyIds.length > 0) {
+                    const { data: subscriptions } = await supabase
+                        .from('subscriptions')
+                        .select('id, company_id, product_id, plan, status, current_period_end, monthly_amount')
+                        .in('company_id', companyIds);
+
+                    (subscriptions || []).forEach((s: any) => {
+                        if (!subsMap[s.company_id]) subsMap[s.company_id] = [];
+                        subsMap[s.company_id].push(s);
+                    });
+                }
+
                 (comps || []).forEach((c: any) => {
                     if (!companiesMap[c.subscriber_id]) companiesMap[c.subscriber_id] = [];
-                    companiesMap[c.subscriber_id].push({ id: c.id, name: c.name, slug: c.slug, status: c.status });
+                    companiesMap[c.subscriber_id].push({
+                        id: c.id, name: c.name, slug: c.slug, status: c.status,
+                        subscriptions: subsMap[c.id] || [],
+                    });
                 });
             }
 
@@ -406,7 +447,9 @@ export function AdminSubscribers() {
                                     <Table.Th>Telefone</Table.Th>
                                     <Table.Th>CPF/CNPJ</Table.Th>
                                     <Table.Th>Empresas</Table.Th>
+                                    <Table.Th>Plano</Table.Th>
                                     <Table.Th>Cadastro</Table.Th>
+                                    <Table.Th style={{ width: 50 }}></Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>
@@ -414,19 +457,16 @@ export function AdminSubscribers() {
                                     <>
                                         <Table.Tr
                                             key={sub.id}
-                                            style={{ cursor: (sub.companies?.length || 0) > 0 ? 'pointer' : 'default' }}
+                                            style={{ cursor: 'pointer' }}
                                             onClick={() => {
-                                                if ((sub.companies?.length || 0) > 0) {
-                                                    setExpandedId(expandedId === sub.id ? null : sub.id);
-                                                }
+                                                setExpandedId(expandedId === sub.id ? null : sub.id);
                                             }}
                                         >
                                             <Table.Td>
-                                                {(sub.companies?.length || 0) > 0 && (
-                                                    expandedId === sub.id
-                                                        ? <IconChevronDown size={14} />
-                                                        : <IconChevronRight size={14} />
-                                                )}
+                                                {expandedId === sub.id
+                                                    ? <IconChevronDown size={14} />
+                                                    : <IconChevronRight size={14} />
+                                                }
                                             </Table.Td>
                                             <Table.Td>
                                                 <Group gap="sm">
@@ -467,35 +507,155 @@ export function AdminSubscribers() {
                                                 </Badge>
                                             </Table.Td>
                                             <Table.Td>
+                                                {(() => {
+                                                    const allSubs = sub.companies?.flatMap(c => c.subscriptions || []) || [];
+                                                    const activeSub = allSubs.find(s => s.status === 'active');
+                                                    if (!activeSub) return <Text size="sm" c="dimmed">—</Text>;
+                                                    return (
+                                                        <Badge variant="light" color="blue" size="sm">
+                                                            {activeSub.plan}
+                                                        </Badge>
+                                                    );
+                                                })()}
+                                            </Table.Td>
+                                            <Table.Td>
                                                 <Text size="sm">{formatDate(sub.created_at)}</Text>
                                             </Table.Td>
+                                            <Table.Td>
+                                                {editingId === sub.id ? (
+                                                    <Group gap={4}>
+                                                        <ActionIcon
+                                                            size="sm" variant="light" color="green"
+                                                            loading={editLoading}
+                                                            onClick={async (e: React.MouseEvent) => {
+                                                                e.stopPropagation();
+                                                                setEditLoading(true);
+                                                                try {
+                                                                    const { error } = await supabase
+                                                                        .from('subscribers')
+                                                                        .update({
+                                                                            name: editForm.name || null,
+                                                                            phone: editForm.phone || null,
+                                                                            cpf_cnpj: editForm.cpf_cnpj || null,
+                                                                        })
+                                                                        .eq('id', sub.id);
+                                                                    if (error) throw error;
+                                                                    notifications.show({ title: 'Salvo ✅', message: 'Dados atualizados.', color: 'green' });
+                                                                    setEditingId(null);
+                                                                    loadData();
+                                                                } catch (err: any) {
+                                                                    notifications.show({ title: 'Erro', message: err.message, color: 'red' });
+                                                                } finally {
+                                                                    setEditLoading(false);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <IconDeviceFloppy size={14} />
+                                                        </ActionIcon>
+                                                        <ActionIcon
+                                                            size="sm" variant="light" color="gray"
+                                                            onClick={(e: React.MouseEvent) => { e.stopPropagation(); setEditingId(null); }}
+                                                        >
+                                                            <IconX size={14} />
+                                                        </ActionIcon>
+                                                    </Group>
+                                                ) : (
+                                                    <Tooltip label="Editar">
+                                                        <ActionIcon
+                                                            size="sm" variant="subtle" color="gray"
+                                                            onClick={(e: React.MouseEvent) => {
+                                                                e.stopPropagation();
+                                                                setEditingId(sub.id);
+                                                                setEditForm({
+                                                                    name: sub.name || '',
+                                                                    phone: sub.phone || '',
+                                                                    cpf_cnpj: sub.cpf_cnpj || '',
+                                                                });
+                                                            }}
+                                                        >
+                                                            <IconEdit size={14} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                )}
+                                            </Table.Td>
                                         </Table.Tr>
-                                        {(sub.companies?.length || 0) > 0 && (
-                                            <Table.Tr key={`${sub.id}-details`}>
-                                                <Table.Td colSpan={6} p={0}>
-                                                    <Collapse in={expandedId === sub.id}>
-                                                        <Box px="xl" py="sm" bg="var(--mantine-color-gray-0)">
-                                                            <Text size="xs" fw={600} mb="xs" c="dimmed">
-                                                                Empresas de {sub.name || sub.email}:
-                                                            </Text>
-                                                            <Group gap="sm">
+                                        {/* Expanded details + Edit form */}
+                                        <Table.Tr key={`${sub.id}-details`}>
+                                            <Table.Td colSpan={8} p={0}>
+                                                <Collapse in={expandedId === sub.id}>
+                                                    <Box px="xl" py="sm" bg="var(--mantine-color-gray-0)">
+                                                        {/* Edit form */}
+                                                        {editingId === sub.id && (
+                                                            <Box mb="md">
+                                                                <Text size="xs" fw={600} mb="xs" c="dimmed">Editar dados:</Text>
+                                                                <Group gap="sm">
+                                                                    <TextInput
+                                                                        size="xs" label="Nome" style={{ flex: 1 }}
+                                                                        value={editForm.name}
+                                                                        onChange={(e) => setEditForm(f => ({ ...f, name: e.currentTarget.value }))}
+                                                                    />
+                                                                    <TextInput
+                                                                        size="xs" label="Telefone" style={{ flex: 1 }}
+                                                                        value={editForm.phone}
+                                                                        onChange={(e) => setEditForm(f => ({ ...f, phone: e.currentTarget.value }))}
+                                                                    />
+                                                                    <TextInput
+                                                                        size="xs" label="CPF/CNPJ" style={{ flex: 1 }}
+                                                                        value={editForm.cpf_cnpj}
+                                                                        onChange={(e) => setEditForm(f => ({ ...f, cpf_cnpj: e.currentTarget.value }))}
+                                                                    />
+                                                                </Group>
+                                                                <Divider my="sm" />
+                                                            </Box>
+                                                        )}
+
+                                                        {/* Companies + Subscriptions */}
+                                                        {(sub.companies?.length || 0) > 0 ? (
+                                                            <Stack gap="sm">
+                                                                <Text size="xs" fw={600} c="dimmed">
+                                                                    Empresas e Assinaturas de {sub.name || sub.email}:
+                                                                </Text>
                                                                 {sub.companies!.map(c => (
-                                                                    <Badge
-                                                                        key={c.id}
-                                                                        variant="light"
-                                                                        color={c.status === 'active' ? 'green' : 'red'}
-                                                                        size="md"
-                                                                    >
-                                                                        <IconBuilding size={10} style={{ marginRight: 4 }} />
-                                                                        {c.name}
-                                                                    </Badge>
+                                                                    <Card key={c.id} withBorder padding="xs" radius="sm">
+                                                                        <Group justify="space-between" mb={4}>
+                                                                            <Group gap="xs">
+                                                                                <IconBuilding size={14} color="var(--mantine-color-violet-6)" />
+                                                                                <Text size="sm" fw={600}>{c.name}</Text>
+                                                                                <Badge size="xs" variant="dot" color={c.status === 'active' ? 'green' : 'red'}>
+                                                                                    {c.status}
+                                                                                </Badge>
+                                                                            </Group>
+                                                                            <Text size="xs" c="dimmed">slug: {c.slug}</Text>
+                                                                        </Group>
+                                                                        {(c.subscriptions?.length || 0) > 0 ? (
+                                                                            <Group gap="xs" mt={4}>
+                                                                                {c.subscriptions!.map(s => (
+                                                                                    <Badge
+                                                                                        key={s.id}
+                                                                                        variant="light"
+                                                                                        size="sm"
+                                                                                        color={s.status === 'active' ? 'blue' : s.status === 'trial' ? 'teal' : 'gray'}
+                                                                                        leftSection={<IconCrown size={10} />}
+                                                                                    >
+                                                                                        {s.product_id.toUpperCase()} • {s.plan}
+                                                                                        {s.monthly_amount ? ` • R$ ${Number(s.monthly_amount).toFixed(2)}` : ''}
+                                                                                        {s.current_period_end ? ` • até ${formatDate(s.current_period_end)}` : ''}
+                                                                                    </Badge>
+                                                                                ))}
+                                                                            </Group>
+                                                                        ) : (
+                                                                            <Text size="xs" c="dimmed" fs="italic">Sem assinaturas ativas</Text>
+                                                                        )}
+                                                                    </Card>
                                                                 ))}
-                                                            </Group>
-                                                        </Box>
-                                                    </Collapse>
-                                                </Table.Td>
-                                            </Table.Tr>
-                                        )}
+                                                            </Stack>
+                                                        ) : (
+                                                            <Text size="xs" c="dimmed" fs="italic">Nenhuma empresa vinculada</Text>
+                                                        )}
+                                                    </Box>
+                                                </Collapse>
+                                            </Table.Td>
+                                        </Table.Tr>
                                     </>
                                 ))}
                             </Table.Tbody>
