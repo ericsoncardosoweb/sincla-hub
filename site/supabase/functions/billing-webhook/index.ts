@@ -464,7 +464,7 @@ async function handlePaymentSucceeded(
     supabase: ReturnType<typeof createClient>,
     data: NormalizedPayload['data']
 ): Promise<{ success: boolean; message: string }> {
-    const { subscription_id } = data
+    const { subscription_id, company_id } = data
 
     if (subscription_id) {
         // Update subscription to active if it was past_due
@@ -473,9 +473,36 @@ async function handlePaymentSucceeded(
             .update({ status: 'active' })
             .eq('id', subscription_id)
             .eq('status', 'past_due')
+
+        // ═══ Recarregar créditos da empresa ═══
+        // Resolve company_id: pode vir no payload ou via subscription
+        let resolvedCompanyId = company_id
+        if (!resolvedCompanyId) {
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select('company_id')
+                .eq('id', subscription_id)
+                .single()
+            resolvedCompanyId = sub?.company_id
+        }
+
+        if (resolvedCompanyId) {
+            try {
+                const { data: result, error } = await supabase
+                    .rpc('reload_company_credits', { p_company_id: resolvedCompanyId })
+                
+                if (error) {
+                    console.error('Error reloading credits:', error)
+                } else {
+                    console.log(`Credits reloaded for company ${resolvedCompanyId}:`, result)
+                }
+            } catch (err) {
+                console.error('Failed to reload credits:', err)
+            }
+        }
     }
 
-    return { success: true, message: 'Payment recorded' }
+    return { success: true, message: 'Payment recorded, credits reloaded' }
 }
 
 async function handlePaymentFailed(

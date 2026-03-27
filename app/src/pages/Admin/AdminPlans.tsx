@@ -72,6 +72,7 @@ export function AdminPlans() {
     const LIMIT_PRESETS = [
         { key: 'seats', label: 'Usuários' },
         { key: 'storage_gb', label: 'Armazenamento (GB)' },
+        { key: 'ai_tokens', label: 'Tokens de I.A (/mês)' },
         { key: 'projects', label: 'Projetos' },
         { key: 'reports', label: 'Relatórios/mês' },
         { key: 'api_calls', label: 'Chamadas de API' },
@@ -739,6 +740,13 @@ export function AdminPlans() {
                                                 </Group>
                                             ))}
                                         </Stack>
+                                    )}
+
+                                    {limitsList.some(l => l.key === 'ai_tokens') && (
+                                        <Text size="xs" c="red" fw={600} mt="xs">
+                                            Tokens de I.A - Renova a cada ciclo de 30 dias.
+                                            Não é cumulativo, mesmo a pessoa comprando extra.
+                                        </Text>
                                     )}
                                 </Paper>
                             </Stack>

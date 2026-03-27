@@ -1,5 +1,5 @@
 /**
- * ConsumptionDashboard v2 — Painel de Consumo
+ * ConsumptionDashboard v3 — Painel de Consumo
  *
  * Integrado na tab "Consumo & Créditos" da tela de Assinaturas.
  * Cards visuais de IA, Storage (CDN+Stream) e Notificações.
@@ -19,7 +19,6 @@ import {
     IconBell, IconShoppingCart, IconSparkles, IconRefresh,
     IconTrendingUp, IconAlertCircle, IconHistory, IconPlus,
     IconCoin, IconDatabase, IconVideo, IconFile,
-    IconGauge,
 } from '@tabler/icons-react';
 import { supabase } from '../../../shared/lib/supabase';
 
@@ -94,6 +93,18 @@ const serviceConfig: Record<string, { label: string; icon: typeof IconBrain; col
     notification_push: { label: 'Push', icon: IconBell, color: 'orange', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
 };
 
+// Token slider marks (escala em milhões)
+const TOKEN_MARKS = [
+    { value: 5, label: '5M' },
+    { value: 10, label: '10M' },
+    { value: 30, label: '30M' },
+    { value: 50, label: '50M' },
+    { value: 100, label: '100M' },
+];
+
+const progressColor = (pct: number) =>
+    pct >= 90 ? 'red' : pct >= 70 ? 'orange' : pct >= 40 ? 'yellow' : 'green';
+
 // ==============================
 // Component
 // ==============================
@@ -111,8 +122,8 @@ export function ConsumptionDashboard({ companyId }: Props) {
     // Modais
     const [buyModalOpen, setBuyModalOpen] = useState(false);
     const [buyService, setBuyService] = useState<ServicePricing | null>(null);
-    const [buyQuantity, setBuyQuantity] = useState(1);
-    const [buyTab, setBuyTab] = useState<string | null>('avulso');
+    const [buyTokensM, setBuyTokensM] = useState(5); // Em milhões
+    const [buyQuantity, setBuyQuantity] = useState(1); // Para não-IA
 
     const [storageModalOpen, setStorageModalOpen] = useState(false);
     const [storageGb, setStorageGb] = useState(5);
@@ -148,24 +159,38 @@ export function ConsumptionDashboard({ companyId }: Props) {
 
     const getCredit = (type: string) => credits.find(c => c.service_type === type);
 
+    const handleOpenBuyAI = () => {
+        const p = pricing.find(p => p.service_type === 'ai');
+        if (p) {
+            setBuyService(p);
+            setBuyTokensM(5);
+            setBuyModalOpen(true);
+        }
+    };
+
     const handleOpenBuy = (svcType: string) => {
+        if (svcType === 'ai') { handleOpenBuyAI(); return; }
         const p = pricing.find(p => p.service_type === svcType);
-        if (p) { setBuyService(p); setBuyQuantity(1); setBuyTab('avulso'); setBuyModalOpen(true); }
+        if (p) { setBuyService(p); setBuyQuantity(1); setBuyModalOpen(true); }
+    };
+
+    // Cálculo de preço para IA (escala em milhões)
+    const calcAIPrice = () => {
+        if (!buyService) return 0;
+        // price_brl é por unit_amount (1M tokens), buyTokensM é em M
+        return buyService.price_brl * buyTokensM;
     };
 
     const calcPrice = () => {
         if (!buyService) return 0;
+        if (buyService.service_type === 'ai') return calcAIPrice();
         const base = buyService.price_brl * buyQuantity;
         const steps = Math.floor(buyQuantity / buyService.volume_discount_threshold);
         const disc = Math.min(steps * buyService.volume_discount_percent, buyService.max_discount_percent);
         return base * (1 - disc / 100);
     };
 
-    const calcDiscount = () => {
-        if (!buyService) return 0;
-        const steps = Math.floor(buyQuantity / buyService.volume_discount_threshold);
-        return Math.min(steps * buyService.volume_discount_percent, buyService.max_discount_percent);
-    };
+    const isAIBuy = buyService?.service_type === 'ai';
 
     // ── Loading ──
     if (loading) {
@@ -194,108 +219,143 @@ export function ConsumptionDashboard({ companyId }: Props) {
     const usagePercent = (used: number, total: number) => total > 0 ? Math.min((used / total) * 100, 100) : 0;
     const bytesPercent = (used: number, quota: number) => quota > 0 ? Math.min((used / quota) * 100, 100) : 0;
 
+    // Total de tokens disponíveis
+    const aiTotal = aiCredits ? (aiCredits.monthly_allowance + aiCredits.monthly_bonus) : 0;
+    const aiUsedPct = aiCredits ? usagePercent(aiCredits.period_usage, aiTotal) : 0;
+
     return (
         <Stack gap="lg">
-            {/* ═══ Cards de Créditos ═══ */}
-            <SimpleGrid cols={{ base: 1, sm: 2, md: aiCredits ? 3 : 2 }} spacing="md">
-                {/* IA */}
-                {aiCredits && (
-                    <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
-                        <Box style={{ background: serviceConfig.ai.gradient, padding: '14px 16px' }}>
-                            <Group justify="space-between">
-                                <Group gap="xs">
-                                    <IconBrain size={20} color="#fff" />
-                                    <Text fw={700} c="white" size="sm">Créditos de IA</Text>
-                                </Group>
-                                <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-                                    {fmtNum(aiCredits.balance)} disponíveis
-                                </Badge>
-                            </Group>
-                        </Box>
-                        <Box p="md">
-                            <Group justify="space-between" mb={6}>
-                                <Text size="xs" c="dimmed">Consumido</Text>
-                                <Text size="xs" fw={500}>{fmtNum(aiCredits.period_usage)} / {fmtNum(aiCredits.monthly_allowance + aiCredits.monthly_bonus)}</Text>
-                            </Group>
-                            <Progress value={usagePercent(aiCredits.period_usage, aiCredits.monthly_allowance + aiCredits.monthly_bonus)} color="violet" size="md" radius="xl" />
-                            <Group justify="space-between" mt="sm">
-                                <Text size="xs" c="dimmed">
-                                    Reset: {aiCredits.next_reset_at ? new Date(aiCredits.next_reset_at).toLocaleDateString('pt-BR') : '—'}
+            {/* ═══ Seção: Créditos de Inteligência Artificial ═══ */}
+            <Group gap="xs" mb={-4}>
+                <ThemeIcon size="md" radius="md" variant="light" color="violet">
+                    <IconBrain size={16} />
+                </ThemeIcon>
+                <Text fw={700} size="md">Créditos de Inteligência Artificial</Text>
+            </Group>
+
+            <Card withBorder radius="lg" padding={0} style={{ overflow: 'hidden' }}>
+                <Box style={{ background: serviceConfig.ai.gradient, padding: '18px 24px' }}>
+                    <Group justify="space-between" align="center">
+                        <Group gap="sm">
+                            <IconBrain size={24} color="#fff" />
+                            <div>
+                                <Text size="xs" style={{ color: 'rgba(255,255,255,0.7)' }}>Saldo Disponível</Text>
+                                <Text fw={800} size="28px" c="white" style={{ lineHeight: 1.1 }}>
+                                    {fmtNum(aiCredits?.balance ?? 0)} tokens
                                 </Text>
-                                <Button variant="light" size="xs" color="violet" leftSection={<IconPlus size={14} />}
-                                    onClick={() => handleOpenBuy('ai')}>
-                                    Comprar
-                                </Button>
-                            </Group>
-                            {aiCredits.balance <= 0 && (
-                                <Alert variant="light" color="red" icon={<IconAlertCircle size={14} />} mt="xs" p="xs">
-                                    <Text size="xs">Créditos esgotados — IA desabilitada</Text>
-                                </Alert>
-                            )}
-                        </Box>
-                    </Card>
-                )}
+                                <Text size="xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                                    Incluso no plano: {fmtNum(aiCredits?.monthly_allowance ?? 0)}/mês
+                                </Text>
+                            </div>
+                        </Group>
+                        <Button variant="white" size="sm" leftSection={<IconShoppingCart size={16} />}
+                            onClick={handleOpenBuyAI}
+                            style={{ fontWeight: 600 }}>
+                            Comprar Créditos
+                        </Button>
+                    </Group>
+                </Box>
+                <Box p="md">
+                    <Group justify="space-between" mb={6}>
+                        <Text size="xs" c="dimmed">Consumido este período</Text>
+                        <Text size="xs" fw={500}>{fmtNum(aiCredits?.period_usage ?? 0)} / {fmtNum(aiTotal)} tokens</Text>
+                    </Group>
+                    <Progress
+                        value={aiUsedPct}
+                        color={progressColor(aiUsedPct)}
+                        size="lg" radius="xl"
+                        style={{ transition: 'all 0.3s ease' }}
+                    />
+                    <Group justify="space-between" mt="sm">
+                        <Text size="xs" c="dimmed">
+                            Renova em: {aiCredits?.next_reset_at ? new Date(aiCredits.next_reset_at).toLocaleDateString('pt-BR') : '—'}
+                        </Text>
+                        {(aiCredits?.monthly_bonus ?? 0) > 0 && (
+                            <Badge variant="light" color="violet" size="xs">
+                                +{fmtNum(aiCredits!.monthly_bonus)} bônus mensal
+                            </Badge>
+                        )}
+                    </Group>
+                    {(aiCredits?.balance ?? 0) <= 0 && (
+                        <Alert variant="light" color="red" icon={<IconAlertCircle size={14} />} mt="xs" p="xs">
+                            <Text size="xs">Créditos esgotados — recursos de IA desabilitados</Text>
+                        </Alert>
+                    )}
+                </Box>
+                <Box px="md" pb="md">
+                    <Alert variant="light" color="violet" icon={<IconSparkles size={16} />} p="sm" radius="md"
+                        style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
+                        <Text size="xs" c="dark">
+                            <strong>🟣 Potencialize sua lavanderia com IA</strong> — Os créditos de IA alimentam recursos como classificação inteligente de pedidos, atendimento automatizado via chatbot, análise de sentimento e geração de campanhas. Quanto mais tokens, mais automação e inteligência o seu negócio ganha.
+                        </Text>
+                    </Alert>
+                </Box>
+            </Card>
 
-                {/* Email */}
-                {emailCredits && (
-                    <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
-                        <Box style={{ background: serviceConfig.notification_email.gradient, padding: '14px 16px' }}>
-                            <Group justify="space-between">
-                                <Group gap="xs">
-                                    <IconMail size={20} color="#fff" />
-                                    <Text fw={700} c="white" size="sm">Emails</Text>
+            {/* ═══ Cards de Notificações ═══ */}
+            {(emailCredits || whatsappCredits) && (
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                    {/* Email */}
+                    {emailCredits && (
+                        <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
+                            <Box style={{ background: serviceConfig.notification_email.gradient, padding: '14px 16px' }}>
+                                <Group justify="space-between">
+                                    <Group gap="xs">
+                                        <IconMail size={20} color="#fff" />
+                                        <Text fw={700} c="white" size="sm">Emails</Text>
+                                    </Group>
+                                    <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+                                        {fmtNum(emailCredits.balance)} restantes
+                                    </Badge>
                                 </Group>
-                                <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-                                    {fmtNum(emailCredits.balance)} restantes
-                                </Badge>
-                            </Group>
-                        </Box>
-                        <Box p="md">
-                            <Group justify="space-between" mb={6}>
-                                <Text size="xs" c="dimmed">Enviados este mês</Text>
-                                <Text size="xs" fw={500}>{fmtNum(emailCredits.period_usage)}</Text>
-                            </Group>
-                            <Progress value={usagePercent(emailCredits.period_usage, emailCredits.monthly_allowance)} color="blue" size="md" radius="xl" />
-                            <Group justify="flex-end" mt="sm">
-                                <Button variant="light" size="xs" color="blue" leftSection={<IconPlus size={14} />}
-                                    onClick={() => handleOpenBuy('notification_email')}>
-                                    Comprar
-                                </Button>
-                            </Group>
-                        </Box>
-                    </Card>
-                )}
+                            </Box>
+                            <Box p="md">
+                                <Group justify="space-between" mb={6}>
+                                    <Text size="xs" c="dimmed">Enviados este mês</Text>
+                                    <Text size="xs" fw={500}>{fmtNum(emailCredits.period_usage)}</Text>
+                                </Group>
+                                <Progress value={usagePercent(emailCredits.period_usage, emailCredits.monthly_allowance)} color="blue" size="md" radius="xl" />
+                                <Group justify="flex-end" mt="sm">
+                                    <Button variant="light" size="xs" color="blue" leftSection={<IconPlus size={14} />}
+                                        onClick={() => handleOpenBuy('notification_email')}>
+                                        Comprar
+                                    </Button>
+                                </Group>
+                            </Box>
+                        </Card>
+                    )}
 
-                {/* WhatsApp */}
-                {whatsappCredits && (
-                    <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
-                        <Box style={{ background: serviceConfig.notification_whatsapp.gradient, padding: '14px 16px' }}>
-                            <Group justify="space-between">
-                                <Group gap="xs">
-                                    <IconBrandWhatsapp size={20} color="#fff" />
-                                    <Text fw={700} c="white" size="sm">WhatsApp</Text>
+                    {/* WhatsApp */}
+                    {whatsappCredits && (
+                        <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
+                            <Box style={{ background: serviceConfig.notification_whatsapp.gradient, padding: '14px 16px' }}>
+                                <Group justify="space-between">
+                                    <Group gap="xs">
+                                        <IconBrandWhatsapp size={20} color="#fff" />
+                                        <Text fw={700} c="white" size="sm">WhatsApp</Text>
+                                    </Group>
+                                    <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+                                        {fmtNum(whatsappCredits.balance)} restantes
+                                    </Badge>
                                 </Group>
-                                <Badge variant="white" size="xs" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-                                    {fmtNum(whatsappCredits.balance)} restantes
-                                </Badge>
-                            </Group>
-                        </Box>
-                        <Box p="md">
-                            <Group justify="space-between" mb={6}>
-                                <Text size="xs" c="dimmed">Enviados este mês</Text>
-                                <Text size="xs" fw={500}>{fmtNum(whatsappCredits.period_usage)}</Text>
-                            </Group>
-                            <Progress value={usagePercent(whatsappCredits.period_usage, whatsappCredits.monthly_allowance)} color="green" size="md" radius="xl" />
-                            <Group justify="flex-end" mt="sm">
-                                <Button variant="light" size="xs" color="green" leftSection={<IconPlus size={14} />}
-                                    onClick={() => handleOpenBuy('notification_whatsapp')}>
-                                    Comprar
-                                </Button>
-                            </Group>
-                        </Box>
-                    </Card>
-                )}
-            </SimpleGrid>
+                            </Box>
+                            <Box p="md">
+                                <Group justify="space-between" mb={6}>
+                                    <Text size="xs" c="dimmed">Enviados este mês</Text>
+                                    <Text size="xs" fw={500}>{fmtNum(whatsappCredits.period_usage)}</Text>
+                                </Group>
+                                <Progress value={usagePercent(whatsappCredits.period_usage, whatsappCredits.monthly_allowance)} color="green" size="md" radius="xl" />
+                                <Group justify="flex-end" mt="sm">
+                                    <Button variant="light" size="xs" color="green" leftSection={<IconPlus size={14} />}
+                                        onClick={() => handleOpenBuy('notification_whatsapp')}>
+                                        Comprar
+                                    </Button>
+                                </Group>
+                            </Box>
+                        </Card>
+                    )}
+                </SimpleGrid>
+            )}
 
             {/* ═══ Storage ═══ */}
             {storage && (
@@ -428,13 +488,79 @@ export function ConsumptionDashboard({ companyId }: Props) {
                 </Card>
             )}
 
-            {/* ═══ Modal: Comprar Créditos ═══ */}
-            <Modal opened={buyModalOpen} onClose={() => setBuyModalOpen(false)} centered size="md"
+            {/* ═══ Modal: Comprar Créditos de IA ═══ */}
+            <Modal opened={buyModalOpen && isAIBuy} onClose={() => setBuyModalOpen(false)} centered size="md"
+                title={<Group gap="xs"><Text size="lg">🧠</Text><Text fw={700} c="violet">Comprar Créditos de IA</Text></Group>}
+            >
+                <Stack gap="md">
+                    <Alert variant="light" color="violet" icon={<IconSparkles size={16} />} p="sm" radius="md">
+                        <Text size="xs">
+                            <strong>💡 Mais tokens = mais inteligência para o seu negócio.</strong> Automatize atendimento, classifique pedidos, gere campanhas e muito mais. Compre avulso ou adicione como crédito recorrente na sua assinatura.
+                        </Text>
+                    </Alert>
+
+                    <div>
+                        <Text size="sm" fw={500} mb={4} c="dimmed">Quantidade de tokens</Text>
+                        <Text size="28px" fw={800} c="violet" ta="center" my="sm" style={{ lineHeight: 1 }}>
+                            {buyTokensM}M tokens
+                        </Text>
+                        <Slider
+                            value={buyTokensM}
+                            onChange={setBuyTokensM}
+                            min={5}
+                            max={100}
+                            step={5}
+                            color="violet"
+                            size="lg"
+                            marks={TOKEN_MARKS}
+                            styles={{ markLabel: { fontSize: 11 } }}
+                        />
+                    </div>
+
+                    <Card withBorder radius="md" p="sm" mt="xs">
+                        <Group justify="space-between">
+                            <Text size="xs" c="dimmed">Preço base ({buyTokensM}M × {fmt(buyService?.price_brl ?? 15)})</Text>
+                            <Text size="sm">{fmt(calcAIPrice())}</Text>
+                        </Group>
+                        <Divider my="xs" />
+                        <Group justify="space-between">
+                            <Text fw={700}>Total</Text>
+                            <Text size="lg" fw={800} c="violet">{fmt(calcAIPrice())}</Text>
+                        </Group>
+                        <Text size="xs" c="dimmed" ta="center" mt={2}>
+                            {fmt(buyService?.price_brl ?? 15)}/milhão de tokens
+                        </Text>
+                    </Card>
+
+                    <Button fullWidth size="md" color="violet" leftSection={<IconShoppingCart size={18} />}
+                        onClick={() => {
+                            setBuyModalOpen(false);
+                            navigate(`/checkout?tipo=creditos&servico=ai&quantidade=${buyTokensM}&ciclo=avulso&valor=${calcAIPrice().toFixed(2)}`);
+                        }}>
+                        Comprar {buyTokensM}M tokens por {fmt(calcAIPrice())}
+                    </Button>
+
+                    <Button fullWidth size="md" variant="light" color="violet" leftSection={<IconRefresh size={18} />}
+                        onClick={() => {
+                            setBuyModalOpen(false);
+                            navigate(`/checkout?tipo=creditos&servico=ai&quantidade=${buyTokensM}&ciclo=recorrente&valor=${calcAIPrice().toFixed(2)}`);
+                        }}>
+                        📈 Ou adicionar +{fmt(calcAIPrice())}/mês na assinatura
+                    </Button>
+
+                    <Text size="xs" c="dimmed" ta="center">
+                        O botão principal compra créditos avulsos (sem renovação). A opção mensal adiciona recarga automática à sua assinatura.
+                    </Text>
+                </Stack>
+            </Modal>
+
+            {/* ═══ Modal: Comprar Outros Créditos (Email/WhatsApp) ═══ */}
+            <Modal opened={buyModalOpen && !isAIBuy} onClose={() => setBuyModalOpen(false)} centered size="md"
                 title={<Group gap="xs"><IconCoin size={20} /><Text fw={600}>Comprar {buyService?.name}</Text></Group>}
             >
                 {buyService && (
                     <Stack gap="md">
-                        <Tabs value={buyTab} onChange={setBuyTab}>
+                        <Tabs defaultValue="avulso">
                             <Tabs.List grow>
                                 <Tabs.Tab value="avulso" leftSection={<IconShoppingCart size={14} />}>Créditos Avulsos</Tabs.Tab>
                                 <Tabs.Tab value="recorrente" leftSection={<IconRefresh size={14} />}>Recorrente (+/mês)</Tabs.Tab>
@@ -442,7 +568,7 @@ export function ConsumptionDashboard({ companyId }: Props) {
 
                             <Tabs.Panel value="avulso" pt="md">
                                 <Stack gap="sm">
-                                    <Alert variant="light" color="orange" icon={<IconGauge size={16} />} p="xs">
+                                    <Alert variant="light" color="orange" icon={<IconAlertCircle size={16} />} p="xs">
                                         <Text size="xs">Créditos avulsos expiram em <strong>30 dias</strong> após a compra.</Text>
                                     </Alert>
                                     <div>
@@ -452,17 +578,6 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                         />
                                     </div>
                                     <Card withBorder radius="md" p="sm" mt="xs">
-                                        <Group justify="space-between">
-                                            <Text size="xs" c="dimmed">Subtotal</Text>
-                                            <Text size="sm">{fmt(buyService.price_brl * buyQuantity)}</Text>
-                                        </Group>
-                                        {calcDiscount() > 0 && (
-                                            <Group justify="space-between" mt={4}>
-                                                <Badge variant="light" color="green" size="xs">-{calcDiscount()}% volume</Badge>
-                                                <Text size="sm" c="green">-{fmt(buyService.price_brl * buyQuantity - calcPrice())}</Text>
-                                            </Group>
-                                        )}
-                                        <Divider my="xs" />
                                         <Group justify="space-between">
                                             <Text fw={700}>Total</Text>
                                             <Text size="lg" fw={800} c="violet">{fmt(calcPrice())}</Text>
