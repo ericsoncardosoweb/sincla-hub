@@ -9,6 +9,7 @@ import { notifications } from '@mantine/notifications';
 import { IconUser, IconMail, IconPhone, IconId, IconLock, IconCamera, IconAlertCircle } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
+import { storageService } from '../../shared/services/storage';
 import { PageHeader } from '../../components/shared';
 
 export function Profile() {
@@ -62,22 +63,11 @@ export function Profile() {
 
         setUploadingAvatar(true);
         try {
-            const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-            const filePath = `avatars/${subscriber.id}.${fileExt}`;
+            // Upload via Bunny CDN (Edge Function upload-asset)
+            const result = await storageService.uploadAvatar(subscriber.id, file);
+            if (!result.success) throw new Error(result.error || 'Falha no upload');
 
-            // Upload para o storage
-            const { error: uploadError } = await supabase.storage
-                .from('public-assets')
-                .upload(filePath, file, { upsert: true });
-
-            if (uploadError) throw uploadError;
-
-            // Gerar URL pública
-            const { data: urlData } = supabase.storage
-                .from('public-assets')
-                .getPublicUrl(filePath);
-
-            const newAvatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+            const newAvatarUrl = `${result.url}?t=${Date.now()}`;
 
             // Atualizar no perfil
             const { error: updateError } = await supabase
