@@ -10,7 +10,7 @@ import {
     IconSearch, IconUsers, IconBuilding, IconUserPlus,
     IconChevronDown, IconChevronRight, IconPhone,
     IconPlus, IconTrash, IconCheck, IconX, IconEdit, IconDeviceFloppy,
-    IconCrown,
+    IconCrown, IconAlertTriangle,
 } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
 
@@ -99,6 +99,10 @@ export function AdminSubscribers() {
     // Edit state
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<{ name: string; phone: string; cpf_cnpj: string }>({ name: '', phone: '', cpf_cnpj: '' });
+
+    // Delete state
+    const [deleteTarget, setDeleteTarget] = useState<SubscriberRow | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     const [editLoading, setEditLoading] = useState(false);
 
     // Create modal state
@@ -234,6 +238,43 @@ export function AdminSubscribers() {
 
     const handleSearch = () => {
         loadData();
+    };
+
+    // ============================
+    // Delete Subscriber Handler
+    // ============================
+    const handleDeleteSubscriber = async () => {
+        if (!deleteTarget) return;
+        setDeleteLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('admin-delete-subscriber', {
+                body: { subscriberId: deleteTarget.id },
+            });
+
+            if (error || data?.error) {
+                throw new Error(error?.message || data?.error || 'Falha desconhecida');
+            }
+
+            notifications.show({
+                title: 'Assinante excluído ✅',
+                message: `${deleteTarget.name || deleteTarget.email} foi removido com sucesso.`,
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+
+            setDeleteTarget(null);
+            loadData();
+        } catch (error: any) {
+            console.error('Error deleting subscriber:', error);
+            notifications.show({
+                title: 'Erro ao excluir assinante',
+                message: error.message || 'Falha desconhecida.',
+                color: 'red',
+                icon: <IconX size={16} />,
+            });
+        } finally {
+            setDeleteLoading(false);
+        }
     };
 
     // ============================
@@ -560,22 +601,35 @@ export function AdminSubscribers() {
                                                         </ActionIcon>
                                                     </Group>
                                                 ) : (
-                                                    <Tooltip label="Editar">
-                                                        <ActionIcon
-                                                            size="sm" variant="subtle" color="gray"
-                                                            onClick={(e: React.MouseEvent) => {
-                                                                e.stopPropagation();
-                                                                setEditingId(sub.id);
-                                                                setEditForm({
-                                                                    name: sub.name || '',
-                                                                    phone: sub.phone || '',
-                                                                    cpf_cnpj: sub.cpf_cnpj || '',
-                                                                });
-                                                            }}
-                                                        >
-                                                            <IconEdit size={14} />
-                                                        </ActionIcon>
-                                                    </Tooltip>
+                                                    <Group gap={4}>
+                                                        <Tooltip label="Editar">
+                                                            <ActionIcon
+                                                                size="sm" variant="subtle" color="gray"
+                                                                onClick={(e: React.MouseEvent) => {
+                                                                    e.stopPropagation();
+                                                                    setEditingId(sub.id);
+                                                                    setEditForm({
+                                                                        name: sub.name || '',
+                                                                        phone: sub.phone || '',
+                                                                        cpf_cnpj: sub.cpf_cnpj || '',
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <IconEdit size={14} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
+                                                        <Tooltip label="Excluir">
+                                                            <ActionIcon
+                                                                size="sm" variant="subtle" color="red"
+                                                                onClick={(e: React.MouseEvent) => {
+                                                                    e.stopPropagation();
+                                                                    setDeleteTarget(sub);
+                                                                }}
+                                                            >
+                                                                <IconTrash size={14} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
+                                                    </Group>
                                                 )}
                                             </Table.Td>
                                         </Table.Tr>
@@ -797,6 +851,58 @@ export function AdminSubscribers() {
                             leftSection={<IconCheck size={16} />}
                         >
                             Criar Assinante
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
+            {/* ============================
+                Modal: Confirmar Exclusão
+            ============================ */}
+            <Modal
+                opened={!!deleteTarget}
+                onClose={() => !deleteLoading && setDeleteTarget(null)}
+                title={
+                    <Group gap="xs">
+                        <IconAlertTriangle size={20} color="var(--mantine-color-red-6)" />
+                        <Title order={4}>Excluir Assinante</Title>
+                    </Group>
+                }
+                centered
+                size="md"
+            >
+                <Stack gap="md">
+                    <Text size="sm">
+                        Tem certeza que deseja excluir o assinante <strong>{deleteTarget?.name || deleteTarget?.email}</strong>?
+                    </Text>
+                    <Card withBorder padding="sm" radius="md" bg="var(--mantine-color-red-light)">
+                        <Text size="xs" c="red" fw={600}>
+                            ⚠️ Esta ação é irreversível. Todos os dados serão removidos:
+                        </Text>
+                        <Text size="xs" c="dimmed" mt={4}>
+                            • Conta de acesso (auth)
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                            • Empresas vinculadas ({deleteTarget?.companies?.length || 0})
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                            • Assinaturas e licenças ativas
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                            • Membros e permissões
+                        </Text>
+                    </Card>
+                    <Group justify="flex-end" gap="sm">
+                        <Button variant="subtle" onClick={() => setDeleteTarget(null)} disabled={deleteLoading}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            color="red"
+                            onClick={handleDeleteSubscriber}
+                            loading={deleteLoading}
+                            leftSection={<IconTrash size={16} />}
+                        >
+                            Excluir Permanentemente
                         </Button>
                     </Group>
                 </Stack>

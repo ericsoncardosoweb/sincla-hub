@@ -64,8 +64,8 @@ Deno.serve(async (req) => {
         const authHeader = req.headers.get('Authorization')
         if (!authHeader) {
             return new Response(
-                JSON.stringify({ error: 'Não autorizado' }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                JSON.stringify({ error: 'Não autorizado', status: 401 }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
@@ -76,8 +76,8 @@ Deno.serve(async (req) => {
         if (!checkRateLimit(clientIp)) {
             console.warn(`[Asaas Checkout] RATE LIMIT BLOQUEADO: IP ${clientIp}`)
             return new Response(
-                JSON.stringify({ error: 'Muitas tentativas. Tente novamente em alguns minutos.' }),
-                { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                JSON.stringify({ error: 'Muitas tentativas. Tente novamente em alguns minutos.', status: 429 }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
@@ -87,8 +87,8 @@ Deno.serve(async (req) => {
 
         if (!endpoint) {
             return new Response(
-                JSON.stringify({ error: 'Endpoint é obrigatório' }),
-                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                JSON.stringify({ error: 'Endpoint é obrigatório', status: 400 }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
@@ -108,8 +108,8 @@ Deno.serve(async (req) => {
         if (!apiKey) {
             console.error(`[Asaas Checkout] API Key não configurada para ambiente: ${isSandbox ? 'sandbox' : 'prod'}`)
             return new Response(
-                JSON.stringify({ error: 'Configuração de API inválida' }),
-                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                JSON.stringify({ error: 'Configuração de API inválida', status: 500 }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
                     status: asaasResponse.status
                 }),
                 {
-                    status: asaasResponse.status,
+                    status: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
                 }
             )
@@ -190,8 +190,8 @@ Deno.serve(async (req) => {
     } catch (error) {
         console.error('[Asaas Checkout] Erro:', error)
         return new Response(
-            JSON.stringify({ error: (error as Error).message || 'Erro interno' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({ error: (error as Error).message || 'Erro interno', status: 500 }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
 })

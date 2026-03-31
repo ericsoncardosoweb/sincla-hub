@@ -172,12 +172,28 @@ Deno.serve(async (req) => {
 
             if (createError || !newUser?.user) {
                 // User might exist in auth but not in subscribers
-                if (createError?.message?.includes('already been registered') || createError?.message?.includes('already exists')) {
+                // Captura todas as variantes de erro: "already been registered", "already exists",
+                // e "Database error creating new user" (trigger handle_new_user falha no INSERT duplicado)
+                const isUserExistsError = createError?.message && (
+                    createError.message.includes('already been registered') ||
+                    createError.message.includes('already exists') ||
+                    createError.message.includes('Database error creating new user') ||
+                    createError.message.includes('duplicate key')
+                )
+
+                if (isUserExistsError) {
+                    console.log(`[admin-provision-subscriber] User exists, looking up: ${email}`)
                     const { data: { users } } = await adminClient.auth.admin.listUsers()
                     const found = users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase())
                     if (found) {
                         userId = found.id
                         alreadyExisted = true
+                        // Garantir que o subscriber record existe (pode ter falhado no trigger)
+                        await adminClient.from('subscribers').upsert({
+                            id: found.id,
+                            email: email.trim(),
+                            name,
+                        }, { onConflict: 'id' })
                     } else {
                         return new Response(
                             JSON.stringify({ error: 'Usuário existe no auth mas não foi encontrado: ' + createError?.message }),

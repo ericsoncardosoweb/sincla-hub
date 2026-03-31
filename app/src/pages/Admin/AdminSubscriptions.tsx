@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback } from 'react';
 import {
     Container, Title, Text, Card, Group, Badge, Stack, Skeleton,
     Table, TextInput, SimpleGrid, ThemeIcon, Select, Button, Modal,
+    ActionIcon, Tooltip,
 } from '@mantine/core';
 import {
     IconSearch, IconCreditCard, IconTrendingUp,
     IconClock, IconX, IconCrown, IconGift,
+    IconPlayerStop, IconTrash, IconAlertTriangle, IconCheck,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { supabase } from '../../shared/lib/supabase';
@@ -28,6 +30,7 @@ interface SubscriptionRow {
     canceled_at: string | null;
     current_period_end: string | null;
     created_at: string;
+    external_subscription_id: string | null;
     company: { name: string; slug: string } | null;
     product: { name: string } | null;
 }
@@ -85,6 +88,12 @@ export function AdminSubscriptions() {
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
     const [grantDuration, setGrantDuration] = useState<string>('0');
 
+    // Cancel / Delete Subscription
+    const [cancelTarget, setCancelTarget] = useState<SubscriptionRow | null>(null);
+    const [cancelLoading, setCancelLoading] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<SubscriptionRow | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
@@ -109,7 +118,7 @@ export function AdminSubscriptions() {
                 .select(`
                     id, company_id, product_id, plan, status, seats_limit, seats_used,
                     billing_cycle, monthly_amount, trial_ends_at, canceled_at,
-                    current_period_end, created_at,
+                    current_period_end, created_at, external_subscription_id,
                     company:companies!company_id (name, slug),
                     product:products!product_id (name)
                 `)
@@ -155,6 +164,99 @@ export function AdminSubscriptions() {
     const mrr = subscriptions
         .filter(s => s.status === 'active' || s.status === 'trial')
         .reduce((sum, s) => sum + (s.monthly_amount || 0), 0);
+
+    // ============================
+    // Cancel Subscription Handler
+    // ============================
+    const handleCancelSubscription = async () => {
+        if (!cancelTarget) return;
+        setCancelLoading(true);
+        try {
+            // Se tem assinatura externa no Asaas, cancelar lá primeiro
+            if (cancelTarget.external_subscription_id) {
+                const { data: asaasResult, error: asaasError } = await supabase.functions.invoke('asaas-checkout', {
+                    body: {
+                        endpoint: `/subscriptions/${cancelTarget.external_subscription_id}`,
+                        method: 'DELETE',
+                    },
+                });
+
+                if (asaasError) {
+                    console.error('Asaas cancel error:', asaasError);
+                    // Continuar mesmo com erro no Asaas (pode já estar cancelada)
+                }
+
+                if (asaasResult?.error && !asaasResult.error.includes('inativada')) {
+                    console.warn('Asaas cancel warning:', asaasResult.error);
+                }
+            }
+
+            // Atualizar no banco
+            const { error: dbError } = await supabase
+                .from('subscriptions')
+                .update({
+                    status: 'canceled',
+                    canceled_at: new Date().toISOString(),
+                })
+                .eq('id', cancelTarget.id);
+
+            if (dbError) throw dbError;
+
+            notifications.show({
+                title: 'Assinatura cancelada \u2705',
+                message: `${cancelTarget.product?.name || cancelTarget.product_id} da empresa ${cancelTarget.company?.name || ''} foi cancelada.`,
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+
+            setCancelTarget(null);
+            loadData();
+        } catch (error: any) {
+            console.error('Error canceling subscription:', error);
+            notifications.show({
+                title: 'Erro ao cancelar',
+                message: error.message || 'Falha desconhecida.',
+                color: 'red',
+            });
+        } finally {
+            setCancelLoading(false);
+        }
+    };
+
+    // ============================
+    // Delete Subscription Handler (only canceled)
+    // ============================
+    const handleDeleteSubscription = async () => {
+        if (!deleteTarget) return;
+        setDeleteLoading(true);
+        try {
+            const { error } = await supabase
+                .from('subscriptions')
+                .delete()
+                .eq('id', deleteTarget.id);
+
+            if (error) throw error;
+
+            notifications.show({
+                title: 'Registro exclu\u00eddo \u2705',
+                message: 'Assinatura cancelada removida do banco de dados.',
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+
+            setDeleteTarget(null);
+            loadData();
+        } catch (error: any) {
+            console.error('Error deleting subscription:', error);
+            notifications.show({
+                title: 'Erro ao excluir',
+                message: error.message || 'Falha desconhecida.',
+                color: 'red',
+            });
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
 
     return (
         <Container size="xl" py="md">
@@ -275,6 +377,7 @@ export function AdminSubscriptions() {
                                     <Table.Th>Valor/mês</Table.Th>
                                     <Table.Th>Ciclo</Table.Th>
                                     <Table.Th>Desde</Table.Th>
+                                    <Table.Th style={{ width: 70 }}>A\u00e7\u00f5es</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>
@@ -332,6 +435,30 @@ export function AdminSubscriptions() {
                                                     Cancelada em {formatDate(sub.canceled_at)}
                                                 </Text>
                                             )}
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Group gap={4}>
+                                                {sub.status === 'active' || sub.status === 'trial' ? (
+                                                    <Tooltip label="Cancelar assinatura">
+                                                        <ActionIcon
+                                                            size="sm" variant="subtle" color="orange"
+                                                            onClick={() => setCancelTarget(sub)}
+                                                        >
+                                                            <IconPlayerStop size={14} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                ) : null}
+                                                {sub.status === 'canceled' && (
+                                                    <Tooltip label="Excluir registro">
+                                                        <ActionIcon
+                                                            size="sm" variant="subtle" color="red"
+                                                            onClick={() => setDeleteTarget(sub)}
+                                                        >
+                                                            <IconTrash size={14} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                )}
+                                            </Group>
                                         </Table.Td>
                                     </Table.Tr>
                                 ))}
@@ -442,6 +569,93 @@ export function AdminSubscriptions() {
                             loading={grantLoading}
                         >
                             Conceder Acessos
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
+            {/* ============================
+                Modal: Confirmar Cancelamento
+            ============================ */}
+            <Modal
+                opened={!!cancelTarget}
+                onClose={() => !cancelLoading && setCancelTarget(null)}
+                title={
+                    <Group gap="xs">
+                        <IconAlertTriangle size={20} color="var(--mantine-color-orange-6)" />
+                        <Title order={4}>Cancelar Assinatura</Title>
+                    </Group>
+                }
+                centered
+                size="md"
+            >
+                <Stack gap="md">
+                    <Text size="sm">
+                        Tem certeza que deseja cancelar a assinatura de{' '}
+                        <strong>{cancelTarget?.product?.name || cancelTarget?.product_id}</strong>{' '}
+                        da empresa <strong>{cancelTarget?.company?.name || '—'}</strong>?
+                    </Text>
+                    {cancelTarget?.external_subscription_id && (
+                        <Card withBorder padding="sm" radius="md" bg="var(--mantine-color-orange-light)">
+                            <Text size="xs" c="orange" fw={600}>
+                                \u26a0\ufe0f Esta assinatura tem cobran\u00e7a no Asaas. O cancelamento tamb\u00e9m ser\u00e1 enviado para o gateway de pagamento.
+                            </Text>
+                            <Text size="xs" c="dimmed" mt={4}>
+                                ID Asaas: {cancelTarget.external_subscription_id}
+                            </Text>
+                        </Card>
+                    )}
+                    <Group justify="flex-end" gap="sm">
+                        <Button variant="subtle" onClick={() => setCancelTarget(null)} disabled={cancelLoading}>
+                            Voltar
+                        </Button>
+                        <Button
+                            color="orange"
+                            onClick={handleCancelSubscription}
+                            loading={cancelLoading}
+                            leftSection={<IconPlayerStop size={16} />}
+                        >
+                            Cancelar Assinatura
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
+            {/* ============================
+                Modal: Confirmar Exclus\u00e3o
+            ============================ */}
+            <Modal
+                opened={!!deleteTarget}
+                onClose={() => !deleteLoading && setDeleteTarget(null)}
+                title={
+                    <Group gap="xs">
+                        <IconAlertTriangle size={20} color="var(--mantine-color-red-6)" />
+                        <Title order={4}>Excluir Registro</Title>
+                    </Group>
+                }
+                centered
+                size="md"
+            >
+                <Stack gap="md">
+                    <Text size="sm">
+                        Deseja excluir permanentemente o registro da assinatura cancelada de{' '}
+                        <strong>{deleteTarget?.product?.name || deleteTarget?.product_id}</strong>{' '}
+                        da empresa <strong>{deleteTarget?.company?.name || '—'}</strong>?
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                        Esta a\u00e7\u00e3o remove apenas o registro do banco de dados. A conta da empresa e do usu\u00e1rio n\u00e3o ser\u00e3o afetadas.
+                    </Text>
+                    <Group justify="flex-end" gap="sm">
+                        <Button variant="subtle" onClick={() => setDeleteTarget(null)} disabled={deleteLoading}>
+                            Cancelar
+                        </Button>
+                        <Button
+                            color="red"
+                            onClick={handleDeleteSubscription}
+                            loading={deleteLoading}
+                            leftSection={<IconTrash size={16} />}
+                        >
+                            Excluir Registro
                         </Button>
                     </Group>
                 </Stack>
