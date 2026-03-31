@@ -163,6 +163,7 @@ Deno.serve(async (req) => {
             await adminClient.from('subscribers').update({ name }).eq('id', userId)
         } else {
             // Try to create auth user
+            console.log(`[admin-provision-subscriber] Creating new auth user: ${email}`)
             const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
                 email: email.trim(),
                 password: DEFAULT_PASSWORD,
@@ -171,24 +172,23 @@ Deno.serve(async (req) => {
             })
 
             if (createError || !newUser?.user) {
-                // User might exist in auth but not in subscribers
-                // Captura todas as variantes de erro: "already been registered", "already exists",
-                // e "Database error creating new user" (trigger handle_new_user falha no INSERT duplicado)
-                const isUserExistsError = createError?.message && (
-                    createError.message.includes('already been registered') ||
-                    createError.message.includes('already exists') ||
-                    createError.message.includes('Database error creating new user') ||
-                    createError.message.includes('duplicate key')
+                const errorMsg = createError?.message || 'Erro desconhecido'
+                console.log(`[admin-provision-subscriber] createUser error: ${errorMsg}`)
+
+                // Cenário A: Usuário já existe no auth
+                const isUserExistsError = (
+                    errorMsg.includes('already been registered') ||
+                    errorMsg.includes('already exists')
                 )
 
                 if (isUserExistsError) {
-                    console.log(`[admin-provision-subscriber] User exists, looking up: ${email}`)
+                    console.log(`[admin-provision-subscriber] User already registered, looking up: ${email}`)
                     const { data: { users } } = await adminClient.auth.admin.listUsers()
                     const found = users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase())
                     if (found) {
                         userId = found.id
                         alreadyExisted = true
-                        // Garantir que o subscriber record existe (pode ter falhado no trigger)
+                        // Garantir que o subscriber record existe
                         await adminClient.from('subscribers').upsert({
                             id: found.id,
                             email: email.trim(),
@@ -196,13 +196,48 @@ Deno.serve(async (req) => {
                         }, { onConflict: 'id' })
                     } else {
                         return new Response(
-                            JSON.stringify({ error: 'Usuário existe no auth mas não foi encontrado: ' + createError?.message }),
+                            JSON.stringify({ error: 'Usuário registrado no auth mas não localizado. Contate o suporte.' }),
                             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                         )
                     }
-                } else {
+                }
+                // Cenário B: Trigger handle_new_user falhou (Database error)
+                // Isso acontece quando o trigger tenta INSERT e falha.
+                // Com a migration 034 (ON CONFLICT DO NOTHING), um retry deve resolver.
+                else if (errorMsg.includes('Database error')) {
+                    console.log(`[admin-provision-subscriber] Trigger failed, retrying createUser for: ${email}`)
+
+                    // Retry: após migration 034, o trigger é resiliente
+                    const { data: retryUser, error: retryError } = await adminClient.auth.admin.createUser({
+                        email: email.trim(),
+                        password: DEFAULT_PASSWORD,
+                        email_confirm: true,
+                        user_metadata: { name, must_change_password: true },
+                    })
+
+                    if (retryError || !retryUser?.user) {
+                        console.error('[admin-provision-subscriber] Retry also failed:', retryError?.message)
+                        return new Response(
+                            JSON.stringify({
+                                error: 'Falha ao criar usuário. O trigger handle_new_user pode precisar de atualização. Execute a migration 034_fix_handle_new_user_resilient.sql no SQL Editor.',
+                                details: 'Erro original: ' + errorMsg + ' | Retry: ' + (retryError?.message || 'sem user'),
+                            }),
+                            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                        )
+                    }
+
+                    userId = retryUser.user.id
+                    // Garantir subscriber existe (trigger pode ter falhado de novo mas auth.users foi criado)
+                    await adminClient.from('subscribers').upsert({
+                        id: retryUser.user.id,
+                        email: email.trim(),
+                        name,
+                    }, { onConflict: 'id' })
+                }
+                // Cenário C: Erro desconhecido
+                else {
                     return new Response(
-                        JSON.stringify({ error: 'Falha ao criar usuário: ' + (createError?.message || 'Erro desconhecido') }),
+                        JSON.stringify({ error: 'Falha ao criar usuário: ' + errorMsg }),
                         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
                     )
                 }
