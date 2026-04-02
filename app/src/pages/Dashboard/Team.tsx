@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 import {
     Container,
     Text,
@@ -210,14 +211,28 @@ export function Team() {
         if (!currentCompany) return;
 
         try {
-            // Check if user exists
-            const { data: existingUser } = await supabase
-                .from('subscribers')
-                .select('id')
-                .eq('email', values.email)
-                .single();
+            // Check if user exists via RPC to bypass RLS on subscribers
+            const { data: rpcData, error: rpcError } = await supabase
+                .rpc('get_subscriber_id_by_email', { p_email: values.email })
+                .maybeSingle();
 
-            if (existingUser) {
+            if (rpcError) throw rpcError;
+            
+            const existingUser = rpcData as { id: string } | null;
+
+            if (existingUser && existingUser.id) {
+                // Check if user is already a member before trying to insert to give a better error message
+                const { data: memberCheck } = await supabase
+                    .from('company_members')
+                    .select('id')
+                    .eq('company_id', currentCompany.id)
+                    .eq('user_id', existingUser.id)
+                    .maybeSingle();
+
+                if (memberCheck) {
+                    throw new Error('Este usuário já é membro desta empresa.');
+                }
+
                 // Add to company
                 const { data: newMember, error } = await supabase.from('company_members').insert({
                     company_id: currentCompany.id,
@@ -241,7 +256,23 @@ export function Team() {
             } else {
                 // User not registered — create account via signUp and send password reset
                 const tempPassword = crypto.randomUUID();
-                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                
+                // IMPORTANTE: Criamos um client "isolado" para signUp. 
+                // Isso previne que a plataforma faça auto-login com o usuário recém criado
+                // e deslogue o usuário atual (Administrador / Gestor).
+                const inviteClient = createClient(
+                    import.meta.env.VITE_SUPABASE_URL,
+                    import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    {
+                        auth: {
+                            persistSession: false,
+                            autoRefreshToken: false,
+                            detectSessionInUrl: false
+                        }
+                    }
+                );
+
+                const { data: signUpData, error: signUpError } = await inviteClient.auth.signUp({
                     email: values.email,
                     password: tempPassword,
                     options: {
@@ -644,6 +675,7 @@ export function Team() {
                                 { value: 'member', label: 'Membro' },
                             ]}
                             required
+                            comboboxProps={{ withinPortal: true, zIndex: 1000000 }}
                             {...form.getInputProps('role')}
                         />
 
@@ -658,6 +690,7 @@ export function Team() {
                                 { value: 'customer', label: 'Cliente — B2C promovido' },
                             ]}
                             required
+                            comboboxProps={{ withinPortal: true, zIndex: 1000000 }}
                             {...form.getInputProps('user_type')}
                         />
 
