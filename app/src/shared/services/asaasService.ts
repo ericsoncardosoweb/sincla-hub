@@ -554,3 +554,19 @@ export async function cancelSubscription(subscriptionId: string): Promise<{ succ
         return { success: false, error: error.message };
     }
 }
+
+/**
+ * Listar faturas (pagamentos) de uma assinatura (Asaas)
+ */
+export async function listPaymentsBySubscription(subscriptionId: string): Promise<any[]> {
+    try {
+        const result = await callAsaasCheckout({
+            endpoint: `/subscriptions/${subscriptionId}/payments?limit=30`,
+            method: 'GET',
+        });
+        return result?.data || [];
+    } catch (error) {
+        console.error('Erro ao listar faturas da assinatura no gateway:', error);
+        return [];
+    }
+}

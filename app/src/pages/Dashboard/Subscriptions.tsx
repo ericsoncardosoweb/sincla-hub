@@ -4,20 +4,23 @@ import {
     Container, Text, Card, Group, Badge, Stack, Skeleton,
     ThemeIcon, SimpleGrid, Button, Divider, Loader,
     ActionIcon, Title, Modal, Tooltip, SegmentedControl,
-    Box, Paper, Progress, Tabs,
+    Box, Paper, Progress, Tabs, Menu,
 } from '@mantine/core';
 import {
     IconCreditCard, IconCalendar, IconReceipt, IconUsers,
     IconStar, IconCheck, IconArrowLeft, IconRocket,
     IconSchool, IconTarget, IconBuildingCommunity, IconShoppingCart,
     IconMessage, IconChartBar, IconArrowsExchange, IconArrowUp,
-    IconArrowDown, IconBrandWhatsapp, IconSparkles,
-    IconExternalLink, IconCrown, IconTrendingUp,
+    IconArrowDown, IconBrandWhatsapp, IconSparkles, IconExternalLink, 
+    IconCrown, IconTrendingUp, IconDotsVertical, IconFileInvoice, 
+    IconTrash 
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
 import { redirectToProduct } from '../../shared/services/cross-auth';
+import { listPaymentsBySubscription, cancelSubscription } from '../../shared/services/asaasService';
+import { notifications } from '@mantine/notifications';
 import { ConsumptionDashboard } from './components/ConsumptionDashboard';
 
 // ============================
@@ -132,6 +135,15 @@ export function Subscriptions() {
     const [selectedNewPlan, setSelectedNewPlan] = useState<PlanOption | null>(null);
     const [changeBillingCycle, setChangeBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
+    // Invoices State
+    const [invoicesModalOpen, setInvoicesModalOpen] = useState(false);
+    const [invoicesLoading, setInvoicesLoading] = useState(false);
+    const [invoices, setInvoices] = useState<any[]>([]);
+
+    // Cancel State
+    const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [cancelLoading, setCancelLoading] = useState(false);
+
     const [platformWhatsapp, setPlatformWhatsapp] = useState('');
 
     const handleCloseSuccessModal = () => {
@@ -235,6 +247,36 @@ export function Subscriptions() {
         const cycle = changeBillingCycle === 'yearly' ? 'annual' : 'monthly';
         setChangePlanModalOpen(false);
         navigate(`/checkout?produto=${selectedSub.product_id}&plano=${selectedNewPlan.slug}&ciclo=${cycle}`);
+    };
+
+    const handleOpenInvoices = async (sub: SubscriptionRow) => {
+        if (!sub.id) return;
+        setSelectedSub(sub);
+        setInvoicesModalOpen(true);
+        setInvoicesLoading(true);
+        try {
+            const bills = await listPaymentsBySubscription(sub.id);
+            setInvoices(bills);
+        } catch (err) {
+            notifications.show({ title: 'Erro', message: 'Falha ao buscar histórico do gateway Asaas', color: 'red' });
+        } finally {
+            setInvoicesLoading(false);
+        }
+    };
+
+    const handleConfirmCancel = async () => {
+        if (!selectedSub) return;
+        setCancelLoading(true);
+        const res = await cancelSubscription(selectedSub.id);
+        if (res.success) {
+            await supabase.from('subscriptions').update({ status: 'canceled', canceled_at: new Date().toISOString() }).eq('id', selectedSub.id);
+            notifications.show({ title: 'Cancelada', message: 'Assinatura cancelada com sucesso. O acesso vigora até o fim do ciclo.', color: 'green' });
+            setCancelModalOpen(false);
+            loadData();
+        } else {
+            notifications.show({ title: 'Falha', message: res.error || 'Falha ao cancelar serviço financeiro', color: 'red' });
+        }
+        setCancelLoading(false);
     };
 
     const getPlanDirection = (currentPlan: string, newPlan: PlanOption): 'upgrade' | 'downgrade' | 'same' => {
@@ -472,13 +514,35 @@ export function Subscriptions() {
                                                                     <IconCrown size={10} style={{ marginRight: 4 }} />{planLabels[sub.plan] || sub.plan}
                                                                 </Badge>
                                                             </Group>
-                                                        </div>
-                                                    </Group>
+                                                    </div>
+                                                </Group>
+                                                <Group gap="xs">
                                                     <Badge color={statusColors[sub.status] || 'gray'} variant="filled" size="sm" style={{ textTransform: 'capitalize' }}>
                                                         {statusLabels[sub.status] || sub.status}
                                                     </Badge>
+                                                    <Menu shadow="md" width={220} position="bottom-end" withinPortal>
+                                                        <Menu.Target>
+                                                            <ActionIcon variant="transparent" color="white" size="sm">
+                                                                <IconDotsVertical size={16} />
+                                                            </ActionIcon>
+                                                        </Menu.Target>
+                                                        <Menu.Dropdown>
+                                                            <Menu.Item leftSection={<IconFileInvoice size={14} />} onClick={() => handleOpenInvoices(sub)}>
+                                                                Histórico de Faturas
+                                                            </Menu.Item>
+                                                            {sub.status !== 'canceled' && (
+                                                                <>
+                                                                    <Menu.Divider />
+                                                                    <Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => { setSelectedSub(sub); setCancelModalOpen(true); }}>
+                                                                        Cancelar Assinatura
+                                                                    </Menu.Item>
+                                                                </>
+                                                            )}
+                                                        </Menu.Dropdown>
+                                                    </Menu>
                                                 </Group>
-                                            </Box>
+                                            </Group>
+                                        </Box>
 
                                             {/* Body */}
                                             <Box p="md">
@@ -644,6 +708,61 @@ export function Subscriptions() {
                         )}
                     </Stack>
                 )}
+            </Modal>
+
+            {/* ═══ Modal Histórico Faturas ═══ */}
+            <Modal opened={invoicesModalOpen} onClose={() => setInvoicesModalOpen(false)} title={<Title order={4}>Histórico de Faturas</Title>} size="lg" centered>
+                {invoicesLoading ? (
+                    <Stack align="center" py="xl"><Loader /><Text c="dimmed">Buscando documentos no gateway...</Text></Stack>
+                ) : invoices.length === 0 ? (
+                    <EmptyState icon={<IconFileInvoice size={28} />} title="Nenhuma fatura encontrada" description="Nenhum pagamento registrado no Asaas para esta assinatura." />
+                ) : (
+                    <Stack gap="sm">
+                        {invoices.map((inv: any) => (
+                            <Card key={inv.id} withBorder padding="sm" radius="md">
+                                <Group justify="space-between" align="center">
+                                    <Group gap="sm">
+                                        <ThemeIcon color={inv.status === 'RECEIVED' || inv.status === 'CONFIRMED' ? 'green' : inv.status === 'PENDING' ? 'orange' : 'gray'} variant="light" size="lg">
+                                            <IconFileInvoice size={20} />
+                                        </ThemeIcon>
+                                        <div>
+                                            <Text fw={600} size="sm">Fatura {inv.invoiceNumber || inv.id.split('_')[1] || ''}</Text>
+                                            <Text size="xs" c="dimmed">Vencimento: {formatDate(inv.dueDate)}</Text>
+                                        </div>
+                                    </Group>
+                                    <Group gap="md">
+                                        <Stack gap={0} align="flex-end">
+                                            <Text size="sm" fw={700}>{formatCurrency(inv.value)}</Text>
+                                            <Badge size="xs" color={inv.status === 'RECEIVED' || inv.status === 'CONFIRMED' ? 'green' : inv.status === 'PENDING' ? 'orange' : 'gray'}>
+                                                {inv.status === 'RECEIVED' || inv.status === 'CONFIRMED' ? 'Pago' : inv.status === 'PENDING' ? 'Aguardando' : inv.status}
+                                            </Badge>
+                                        </Stack>
+                                        <Button variant="light" size="xs" component="a" href={inv.invoiceUrl} target="_blank" leftSection={<IconExternalLink size={14} />}>
+                                            Visualizar
+                                        </Button>
+                                    </Group>
+                                </Group>
+                            </Card>
+                        ))}
+                    </Stack>
+                )}
+            </Modal>
+
+            {/* ═══ Modal Cancelamento ═══ */}
+            <Modal opened={cancelModalOpen} onClose={() => !cancelLoading && setCancelModalOpen(false)} title={<Title order={4} c="red">Cancelar Assinatura</Title>} centered>
+                <Stack gap="md">
+                    <Text size="sm">
+                        Tem certeza que deseja solicitar o cancelamento de sua assinatura <Text span fw={700}>{(selectedSub?.product as any)?.name}</Text>?
+                    </Text>
+                    <Box p="sm" bg="var(--mantine-color-red-0)" style={{ borderRadius: 8, border: '1px solid var(--mantine-color-red-2)' }}>
+                        <Text size="xs" c="red" fw={600}>⚠️ Atenção: Suas faturas futuras serão interrompidas.</Text>
+                        <Text size="xs" c="red" mt={4}>Seu acesso continuará disponível até o fim do ciclo de faturamento vigente. Após isto, as contas e os dados da aplicação poderão ser desativados ou removidos da plataforma.</Text>
+                    </Box>
+                    <Group justify="flex-end" mt="md">
+                        <Button variant="subtle" onClick={() => setCancelModalOpen(false)} disabled={cancelLoading}>Voltar</Button>
+                        <Button color="red" onClick={handleConfirmCancel} loading={cancelLoading}>Sim, quero cancelar</Button>
+                    </Group>
+                </Stack>
             </Modal>
         </Container>
     );

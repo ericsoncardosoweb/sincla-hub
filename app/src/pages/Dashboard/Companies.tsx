@@ -19,7 +19,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEdit, IconBuilding, IconUsers, IconSearch, IconDotsVertical, IconArrowRight, IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconBuilding, IconUsers, IconSearch, IconDotsVertical, IconArrowRight, IconTrash, IconCreditCard } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
