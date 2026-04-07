@@ -267,16 +267,32 @@ export function Subscriptions() {
     const handleConfirmCancel = async () => {
         if (!selectedSub) return;
         setCancelLoading(true);
-        const res = await cancelSubscription(selectedSub.id);
-        if (res.success) {
-            await supabase.from('subscriptions').update({ status: 'canceled', canceled_at: new Date().toISOString() }).eq('id', selectedSub.id);
-            notifications.show({ title: 'Cancelada', message: 'Assinatura cancelada com sucesso. O acesso vigora até o fim do ciclo.', color: 'green' });
-            setCancelModalOpen(false);
-            loadData();
-        } else {
-            notifications.show({ title: 'Falha', message: res.error || 'Falha ao cancelar serviço financeiro', color: 'red' });
+
+        try {
+            // 1. Checagem rígida de débitos: Se hover fatura com status vencida (e não apenas aguardando), barrar.
+            // PENDING é o estado das faturas futuras mensais ou da atual no prazo, OVERDUE é atrasada (débito aberto)
+            const bills = await listPaymentsBySubscription(selectedSub.id);
+            const hasOverdue = bills.some((b: any) => b.status === 'OVERDUE');
+            if (hasOverdue) {
+                setCancelModalOpen(false);
+                notifications.show({ title: 'Ação Bloqueada', message: 'Você possui pendências em aberto. Quite seus débitos para poder cancelar a assinatura.', color: 'red' });
+                return;
+            }
+
+            const res = await cancelSubscription(selectedSub.id);
+            if (res.success) {
+                await supabase.from('subscriptions').update({ status: 'canceled', canceled_at: new Date().toISOString() }).eq('id', selectedSub.id);
+                notifications.show({ title: 'Cancelada', message: 'Assinatura cancelada com sucesso. O acesso vigora até o fim do ciclo.', color: 'green' });
+                setCancelModalOpen(false);
+                loadData();
+            } else {
+                notifications.show({ title: 'Falha', message: res.error || 'Falha ao cancelar serviço financeiro', color: 'red' });
+            }
+        } catch {
+            notifications.show({ title: 'Erro', message: 'Não foi possível validar o extrato de faturas com o Asaas.', color: 'red' });
+        } finally {
+            setCancelLoading(false);
         }
-        setCancelLoading(false);
     };
 
     const getPlanDirection = (currentPlan: string, newPlan: PlanOption): 'upgrade' | 'downgrade' | 'same' => {
@@ -494,9 +510,20 @@ export function Subscriptions() {
                                         ? Math.max(0, Math.ceil((new Date(sub.current_period_end).getTime() - Date.now()) / 86400000))
                                         : null;
                                     const seatPercent = sub.seats_limit > 0 ? (sub.seats_used / sub.seats_limit) * 100 : 0;
+                                    const isSuspendedData = sub.status === 'suspended' || sub.status === 'canceled';
+                                    let isAccessBlockedDate = false;
+                                    let daysLate = 0;
+                                    if (sub.status === 'past_due' && sub.current_period_end) {
+                                        const pass = Math.ceil((Date.now() - new Date(sub.current_period_end).getTime()) / 86400000);
+                                        if (pass > 5) {
+                                            isAccessBlockedDate = true;
+                                        }
+                                        daysLate = pass;
+                                    }
+                                    const isAccessBlocked = isSuspendedData || isAccessBlockedDate;
 
                                     return (
-                                        <Card key={sub.id} withBorder radius="md" padding={0} style={{ overflow: 'hidden', transition: 'all 0.2s ease' }}
+                                        <Card key={sub.id} withBorder radius="md" padding={0} style={{ overflow: 'hidden', transition: 'all 0.2s ease', opacity: isAccessBlocked ? 0.8 : 1 }}
                                             onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = `0 8px 24px ${subColor}20`; }}
                                             onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = 'none'; }}
                                         >
@@ -568,27 +595,32 @@ export function Subscriptions() {
 
                                                 <Divider my="xs" />
 
-                                                <Group justify="space-between">
-                                                    <Tooltip label="Mudar plano" withArrow>
+                                                <Group justify="space-between" mt="md">
+                                                    <Tooltip label={isAccessBlocked ? 'O plano desta assinatura não permite alterações' : 'Mudar plano'} withArrow>
                                                         <Button variant="subtle" size="xs" leftSection={<IconArrowsExchange size={14} />}
-                                                            onClick={() => handleOpenChangePlan(sub)} disabled={sub.status === 'canceled'}
+                                                            onClick={() => handleOpenChangePlan(sub)} disabled={sub.status === 'canceled' || isAccessBlocked}
                                                         >
                                                             Alterar Plano
                                                         </Button>
                                                     </Tooltip>
-                                                    <Button variant="light" size="xs" rightSection={<IconExternalLink size={14} />}
-                                                        style={{ color: subColor }}
-                                                        onClick={async () => {
-                                                            try {
-                                                                await redirectToProduct(
-                                                                    { id: sub.product_id, base_url: sub.product?.base_url } as any,
-                                                                    currentCompany as any
-                                                                );
-                                                            } catch { /* silent */ }
-                                                        }}
-                                                    >
-                                                        Acessar
-                                                    </Button>
+                                                    <Tooltip label={isAccessBlocked ? (daysLate > 0 ? `Seu acesso está bloqueado por inatividade ou atraso de ${daysLate} dias.` : 'O plano desta assinatura foi cancelado ou desativado.') : 'Acessar ferramenta'} withArrow>
+                                                        <Button variant={isAccessBlocked ? 'filled' : 'light'} size="xs" rightSection={<IconExternalLink size={14} />}
+                                                            color={isAccessBlocked ? 'red' : undefined}
+                                                            style={!isAccessBlocked ? { color: subColor } : undefined}
+                                                            disabled={isAccessBlocked}
+                                                            onClick={async () => {
+                                                                if (isAccessBlocked) return;
+                                                                try {
+                                                                    await redirectToProduct(
+                                                                        { id: sub.product_id, base_url: sub.product?.base_url } as any,
+                                                                        currentCompany as any
+                                                                    );
+                                                                } catch { /* silent */ }
+                                                            }}
+                                                        >
+                                                            {isAccessBlocked ? 'Bloqueada' : 'Acessar'}
+                                                        </Button>
+                                                    </Tooltip>
                                                 </Group>
                                             </Box>
                                         </Card>
