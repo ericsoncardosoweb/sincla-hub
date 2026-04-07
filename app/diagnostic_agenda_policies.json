@@ -1,0 +1,694 @@
+{
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can view own profile",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can insert own profile",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can update own profile",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = id)",
+      "with_check": "(auth.uid() = id)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "contacts",
+      "policyname": "contacts_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "contacts",
+      "policyname": "contacts_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "contacts",
+      "policyname": "contacts_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "contacts",
+      "policyname": "contacts_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenant_members",
+      "policyname": "tenant_members_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenant_members",
+      "policyname": "tenant_members_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenant_members",
+      "policyname": "tenant_members_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenant_members",
+      "policyname": "tenant_members_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_public_read",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(auth.role() = 'authenticated'::text)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "profiles_update_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenants",
+      "policyname": "tenants_select_public",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenants",
+      "policyname": "tenants_update_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.role() = 'authenticated'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_logs",
+      "policyname": "webhook_logs_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(endpoint_id IN ( SELECT webhook_endpoints.id\n   FROM webhook_endpoints\n  WHERE (webhook_endpoints.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "google_integrations",
+      "policyname": "Users can manage their own Google integration",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "api_keys",
+      "policyname": "api_keys_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "api_keys",
+      "policyname": "api_keys_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "api_keys",
+      "policyname": "api_keys_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "api_keys",
+      "policyname": "api_keys_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agenda_events",
+      "policyname": "agenda_events_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agenda_events",
+      "policyname": "agenda_events_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_templates",
+      "policyname": "notification_templates_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((tenant_id IS NULL) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_templates",
+      "policyname": "notification_templates_manage",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_preferences",
+      "policyname": "notification_preferences_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(member_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_preferences",
+      "policyname": "notification_preferences_manage",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(member_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reminder_logs",
+      "policyname": "reminder_logs_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(booking_id IN ( SELECT bookings.id\n   FROM bookings\n  WHERE (bookings.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reminder_settings",
+      "policyname": "reminder_settings_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(event_type_id IN ( SELECT event_types.id\n   FROM event_types\n  WHERE (event_types.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reminder_settings",
+      "policyname": "reminder_settings_manage",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(event_type_id IN ( SELECT event_types.id\n   FROM event_types\n  WHERE (event_types.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "workflows",
+      "policyname": "workflows_tenant_isolation",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id = (( SELECT current_setting('app.current_tenant_id'::text, true) AS current_setting))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "workflow_executions",
+      "policyname": "wf_exec_via_workflow",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(workflow_id IN ( SELECT workflows.id\n   FROM workflows\n  WHERE (workflows.tenant_id = (( SELECT current_setting('app.current_tenant_id'::text, true) AS current_setting))::uuid)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "routing_rules",
+      "policyname": "routing_tenant_isolation",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id = (( SELECT current_setting('app.current_tenant_id'::text, true) AS current_setting))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "availability_schedules",
+      "policyname": "availability_schedules_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "((member_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::text, 'owner'::text]))))))",
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "availability_schedules",
+      "policyname": "availability_schedules_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid()))) OR (id IN ( SELECT get_publicly_readable_schedule_ids() AS get_publicly_readable_schedule_ids)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "date_overrides",
+      "policyname": "date_overrides_manage",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "schedule_rules",
+      "policyname": "schedule_rules_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid()))))) OR (schedule_id IN ( SELECT get_publicly_readable_schedule_ids() AS get_publicly_readable_schedule_ids)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tasks",
+      "policyname": "tasks_tenant_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT t.id\n   FROM (tenants t\n     JOIN tenant_members tm ON ((tm.tenant_id = t.id)))\n  WHERE ((tm.user_id = auth.uid()) AND (tm.is_active = true))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tasks",
+      "policyname": "tasks_owner_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "task_reminder_logs",
+      "policyname": "service_role_full_access_task_reminders",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "microsoft_integrations",
+      "policyname": "users_manage_own_microsoft_integrations",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "((user_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = 'tenant_admin'::text)))))",
+      "with_check": "((user_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = 'tenant_admin'::text)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "event_types",
+      "policyname": "event_types_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "event_types",
+      "policyname": "event_types_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "event_types",
+      "policyname": "event_types_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "((member_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::text, 'owner'::text]))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "microsoft_integrations",
+      "policyname": "service_role_full_access_microsoft_integrations",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "event_types",
+      "policyname": "event_types_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "((member_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::text, 'owner'::text]))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "schedule_rules",
+      "policyname": "schedule_rules_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "schedule_rules",
+      "policyname": "schedule_rules_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "schedule_rules",
+      "policyname": "schedule_rules_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "date_overrides",
+      "policyname": "date_overrides_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "date_overrides",
+      "policyname": "date_overrides_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "date_overrides",
+      "policyname": "date_overrides_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "date_overrides",
+      "policyname": "date_overrides_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "bookings",
+      "policyname": "bookings_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "bookings",
+      "policyname": "bookings_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "bookings",
+      "policyname": "bookings_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "((member_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::text, 'owner'::text]))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "team_invites",
+      "policyname": "team_invites_select_own_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tm.tenant_id\n   FROM tenant_members tm\n  WHERE ((tm.user_id = auth.uid()) AND (tm.is_active = true))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "team_invites",
+      "policyname": "team_invites_insert_own_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tm.tenant_id\n   FROM tenant_members tm\n  WHERE ((tm.user_id = auth.uid()) AND (tm.is_active = true) AND (tm.role = 'tenant_admin'::text))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "team_invites",
+      "policyname": "team_invites_public_read_by_token",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "team_invites",
+      "policyname": "team_invites_update_accept",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "true",
+      "with_check": "(accepted_at IS NOT NULL)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "availability_schedules",
+      "policyname": "availability_schedules_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "availability_schedules",
+      "policyname": "availability_schedules_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "((member_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::text, 'owner'::text]))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "schedule_rules",
+      "policyname": "schedule_rules_manage",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(schedule_id IN ( SELECT availability_schedules.id\n   FROM availability_schedules\n  WHERE (availability_schedules.member_id = auth.uid())))",
+      "with_check": null
+    }
+  ]
+}

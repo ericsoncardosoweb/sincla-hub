@@ -1,0 +1,137 @@
+{
+  "triggers": [
+    {
+      "event_object_table": "profiles",
+      "trigger_name": "update_profiles_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "bookings",
+      "trigger_name": "trg_sync_contact_booking",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION sync_contact_from_booking()"
+    },
+    {
+      "event_object_table": "bookings",
+      "trigger_name": "trg_emit_booking_event",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION emit_booking_event()"
+    },
+    {
+      "event_object_table": "bookings",
+      "trigger_name": "trg_emit_booking_event",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION emit_booking_event()"
+    },
+    {
+      "event_object_table": "event_types",
+      "trigger_name": "update_event_types_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "availability_schedules",
+      "trigger_name": "update_availability_schedules_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "bookings",
+      "trigger_name": "update_bookings_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "tasks",
+      "trigger_name": "update_tasks_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "contacts",
+      "trigger_name": "contacts_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "google_integrations",
+      "trigger_name": "trg_google_integrations_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_google_integrations_updated_at()"
+    },
+    {
+      "event_object_table": "agenda_events",
+      "trigger_name": "trg_notify_dispatcher",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION notify_dispatcher_on_event()"
+    }
+  ],
+  "missing_indexes": [
+    {
+      "table_name": "auth.mfa_challenges",
+      "column_name": "factor_id"
+    },
+    {
+      "table_name": "auth.saml_relay_states",
+      "column_name": "flow_state_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "client_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "upload_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "storage.vector_indexes",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "profiles",
+      "column_name": "current_tenant_id"
+    },
+    {
+      "table_name": "tenant_members",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "event_types",
+      "column_name": "schedule_id"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "rescheduled_from"
+    },
+    {
+      "table_name": "agenda_events",
+      "column_name": "actor_id"
+    },
+    {
+      "table_name": "workflow_executions",
+      "column_name": "event_id"
+    },
+    {
+      "table_name": "routing_rules",
+      "column_name": "target_member_id"
+    },
+    {
+      "table_name": "team_invites",
+      "column_name": "invited_by"
+    },
+    {
+      "table_name": "google_integrations",
+      "column_name": "user_id"
+    }
+  ],
+  "rls_disabled": []
+}

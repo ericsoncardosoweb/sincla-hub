@@ -1,0 +1,34 @@
+{
+  "rls_disabled": [
+    {
+      "relname": "assinaturas"
+    },
+    {
+      "relname": "pagamentos"
+    },
+    {
+      "relname": "pesquisas_respostas_itens"
+    },
+    {
+      "relname": "arquivos_anexos"
+    },
+    {
+      "relname": "arquivos_para_limpar"
+    },
+    {
+      "relname": "processo_etapas"
+    },
+    {
+      "relname": "empresa_cultura"
+    },
+    {
+      "relname": "usuarios"
+    },
+    {
+      "relname": "usuario_empresas"
+    },
+    {
+      "relname": "empresas"
+    }
+  ]
+}

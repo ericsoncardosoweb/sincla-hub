@@ -1,0 +1,221 @@
+{
+  "triggers": [
+    {
+      "event_object_table": "subscribers",
+      "trigger_name": "update_subscribers_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "companies",
+      "trigger_name": "update_companies_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "company_members",
+      "trigger_name": "update_company_members_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "subscriptions",
+      "trigger_name": "update_subscriptions_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "contacts",
+      "trigger_name": "update_contacts_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "sync_settings",
+      "trigger_name": "update_sync_settings_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "companies",
+      "trigger_name": "on_company_created",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION handle_new_company()"
+    },
+    {
+      "event_object_table": "product_plans",
+      "trigger_name": "update_product_plans_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "admin_users",
+      "trigger_name": "update_admin_users_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "partners",
+      "trigger_name": "update_partners_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "external_servers",
+      "trigger_name": "update_external_servers_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "company_contacts",
+      "trigger_name": "update_company_contacts_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "subscribers",
+      "trigger_name": "trg_prevent_referred_by_change",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION prevent_referred_by_change()"
+    },
+    {
+      "event_object_table": "subscribers",
+      "trigger_name": "trg_prevent_self_referral",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION prevent_self_referral()"
+    },
+    {
+      "event_object_table": "subscribers",
+      "trigger_name": "trg_prevent_self_referral",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION prevent_self_referral()"
+    },
+    {
+      "event_object_table": "subscriptions",
+      "trigger_name": "trg_subscription_canceled",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION on_subscription_canceled()"
+    },
+    {
+      "event_object_table": "notification_settings",
+      "trigger_name": "on_notification_settings_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION handle_updated_at()"
+    },
+    {
+      "event_object_table": "notification_templates",
+      "trigger_name": "on_notification_templates_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION handle_updated_at()"
+    },
+    {
+      "event_object_table": "notification_broadcasts",
+      "trigger_name": "on_notification_broadcasts_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION handle_updated_at()"
+    },
+    {
+      "event_object_table": "company_credits",
+      "trigger_name": "update_company_credits_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "credit_purchases",
+      "trigger_name": "update_credit_purchases_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "storage_quotas",
+      "trigger_name": "update_storage_quotas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "service_pricing",
+      "trigger_name": "update_service_pricing_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "subscriptions",
+      "trigger_name": "trg_provision_company_services",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION provision_company_services()"
+    },
+    {
+      "event_object_table": "subscriptions",
+      "trigger_name": "trg_provision_company_services",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION provision_company_services()"
+    }
+  ],
+  "missing_indexes": [
+    {
+      "table_name": "auth.mfa_challenges",
+      "column_name": "factor_id"
+    },
+    {
+      "table_name": "auth.saml_relay_states",
+      "column_name": "flow_state_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "client_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "upload_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "storage.vector_indexes",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "sync_settings",
+      "column_name": "product_id"
+    },
+    {
+      "table_name": "company_members",
+      "column_name": "invited_by"
+    },
+    {
+      "table_name": "member_product_access",
+      "column_name": "granted_by"
+    },
+    {
+      "table_name": "plan_feature_values",
+      "column_name": "feature_id"
+    },
+    {
+      "table_name": "subscriptions",
+      "column_name": "plan_id"
+    },
+    {
+      "table_name": "partner_withdrawals",
+      "column_name": "processed_by"
+    },
+    {
+      "table_name": "notification_broadcasts",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "provision_logs",
+      "column_name": "product_id"
+    },
+    {
+      "table_name": "provision_logs",
+      "column_name": "subscriber_id"
+    }
+  ],
+  "rls_disabled": []
+}

@@ -1,0 +1,2437 @@
+{
+  "triggers": [
+    {
+      "event_object_table": "tenants",
+      "trigger_name": "update_tenants_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "profiles",
+      "trigger_name": "update_profiles_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "courses",
+      "trigger_name": "update_courses_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "modules",
+      "trigger_name": "update_modules_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "lessons",
+      "trigger_name": "update_lessons_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "lesson_progress",
+      "trigger_name": "update_lesson_progress_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "professors",
+      "trigger_name": "update_professors_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "banners",
+      "trigger_name": "update_banners_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "community_posts",
+      "trigger_name": "update_community_posts_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "community_comments",
+      "trigger_name": "update_community_comments_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "gamification_settings",
+      "trigger_name": "update_gamification_settings_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "user_points",
+      "trigger_name": "update_user_points_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "quizzes",
+      "trigger_name": "update_quizzes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "classes",
+      "trigger_name": "update_classes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "payment_settings",
+      "trigger_name": "update_payment_settings_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "webhook_endpoints",
+      "trigger_name": "update_webhook_endpoints_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "integrations",
+      "trigger_name": "update_integrations_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "support_settings",
+      "trigger_name": "update_support_settings_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "ai_sessions",
+      "trigger_name": "update_ai_sessions_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "video_subscriptions",
+      "trigger_name": "update_video_subscriptions_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "subscription_plans",
+      "trigger_name": "update_subscription_plans_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "user_subscriptions",
+      "trigger_name": "update_user_subscriptions_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "community_user_status",
+      "trigger_name": "update_community_user_status_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "inbound_webhooks",
+      "trigger_name": "update_inbound_webhooks_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    }
+  ],
+  "missing_indexes": [
+    {
+      "table_name": "auth.mfa_challenges",
+      "column_name": "factor_id"
+    },
+    {
+      "table_name": "professors",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "professors",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "auth.saml_relay_states",
+      "column_name": "flow_state_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "client_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "storage.vector_indexes",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "upload_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "tenants",
+      "column_name": "saas_plan_id"
+    },
+    {
+      "table_name": "tenant_members",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "course_tags",
+      "column_name": "tag_id"
+    },
+    {
+      "table_name": "lesson_materials",
+      "column_name": "lesson_id"
+    },
+    {
+      "table_name": "course_faqs",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "course_files",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "enrollments",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "full_access",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "full_access",
+      "column_name": "granted_by"
+    },
+    {
+      "table_name": "lesson_progress",
+      "column_name": "lesson_id"
+    },
+    {
+      "table_name": "course_progress",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "course_progress",
+      "column_name": "last_lesson_id"
+    },
+    {
+      "table_name": "certificates",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "certificates",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "lesson_id"
+    },
+    {
+      "table_name": "student_tag_assignments",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "category_access",
+      "column_name": "category_id"
+    },
+    {
+      "table_name": "category_access",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "classes",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "class_students",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "class_professors",
+      "column_name": "professor_id"
+    },
+    {
+      "table_name": "subscription_plans",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "user_subscriptions",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "user_subscriptions",
+      "column_name": "plan_id"
+    },
+    {
+      "table_name": "subscription_payments",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "transactions",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "transactions",
+      "column_name": "student_id"
+    },
+    {
+      "table_name": "community_topics",
+      "column_name": "space_id"
+    },
+    {
+      "table_name": "community_topics",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "community_posts",
+      "column_name": "space_id"
+    },
+    {
+      "table_name": "community_posts",
+      "column_name": "topic_id"
+    },
+    {
+      "table_name": "community_comments",
+      "column_name": "author_id"
+    },
+    {
+      "table_name": "community_comments",
+      "column_name": "parent_id"
+    },
+    {
+      "table_name": "community_likes",
+      "column_name": "comment_id"
+    },
+    {
+      "table_name": "community_stories",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "community_stories",
+      "column_name": "author_id"
+    },
+    {
+      "table_name": "community_story_views",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "community_reports",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "community_reports",
+      "column_name": "reporter_id"
+    },
+    {
+      "table_name": "community_reports",
+      "column_name": "post_id"
+    },
+    {
+      "table_name": "community_reports",
+      "column_name": "comment_id"
+    },
+    {
+      "table_name": "community_space_participations",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "community_user_status",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "moderation_actions",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "moderation_actions",
+      "column_name": "moderator_id"
+    },
+    {
+      "table_name": "moderation_actions",
+      "column_name": "target_user_id"
+    },
+    {
+      "table_name": "moderation_actions",
+      "column_name": "post_id"
+    },
+    {
+      "table_name": "moderation_actions",
+      "column_name": "comment_id"
+    },
+    {
+      "table_name": "gamification_badges",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "user_badges",
+      "column_name": "badge_id"
+    },
+    {
+      "table_name": "quiz_topics",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "question_bank",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "question_bank",
+      "column_name": "topic_id"
+    },
+    {
+      "table_name": "question_bank_answers",
+      "column_name": "question_id"
+    },
+    {
+      "table_name": "quizzes",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "quiz_questions",
+      "column_name": "quiz_id"
+    },
+    {
+      "table_name": "quiz_question_links",
+      "column_name": "question_id"
+    },
+    {
+      "table_name": "quiz_answers",
+      "column_name": "question_id"
+    },
+    {
+      "table_name": "quiz_attempts",
+      "column_name": "quiz_id"
+    },
+    {
+      "table_name": "quiz_user_answers",
+      "column_name": "attempt_id"
+    },
+    {
+      "table_name": "user_notifications",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "push_subscriptions",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "course_views",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "course_views",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "engagement_events",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "engagement_events",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "banners",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "landing_page_faqs",
+      "column_name": "course_id"
+    },
+    {
+      "table_name": "webhook_endpoints",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "webhook_actions",
+      "column_name": "endpoint_id"
+    },
+    {
+      "table_name": "webhook_logs",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "webhook_logs",
+      "column_name": "endpoint_id"
+    },
+    {
+      "table_name": "webhook_request_logs",
+      "column_name": "webhook_id"
+    },
+    {
+      "table_name": "integrations",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "api_tokens",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "video_packages",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "video_subscriptions",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "video_subscriptions",
+      "column_name": "package_id"
+    },
+    {
+      "table_name": "videos",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "import_jobs",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "import_jobs",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "import_job_rows",
+      "column_name": "job_id"
+    },
+    {
+      "table_name": "ai_sessions",
+      "column_name": "tenant_id"
+    },
+    {
+      "table_name": "ai_sessions",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "faqs",
+      "column_name": "tenant_id"
+    }
+  ],
+  "rls_disabled": [],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "professors",
+      "policyname": "professors_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "professors",
+      "policyname": "professors_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "professors",
+      "policyname": "professors_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "professors",
+      "policyname": "professors_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenants",
+      "policyname": "tenants_select_member",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(id IN ( SELECT get_my_tenant_ids() AS get_my_tenant_ids))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenants",
+      "policyname": "tenants_update_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(id IN ( SELECT tm.tenant_id\n   FROM tenant_members tm\n  WHERE ((tm.user_id = auth.uid()) AND (tm.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Service role full access",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(auth.role() = 'service_role'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Tenant members can view profiles",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(current_tenant_id = get_my_tenant_id())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can insert own profile",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can update own profile",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(id = auth.uid())",
+      "with_check": "(id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "profiles",
+      "policyname": "Users can view own profile",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenant_members",
+      "policyname": "tenant_members_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((tenant_id IN ( SELECT get_my_tenant_ids() AS get_my_tenant_ids)) OR (user_id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenant_members",
+      "policyname": "tenant_members_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT get_my_tenant_ids() AS get_my_tenant_ids))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tenant_members",
+      "policyname": "tenant_members_service_role",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(auth.role() = 'service_role'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "categories",
+      "policyname": "categories_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "categories",
+      "policyname": "categories_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "categories",
+      "policyname": "categories_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "categories",
+      "policyname": "categories_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tags",
+      "policyname": "tags_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tags",
+      "policyname": "tags_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tags",
+      "policyname": "tags_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tags",
+      "policyname": "tags_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "courses",
+      "policyname": "courses_all_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "courses",
+      "policyname": "courses_select_published",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((status = 'published'::course_status) AND (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "courses",
+      "policyname": "courses_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_tags",
+      "policyname": "course_tags_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_tags",
+      "policyname": "course_tags_select_via_course",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "modules",
+      "policyname": "modules_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "modules",
+      "policyname": "modules_select_via_course",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lessons",
+      "policyname": "lessons_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(module_id IN ( SELECT m.id\n   FROM (modules m\n     JOIN courses c ON ((c.id = m.course_id)))\n  WHERE (c.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lessons",
+      "policyname": "lessons_select_via_module",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(module_id IN ( SELECT m.id\n   FROM (modules m\n     JOIN courses c ON ((c.id = m.course_id)))\n  WHERE (c.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lesson_materials",
+      "policyname": "lesson_materials_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(lesson_id IN ( SELECT l.id\n   FROM ((lessons l\n     JOIN modules m ON ((m.id = l.module_id)))\n     JOIN courses c ON ((c.id = m.course_id)))\n  WHERE (c.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lesson_materials",
+      "policyname": "lesson_materials_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(lesson_id IN ( SELECT l.id\n   FROM ((lessons l\n     JOIN modules m ON ((m.id = l.module_id)))\n     JOIN courses c ON ((c.id = m.course_id)))\n  WHERE (c.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_faqs",
+      "policyname": "course_faqs_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_faqs",
+      "policyname": "course_faqs_select_via_course",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_files",
+      "policyname": "course_files_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_files",
+      "policyname": "course_files_select_via_course",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "enrollments",
+      "policyname": "enrollments_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "enrollments",
+      "policyname": "enrollments_select_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "full_access",
+      "policyname": "full_access_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "full_access",
+      "policyname": "full_access_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid()))) OR (user_id = auth.uid()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lesson_progress",
+      "policyname": "lesson_progress_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_progress",
+      "policyname": "course_progress_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "certificates",
+      "policyname": "certificates_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "certificates",
+      "policyname": "certificates_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reviews",
+      "policyname": "reviews_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reviews",
+      "policyname": "reviews_insert_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reviews",
+      "policyname": "reviews_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "student_tags",
+      "policyname": "student_tags_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "student_tags",
+      "policyname": "student_tags_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "student_tags",
+      "policyname": "student_tags_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "student_tag_assignments",
+      "policyname": "student_tag_assignments_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(student_tag_id IN ( SELECT student_tags.id\n   FROM student_tags\n  WHERE (student_tags.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "student_tag_assignments",
+      "policyname": "student_tag_assignments_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(student_tag_id IN ( SELECT student_tags.id\n   FROM student_tags\n  WHERE (student_tags.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "category_access",
+      "policyname": "category_access_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(category_id IN ( SELECT categories.id\n   FROM categories\n  WHERE (categories.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "category_access",
+      "policyname": "category_access_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(category_id IN ( SELECT categories.id\n   FROM categories\n  WHERE (categories.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "classes",
+      "policyname": "classes_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "classes",
+      "policyname": "classes_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "classes",
+      "policyname": "classes_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "class_students",
+      "policyname": "class_students_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(class_id IN ( SELECT classes.id\n   FROM classes\n  WHERE (classes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "class_students",
+      "policyname": "class_students_select_via_class",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(class_id IN ( SELECT classes.id\n   FROM classes\n  WHERE (classes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "class_professors",
+      "policyname": "class_professors_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(class_id IN ( SELECT classes.id\n   FROM classes\n  WHERE (classes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "class_professors",
+      "policyname": "class_professors_select_via_class",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(class_id IN ( SELECT classes.id\n   FROM classes\n  WHERE (classes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_settings",
+      "policyname": "payment_settings_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_settings",
+      "policyname": "payment_settings_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_settings",
+      "policyname": "payment_settings_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "subscription_plans",
+      "policyname": "subscription_plans_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "subscription_plans",
+      "policyname": "subscription_plans_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "subscription_plans",
+      "policyname": "subscription_plans_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "subscription_plans",
+      "policyname": "subscription_plans_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_subscriptions",
+      "policyname": "user_subscriptions_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_subscriptions",
+      "policyname": "user_subscriptions_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((user_id = auth.uid()) OR (tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role]))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "subscription_payments",
+      "policyname": "subscription_payments_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(subscription_id IN ( SELECT user_subscriptions.id\n   FROM user_subscriptions\n  WHERE (user_subscriptions.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "transactions",
+      "policyname": "transactions_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_spaces",
+      "policyname": "community_spaces_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_spaces",
+      "policyname": "community_spaces_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_spaces",
+      "policyname": "community_spaces_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_spaces",
+      "policyname": "community_spaces_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_topics",
+      "policyname": "community_topics_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_topics",
+      "policyname": "community_topics_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_topics",
+      "policyname": "community_topics_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_topics",
+      "policyname": "community_topics_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_posts",
+      "policyname": "community_posts_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid()))) AND (author_id = auth.uid()))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_posts",
+      "policyname": "community_posts_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_comments",
+      "policyname": "community_comments_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(author_id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_comments",
+      "policyname": "community_comments_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_likes",
+      "policyname": "community_likes_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_stories",
+      "policyname": "community_stories_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_stories",
+      "policyname": "community_stories_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_stories",
+      "policyname": "community_stories_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_stories",
+      "policyname": "community_stories_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_story_views",
+      "policyname": "community_story_views_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_reports",
+      "policyname": "community_reports_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(reporter_id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_reports",
+      "policyname": "community_reports_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((reporter_id = auth.uid()) OR (EXISTS ( SELECT 1\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role]))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_space_participations",
+      "policyname": "community_space_participations_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_space_participations",
+      "policyname": "community_space_participations_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(space_id IN ( SELECT community_spaces.id\n   FROM community_spaces\n  WHERE (community_spaces.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "community_user_status",
+      "policyname": "community_user_status_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "moderation_actions",
+      "policyname": "moderation_actions_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_settings",
+      "policyname": "gamification_settings_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_settings",
+      "policyname": "gamification_settings_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_settings",
+      "policyname": "gamification_settings_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_settings",
+      "policyname": "gamification_settings_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_levels",
+      "policyname": "gamification_levels_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_levels",
+      "policyname": "gamification_levels_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_levels",
+      "policyname": "gamification_levels_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_levels",
+      "policyname": "gamification_levels_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_badges",
+      "policyname": "gamification_badges_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_badges",
+      "policyname": "gamification_badges_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_badges",
+      "policyname": "gamification_badges_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "gamification_badges",
+      "policyname": "gamification_badges_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_points",
+      "policyname": "user_points_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_points",
+      "policyname": "user_points_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_badges",
+      "policyname": "user_badges_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_topics",
+      "policyname": "quiz_topics_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_topics",
+      "policyname": "quiz_topics_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_topics",
+      "policyname": "quiz_topics_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_topics",
+      "policyname": "quiz_topics_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "question_bank",
+      "policyname": "question_bank_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(topic_id IN ( SELECT quiz_topics.id\n   FROM quiz_topics\n  WHERE (quiz_topics.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "question_bank",
+      "policyname": "question_bank_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(topic_id IN ( SELECT quiz_topics.id\n   FROM quiz_topics\n  WHERE (quiz_topics.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "question_bank_answers",
+      "policyname": "question_bank_answers_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(question_id IN ( SELECT question_bank.id\n   FROM question_bank\n  WHERE (question_bank.topic_id IN ( SELECT quiz_topics.id\n           FROM quiz_topics\n          WHERE (quiz_topics.tenant_id IN ( SELECT tenant_members.tenant_id\n                   FROM tenant_members\n                  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "question_bank_answers",
+      "policyname": "question_bank_answers_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(question_id IN ( SELECT question_bank.id\n   FROM question_bank\n  WHERE (question_bank.topic_id IN ( SELECT quiz_topics.id\n           FROM quiz_topics\n          WHERE (quiz_topics.tenant_id IN ( SELECT tenant_members.tenant_id\n                   FROM tenant_members\n                  WHERE (tenant_members.user_id = auth.uid())))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quizzes",
+      "policyname": "quizzes_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quizzes",
+      "policyname": "quizzes_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quizzes",
+      "policyname": "quizzes_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_questions",
+      "policyname": "quiz_questions_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(quiz_id IN ( SELECT quizzes.id\n   FROM quizzes\n  WHERE (quizzes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_questions",
+      "policyname": "quiz_questions_select_via_quiz",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(quiz_id IN ( SELECT quizzes.id\n   FROM quizzes\n  WHERE (quizzes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_question_links",
+      "policyname": "quiz_question_links_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(quiz_id IN ( SELECT quizzes.id\n   FROM quizzes\n  WHERE (quizzes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_question_links",
+      "policyname": "quiz_question_links_select_via_quiz",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(quiz_id IN ( SELECT quizzes.id\n   FROM quizzes\n  WHERE (quizzes.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_answers",
+      "policyname": "quiz_answers_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(question_id IN ( SELECT quiz_questions.id\n   FROM quiz_questions\n  WHERE (quiz_questions.quiz_id IN ( SELECT quizzes.id\n           FROM quizzes\n          WHERE (quizzes.tenant_id IN ( SELECT tenant_members.tenant_id\n                   FROM tenant_members\n                  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_answers",
+      "policyname": "quiz_answers_select_via_question",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(question_id IN ( SELECT quiz_questions.id\n   FROM quiz_questions\n  WHERE (quiz_questions.quiz_id IN ( SELECT quizzes.id\n           FROM quizzes\n          WHERE (quizzes.tenant_id IN ( SELECT tenant_members.tenant_id\n                   FROM tenant_members\n                  WHERE (tenant_members.user_id = auth.uid())))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_attempts",
+      "policyname": "quiz_attempts_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "quiz_user_answers",
+      "policyname": "quiz_user_answers_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(attempt_id IN ( SELECT quiz_attempts.id\n   FROM quiz_attempts\n  WHERE (quiz_attempts.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_notifications",
+      "policyname": "notifications_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_notifications",
+      "policyname": "notifications_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_notifications",
+      "policyname": "notifications_update_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_templates",
+      "policyname": "notification_templates_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_templates",
+      "policyname": "notification_templates_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notification_templates",
+      "policyname": "notification_templates_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "push_subscriptions",
+      "policyname": "push_subscriptions_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_views",
+      "policyname": "course_views_admin_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "course_views",
+      "policyname": "course_views_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "engagement_events",
+      "policyname": "engagement_events_admin_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "engagement_events",
+      "policyname": "engagement_events_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(user_id = auth.uid())"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "banners",
+      "policyname": "banners_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "banners",
+      "policyname": "banners_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "banners",
+      "policyname": "banners_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "banners",
+      "policyname": "banners_delete_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "banners",
+      "policyname": "banners_insert_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "banners",
+      "policyname": "banners_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "banners",
+      "policyname": "banners_update_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "landing_page_faqs",
+      "policyname": "landing_page_faqs_admin_all",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role, 'professor'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "landing_page_faqs",
+      "policyname": "landing_page_faqs_select_via_course",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(course_id IN ( SELECT courses.id\n   FROM courses\n  WHERE (courses.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_endpoints",
+      "policyname": "webhook_endpoints_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_actions",
+      "policyname": "webhook_actions_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(endpoint_id IN ( SELECT webhook_endpoints.id\n   FROM webhook_endpoints\n  WHERE (webhook_endpoints.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_actions",
+      "policyname": "webhook_actions_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(endpoint_id IN ( SELECT webhook_endpoints.id\n   FROM webhook_endpoints\n  WHERE (webhook_endpoints.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_logs",
+      "policyname": "webhook_logs_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(endpoint_id IN ( SELECT webhook_endpoints.id\n   FROM webhook_endpoints\n  WHERE (webhook_endpoints.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "inbound_webhooks",
+      "policyname": "inbound_webhooks_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "inbound_webhooks",
+      "policyname": "inbound_webhooks_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "inbound_webhooks",
+      "policyname": "inbound_webhooks_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "webhook_request_logs",
+      "policyname": "webhook_request_logs_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(webhook_id IN ( SELECT inbound_webhooks.id\n   FROM inbound_webhooks\n  WHERE (inbound_webhooks.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "integrations",
+      "policyname": "integrations_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "integrations",
+      "policyname": "integrations_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "integrations",
+      "policyname": "integrations_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "api_tokens",
+      "policyname": "api_tokens_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "api_tokens",
+      "policyname": "api_tokens_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "api_tokens",
+      "policyname": "api_tokens_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "video_packages",
+      "policyname": "video_packages_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "video_packages",
+      "policyname": "video_packages_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "video_packages",
+      "policyname": "video_packages_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "video_packages",
+      "policyname": "video_packages_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "video_subscriptions",
+      "policyname": "video_subscriptions_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "video_subscriptions",
+      "policyname": "video_subscriptions_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "video_subscriptions",
+      "policyname": "video_subscriptions_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "videos",
+      "policyname": "videos_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "videos",
+      "policyname": "videos_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "import_jobs",
+      "policyname": "import_jobs_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "import_job_rows",
+      "policyname": "import_job_rows_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(job_id IN ( SELECT import_jobs.id\n   FROM import_jobs\n  WHERE (import_jobs.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "import_job_rows",
+      "policyname": "import_job_rows_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(job_id IN ( SELECT import_jobs.id\n   FROM import_jobs\n  WHERE (import_jobs.tenant_id IN ( SELECT tenant_members.tenant_id\n           FROM tenant_members\n          WHERE (tenant_members.user_id = auth.uid())))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "support_settings",
+      "policyname": "support_settings_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "support_settings",
+      "policyname": "support_settings_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "support_settings",
+      "policyname": "support_settings_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "ai_sessions",
+      "policyname": "ai_sessions_admin",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "ai_sessions",
+      "policyname": "ai_sessions_own",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "ALL",
+      "qual": "(user_id = auth.uid())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "faqs",
+      "policyname": "faqs_admin_delete",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "faqs",
+      "policyname": "faqs_admin_insert",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "faqs",
+      "policyname": "faqs_admin_update",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE ((tenant_members.user_id = auth.uid()) AND (tenant_members.role = ANY (ARRAY['tenant_admin'::user_role, 'master'::user_role])))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "faqs",
+      "policyname": "faqs_select_tenant",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(tenant_id IN ( SELECT tenant_members.tenant_id\n   FROM tenant_members\n  WHERE (tenant_members.user_id = auth.uid())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "saas_plans",
+      "policyname": "saas_plans_select",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    }
+  ]
+}

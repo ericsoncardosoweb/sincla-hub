@@ -445,10 +445,10 @@ export function DashboardLayout() {
                     <>
                         <UnstyledButton
                             className={styles.navLink}
-                            onClick={() => window.open('https://sincla.com.br/tutoriais', '_blank')}
+                            onClick={() => window.open('https://ead.sincla.com.br/s/sincla', '_blank')}
                         >
                             <IconBook size={20} stroke={1.5} className={styles.navIcon} />
-                            <Text size="sm" className={styles.navLabel}>Tutoriais</Text>
+                            <Text size="sm" className={styles.navLabel}>Tutoriais Sincla</Text>
                         </UnstyledButton>
 
                         <UnstyledButton

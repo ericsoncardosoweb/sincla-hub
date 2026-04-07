@@ -256,9 +256,9 @@ export function Companies() {
         }
     };
 
-    const handleSelectCompany = (companyId: string) => {
-        setCurrentCompany(companyId);
-        navigate('/painel/configuracoes');
+    const handleSelectCompany = async (companyId: string, destPath = '/painel/configuracoes') => {
+        await setCurrentCompany(companyId, false);
+        navigate(destPath);
     };
 
     const handleDeleteCompany = async (company: typeof currentCompany) => {
@@ -404,6 +404,15 @@ export function Companies() {
                                             }}
                                         >
                                             Editar
+                                        </Menu.Item>
+                                        <Menu.Item
+                                            leftSection={<IconCreditCard style={{ width: rem(14), height: rem(14) }} />}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSelectCompany(company.id, '/painel/assinaturas');
+                                            }}
+                                        >
+                                            Gerenciar Assinatura
                                         </Menu.Item>
                                         <Menu.Divider />
                                         <Menu.Item

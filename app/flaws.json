@@ -1,0 +1,4 @@
+[
+  "Table: community_comments | cmd: SELECT | pol: community_comments_select",
+  "Table: saas_plans | cmd: SELECT | pol: saas_plans_select"
+]

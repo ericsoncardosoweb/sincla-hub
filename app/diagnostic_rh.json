@@ -1,0 +1,944 @@
+{
+  "triggers": [
+    {
+      "event_object_table": "documentos_gerados",
+      "trigger_name": "trg_documentos_gerados_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_documentos_updated_at()"
+    },
+    {
+      "event_object_table": "motivos_advertencia",
+      "trigger_name": "trigger_motivos_advertencia_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_advertencias_updated_at()"
+    },
+    {
+      "event_object_table": "etapas_processo",
+      "trigger_name": "trigger_etapas_processo_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "candidaturas",
+      "trigger_name": "trigger_candidaturas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "entrevistas",
+      "trigger_name": "trigger_entrevistas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "tipos_punicao",
+      "trigger_name": "trigger_tipos_punicao_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_advertencias_updated_at()"
+    },
+    {
+      "event_object_table": "pesquisas",
+      "trigger_name": "pesquisas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "gamificacao_metas",
+      "trigger_name": "metas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "equipes",
+      "trigger_name": "trigger_equipes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "tipos_competencia",
+      "trigger_name": "trigger_tipos_competencia_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "relatorios_personalizados",
+      "trigger_name": "trigger_relatorios_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_relatorios_updated_at()"
+    },
+    {
+      "event_object_table": "respostas_avaliacao",
+      "trigger_name": "trigger_respostas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "respostas_avaliacao",
+      "trigger_name": "trigger_update_participante_status",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_participante_status()"
+    },
+    {
+      "event_object_table": "respostas_avaliacao",
+      "trigger_name": "trigger_update_participante_status",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_participante_status()"
+    },
+    {
+      "event_object_table": "avaliacao_participantes",
+      "trigger_name": "trg_auto_consensual_180",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION fn_auto_consensual_180()"
+    },
+    {
+      "event_object_table": "avaliacao_participantes",
+      "trigger_name": "trg_competencias_avaliacao",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION fn_atualizar_competencias_avaliacao()"
+    },
+    {
+      "event_object_table": "avaliacao_participantes",
+      "trigger_name": "trg_criar_consensual_180",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION fn_criar_consensual_180()"
+    },
+    {
+      "event_object_table": "avaliacao_participantes",
+      "trigger_name": "trigger_participantes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "avaliacao_participantes",
+      "trigger_name": "trigger_update_ciclo_status",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_ciclo_status()"
+    },
+    {
+      "event_object_table": "documentos_signatarios",
+      "trigger_name": "trg_documentos_signatarios_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_documentos_updated_at()"
+    },
+    {
+      "event_object_table": "avaliacao_consensual",
+      "trigger_name": "trg_competencias_consensual",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION fn_atualizar_competencias_consensual()"
+    },
+    {
+      "event_object_table": "avaliacao_consensual",
+      "trigger_name": "trigger_consensual_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "advertencias",
+      "trigger_name": "trigger_advertencia_log_confirmacao",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION log_advertencia_confirmacao()"
+    },
+    {
+      "event_object_table": "advertencias",
+      "trigger_name": "trigger_advertencia_log_criacao",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION log_advertencia_criacao()"
+    },
+    {
+      "event_object_table": "advertencias",
+      "trigger_name": "trigger_advertencias_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_advertencias_updated_at()"
+    },
+    {
+      "event_object_table": "solicitacoes_feedback",
+      "trigger_name": "trigger_solicitacoes_feedback_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_solicitacoes_feedback_updated_at()"
+    },
+    {
+      "event_object_table": "escalas_competencia",
+      "trigger_name": "trigger_escalas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "usuarios",
+      "trigger_name": "sync_usuario_dados",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION sync_usuario_empresa_dados()"
+    },
+    {
+      "event_object_table": "usuarios",
+      "trigger_name": "trigger_sync_usuario_to_colaborador",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION sync_usuario_to_colaborador()"
+    },
+    {
+      "event_object_table": "usuarios",
+      "trigger_name": "trigger_usuarios_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "cargos",
+      "trigger_name": "trigger_cargos_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "usuario_empresas",
+      "trigger_name": "trigger_set_default_modulos",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION set_default_modulos()"
+    },
+    {
+      "event_object_table": "feed_posts",
+      "trigger_name": "tr_log_deleted_post_files",
+      "event_manipulation": "DELETE",
+      "action_statement": "EXECUTE FUNCTION log_deleted_post_files()"
+    },
+    {
+      "event_object_table": "faqs",
+      "trigger_name": "trg_faqs_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_faqs_updated_at()"
+    },
+    {
+      "event_object_table": "feedbacks",
+      "trigger_name": "trigger_bloquear_feedback",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION bloquear_feedback_apos_leitura()"
+    },
+    {
+      "event_object_table": "feedbacks",
+      "trigger_name": "trigger_feedbacks_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_feedbacks_updated_at()"
+    },
+    {
+      "event_object_table": "documentos_categorias",
+      "trigger_name": "trg_documentos_categorias_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_documentos_updated_at()"
+    },
+    {
+      "event_object_table": "feed_reacoes",
+      "trigger_name": "trigger_update_likes",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_post_likes_count()"
+    },
+    {
+      "event_object_table": "feed_reacoes",
+      "trigger_name": "trigger_update_likes",
+      "event_manipulation": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_post_likes_count()"
+    },
+    {
+      "event_object_table": "feed_comentarios",
+      "trigger_name": "trigger_update_comments",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_post_comments_count()"
+    },
+    {
+      "event_object_table": "feed_comentarios",
+      "trigger_name": "trigger_update_comments",
+      "event_manipulation": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_post_comments_count()"
+    },
+    {
+      "event_object_table": "tutoriais",
+      "trigger_name": "set_youtube_id",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION set_youtube_video_id()"
+    },
+    {
+      "event_object_table": "tutoriais",
+      "trigger_name": "set_youtube_id",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION set_youtube_video_id()"
+    },
+    {
+      "event_object_table": "pesquisas_templates",
+      "trigger_name": "trigger_update_pesquisas_templates_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_pesquisas_templates_updated_at()"
+    },
+    {
+      "event_object_table": "pdi_acoes",
+      "trigger_name": "trigger_pdi_acoes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "pdi_acoes",
+      "trigger_name": "update_pdi_acoes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "pdi",
+      "trigger_name": "trigger_pdi_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "pdi",
+      "trigger_name": "update_pdi_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "documentos_templates",
+      "trigger_name": "trg_documentos_templates_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_documentos_updated_at()"
+    },
+    {
+      "event_object_table": "avaliacoes_ciclo",
+      "trigger_name": "trigger_auto_start_ciclo",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION auto_start_ciclo()"
+    },
+    {
+      "event_object_table": "avaliacoes_ciclo",
+      "trigger_name": "trigger_auto_start_ciclo",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION auto_start_ciclo()"
+    },
+    {
+      "event_object_table": "avaliacoes_ciclo",
+      "trigger_name": "trigger_avaliacoes_ciclo_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "empresa_storage",
+      "trigger_name": "trigger_empresa_storage_timestamp",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_empresa_storage_timestamp()"
+    },
+    {
+      "event_object_table": "documentos_integracoes",
+      "trigger_name": "trg_documentos_integracoes_updated",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_documentos_updated_at()"
+    },
+    {
+      "event_object_table": "competencias",
+      "trigger_name": "trigger_competencias_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "competencias",
+      "trigger_name": "trigger_generate_competencia_codigo",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION generate_competencia_codigo()"
+    },
+    {
+      "event_object_table": "pdi_competencias",
+      "trigger_name": "update_pdi_competencias_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "metas",
+      "trigger_name": "update_metas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "planos_carreira",
+      "trigger_name": "update_planos_carreira_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "planos_carreira_competencias",
+      "trigger_name": "update_planos_carreira_competencias_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "metas_itens",
+      "trigger_name": "trg_metas_itens_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_metas_itens_updated_at()"
+    },
+    {
+      "event_object_table": "metas_itens",
+      "trigger_name": "trg_recalcular_progresso_meta",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION recalcular_progresso_meta()"
+    },
+    {
+      "event_object_table": "metas_itens",
+      "trigger_name": "trg_recalcular_progresso_meta",
+      "event_manipulation": "DELETE",
+      "action_statement": "EXECUTE FUNCTION recalcular_progresso_meta()"
+    },
+    {
+      "event_object_table": "metas_itens",
+      "trigger_name": "trg_recalcular_progresso_meta",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION recalcular_progresso_meta()"
+    },
+    {
+      "event_object_table": "metas_itens",
+      "trigger_name": "trg_validar_peso_itens",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION validar_peso_itens_meta()"
+    },
+    {
+      "event_object_table": "metas_itens",
+      "trigger_name": "trg_validar_peso_itens",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION validar_peso_itens_meta()"
+    },
+    {
+      "event_object_table": "colaboradores",
+      "trigger_name": "trigger_colaboradores_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "colaboradores",
+      "trigger_name": "trigger_handle_colaborador_deactivation",
+      "event_manipulation": "DELETE",
+      "action_statement": "EXECUTE FUNCTION handle_colaborador_deactivation()"
+    },
+    {
+      "event_object_table": "colaboradores",
+      "trigger_name": "trigger_handle_colaborador_deactivation",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION handle_colaborador_deactivation()"
+    },
+    {
+      "event_object_table": "colaboradores",
+      "trigger_name": "trigger_sync_colaborador_to_usuario",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION sync_colaborador_to_usuario()"
+    },
+    {
+      "event_object_table": "colaboradores",
+      "trigger_name": "trigger_validate_colaborador_limit",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION validate_colaborador_limit()"
+    },
+    {
+      "event_object_table": "conhecimentos",
+      "trigger_name": "trg_habilidades_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_habilidades_updated_at()"
+    },
+    {
+      "event_object_table": "treinamentos",
+      "trigger_name": "trg_contabilizar_pontos_treinamento",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION contabilizar_pontos_treinamento()"
+    },
+    {
+      "event_object_table": "treinamentos",
+      "trigger_name": "trg_treinamentos_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_treinamentos_updated_at()"
+    },
+    {
+      "event_object_table": "cursos",
+      "trigger_name": "trg_cursos_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_cursos_updated_at()"
+    },
+    {
+      "event_object_table": "treinamento_participantes",
+      "trigger_name": "trg_treinamento_participantes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_treinamento_participantes_updated_at()"
+    },
+    {
+      "event_object_table": "candidatos",
+      "trigger_name": "trigger_candidatos_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "vagas",
+      "trigger_name": "trigger_vagas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "empresas",
+      "trigger_name": "trigger_create_empresa_storage",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION create_empresa_storage()"
+    },
+    {
+      "event_object_table": "empresas",
+      "trigger_name": "trigger_empresas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "historico_salarial",
+      "trigger_name": "set_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "tabela_salarial",
+      "trigger_name": "set_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "faixa_salarial",
+      "trigger_name": "set_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "rs_termos_lgpd",
+      "trigger_name": "trigger_rs_termos_lgpd_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "rs_questionarios",
+      "trigger_name": "trigger_rs_questionarios_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "rs_etapas_selecao",
+      "trigger_name": "trigger_rs_etapas_selecao_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "rs_filtros_candidatos",
+      "trigger_name": "trigger_rs_filtros_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "rs_selecoes",
+      "trigger_name": "trigger_rs_selecoes_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "rs_selecao_candidatos",
+      "trigger_name": "trigger_rs_selecao_candidatos_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "rs_selecao_candidato_etapas",
+      "trigger_name": "trigger_rs_selecao_candidato_etapas_updated_at",
+      "event_manipulation": "UPDATE",
+      "action_statement": "EXECUTE FUNCTION update_updated_at_column()"
+    },
+    {
+      "event_object_table": "notificacoes",
+      "trigger_name": "trg_send_push_on_notification",
+      "event_manipulation": "INSERT",
+      "action_statement": "EXECUTE FUNCTION notify_push_on_notification_insert()"
+    }
+  ],
+  "missing_indexes": [
+    {
+      "table_name": "auth.mfa_challenges",
+      "column_name": "factor_id"
+    },
+    {
+      "table_name": "auth.saml_relay_states",
+      "column_name": "flow_state_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "client_id"
+    },
+    {
+      "table_name": "auth.oauth_authorizations",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "upload_id"
+    },
+    {
+      "table_name": "storage.s3_multipart_uploads_parts",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "registros_ponto",
+      "column_name": "ajustado_por"
+    },
+    {
+      "table_name": "storage.vector_indexes",
+      "column_name": "bucket_id"
+    },
+    {
+      "table_name": "justificativas_ponto",
+      "column_name": "aprovado_por"
+    },
+    {
+      "table_name": "empresas",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "equipes",
+      "column_name": "equipe_superior_id"
+    },
+    {
+      "table_name": "colaboradores",
+      "column_name": "cargo_id"
+    },
+    {
+      "table_name": "colaboradores",
+      "column_name": "user_id"
+    },
+    {
+      "table_name": "avaliacoes_ciclo",
+      "column_name": "escala_id"
+    },
+    {
+      "table_name": "avaliacoes_ciclo",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "respostas_avaliacao",
+      "column_name": "competencia_id"
+    },
+    {
+      "table_name": "vagas",
+      "column_name": "cargo_id"
+    },
+    {
+      "table_name": "vagas",
+      "column_name": "equipe_id"
+    },
+    {
+      "table_name": "vagas",
+      "column_name": "gestor_responsavel_id"
+    },
+    {
+      "table_name": "vagas",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "candidatos",
+      "column_name": "indicado_por"
+    },
+    {
+      "table_name": "candidaturas",
+      "column_name": "responsavel_id"
+    },
+    {
+      "table_name": "entrevistas",
+      "column_name": "etapa_id"
+    },
+    {
+      "table_name": "convites",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "usuario_empresas",
+      "column_name": "colaborador_id"
+    },
+    {
+      "table_name": "assinaturas",
+      "column_name": "plano_id"
+    },
+    {
+      "table_name": "pagamentos",
+      "column_name": "assinatura_id"
+    },
+    {
+      "table_name": "ferias",
+      "column_name": "aprovado_por"
+    },
+    {
+      "table_name": "competencias",
+      "column_name": "tipo_id"
+    },
+    {
+      "table_name": "ciclos_avaliacao",
+      "column_name": "escala_id"
+    },
+    {
+      "table_name": "avaliacoes",
+      "column_name": "ciclo_id"
+    },
+    {
+      "table_name": "avaliacao_participantes",
+      "column_name": "avaliacao_id"
+    },
+    {
+      "table_name": "notificacao_templates",
+      "column_name": "empresa_id"
+    },
+    {
+      "table_name": "entrevistas",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "filiais",
+      "column_name": "responsavel_id"
+    },
+    {
+      "table_name": "setores",
+      "column_name": "setor_superior_id"
+    },
+    {
+      "table_name": "setores",
+      "column_name": "responsavel_id"
+    },
+    {
+      "table_name": "feedbacks",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "pesquisas_templates",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "relatorios_snapshots",
+      "column_name": "gerado_por"
+    },
+    {
+      "table_name": "colaborador_documentos",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "colaborador_historico",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "mensagens_templates",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "faqs",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "feed_posts",
+      "column_name": "autor_id"
+    },
+    {
+      "table_name": "feed_reacoes",
+      "column_name": "empresa_id"
+    },
+    {
+      "table_name": "feed_reacoes",
+      "column_name": "usuario_id"
+    },
+    {
+      "table_name": "feed_comentarios",
+      "column_name": "empresa_id"
+    },
+    {
+      "table_name": "feed_comentarios",
+      "column_name": "usuario_id"
+    },
+    {
+      "table_name": "pdi",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "pdi_checkins",
+      "column_name": "autor_id"
+    },
+    {
+      "table_name": "avaliacao_participantes",
+      "column_name": "consensual_por"
+    },
+    {
+      "table_name": "avaliacao_consensual",
+      "column_name": "participante_gestor_id"
+    },
+    {
+      "table_name": "avaliacao_consensual",
+      "column_name": "participante_auto_id"
+    },
+    {
+      "table_name": "avaliacao_consensual",
+      "column_name": "competencia_maior_divergencia"
+    },
+    {
+      "table_name": "avaliacao_consensual",
+      "column_name": "concluido_por"
+    },
+    {
+      "table_name": "feedbacks",
+      "column_name": "solicitado_por"
+    },
+    {
+      "table_name": "solicitacoes_feedback",
+      "column_name": "competencia_id"
+    },
+    {
+      "table_name": "solicitacoes_feedback",
+      "column_name": "feedback_id"
+    },
+    {
+      "table_name": "treinamentos",
+      "column_name": "aprovado_por"
+    },
+    {
+      "table_name": "treinamentos",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "avaliacoes",
+      "column_name": "escala_id"
+    },
+    {
+      "table_name": "empresa_cotas_historico",
+      "column_name": "cota_id"
+    },
+    {
+      "table_name": "candidatos",
+      "column_name": "lgpd_termo_id"
+    },
+    {
+      "table_name": "vagas",
+      "column_name": "questionario_id"
+    },
+    {
+      "table_name": "advertencias",
+      "column_name": "punicao_id"
+    },
+    {
+      "table_name": "advertencias",
+      "column_name": "criado_por"
+    },
+    {
+      "table_name": "rs_selecoes",
+      "column_name": "filtro_id"
+    },
+    {
+      "table_name": "rs_selecoes",
+      "column_name": "responsavel_id"
+    },
+    {
+      "table_name": "documentos_signatarios",
+      "column_name": "empresa_id"
+    },
+    {
+      "table_name": "metas",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "metas_historico",
+      "column_name": "autor_id"
+    },
+    {
+      "table_name": "planos_carreira",
+      "column_name": "cargo_atual_id"
+    },
+    {
+      "table_name": "planos_carreira",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "rs_selecao_candidato_etapas",
+      "column_name": "etapa_id"
+    },
+    {
+      "table_name": "rs_selecao_candidato_etapas",
+      "column_name": "avaliador_id"
+    },
+    {
+      "table_name": "metas_itens",
+      "column_name": "created_by"
+    },
+    {
+      "table_name": "rs_questionario_respostas",
+      "column_name": "questionario_id"
+    },
+    {
+      "table_name": "rs_questionario_respostas",
+      "column_name": "pergunta_id"
+    },
+    {
+      "table_name": "rs_questionario_respostas",
+      "column_name": "vaga_id"
+    },
+    {
+      "table_name": "colaborador_conhecimentos",
+      "column_name": "treinamento_id"
+    },
+    {
+      "table_name": "rs_vaga_etapas",
+      "column_name": "etapa_id"
+    },
+    {
+      "table_name": "vagas",
+      "column_name": "termo_lgpd_id"
+    },
+    {
+      "table_name": "templates_vagas",
+      "column_name": "empresa_id"
+    },
+    {
+      "table_name": "templates_vagas",
+      "column_name": "cargo_id"
+    },
+    {
+      "table_name": "templates_vagas",
+      "column_name": "termo_lgpd_id"
+    },
+    {
+      "table_name": "historico_salarial",
+      "column_name": "cargo_anterior_id"
+    },
+    {
+      "table_name": "historico_salarial",
+      "column_name": "cargo_novo_id"
+    },
+    {
+      "table_name": "historico_salarial",
+      "column_name": "aprovado_por"
+    },
+    {
+      "table_name": "treinamento_participantes",
+      "column_name": "direcionado_por"
+    }
+  ],
+  "rls_disabled": [
+    {
+      "relname": "assinaturas"
+    },
+    {
+      "relname": "pagamentos"
+    },
+    {
+      "relname": "pesquisas_respostas_itens"
+    },
+    {
+      "relname": "arquivos_anexos"
+    },
+    {
+      "relname": "arquivos_para_limpar"
+    },
+    {
+      "relname": "processo_etapas"
+    },
+    {
+      "relname": "empresa_cultura"
+    },
+    {
+      "relname": "usuarios"
+    },
+    {
+      "relname": "usuario_empresas"
+    },
+    {
+      "relname": "empresas"
+    }
+  ]
+}
