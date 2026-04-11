@@ -37,6 +37,13 @@ export const theme = createTheme({
         sinclaSecondary,
     },
     fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontSizes: {
+        xs:  '0.8125rem',  // 13px (padrão era 12px)
+        sm:  '0.9375rem',  // 15px (padrão era 14px)
+        md:  '1.0625rem',  // 17px (padrão era 16px)
+        lg:  '1.1875rem',  // 19px (padrão era 18px)
+        xl:  '1.3125rem',  // 21px (padrão era 20px)
+    },
     headings: {
         fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         fontWeight: '700',

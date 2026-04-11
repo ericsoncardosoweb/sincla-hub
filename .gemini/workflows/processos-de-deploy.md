@@ -78,3 +78,51 @@ git push origin main   # → sincla-agenda → Easypanel sincla-agenda
 | Site | `https://sincla.com.br` |
 | Agenda | `https://app.sincla.com.br/agenda/` |
 | RH | `https://app.sincla.com.br/rh/` |
+
+---
+
+## 🔐 Credenciais Supabase CLI — Sincla Ecosystem
+
+> Estas credenciais são necessárias para migrations, Edge Functions, cron jobs e operações de banco.
+> O `SUPABASE_ACCESS_TOKEN` é um token pessoal de conta (único para todos os projetos).
+> A `SUPABASE_DB_PASSWORD` é compartilhada por todos os projetos Sincla.
+
+### Token de Acesso (compartilhado — conta pessoal)
+```
+SUPABASE_ACCESS_TOKEN=sbp_6ed5d53b27c57dabd274055b0dce306c9b2bfc59
+SUPABASE_DB_PASSWORD=TC3VuUEsEJiEhnyD
+```
+
+### Project Refs por Projeto
+
+| Projeto | Diretório | SUPABASE_PROJECT_REF |
+|---------|-----------|----------------------|
+| Hub | `app/` | `igwjtvdanulrwntdyfbt` |
+| Agenda | `tools/agenda/` | `xupyvnyukhxdmfyrrozs` |
+| Bolso | `tools/bolso/` e `tools/bolso/api/` | `yjyiryqaokmqjeblsqgl` |
+| CRM | `tools/crm/` | `szpvltsqkmklesdorgly` |
+| EAD | `tools/ead/` | `gfgrifbpsfjugdmlyvjl` |
+| Lead | `tools/lead/` | `fnncbpfhuejjebfwyqoq` |
+| RH | `tools/rh/` | `fclqxinrkibiwhlhqfih` |
+
+### Comandos úteis com CLI
+
+```bash
+# Linkar projeto ao CLI (necessário uma vez por projeto)
+supabase link --project-ref <SUPABASE_PROJECT_REF>
+
+# Subir migration
+supabase db push
+
+# Deploy de Edge Function
+supabase functions deploy <nome-da-funcao>
+
+# Ver logs de Edge Function
+supabase functions logs <nome-da-funcao>
+
+# Diff do banco (gerar migration)
+supabase db diff -f nome_da_migration
+
+# Executar SQL direto
+supabase db execute --query "SELECT * FROM tabela LIMIT 5;"
+```
