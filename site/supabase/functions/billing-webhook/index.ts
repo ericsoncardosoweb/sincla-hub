@@ -517,9 +517,47 @@ async function handlePaymentFailed(
             .from('subscriptions')
             .update({ status: 'past_due' })
             .eq('id', subscription_id)
+
+        // Fetch company and subscriber to send email
+        const { data: subData } = await supabase
+            .from('subscriptions')
+            .select(`
+                companies (
+                    id,
+                    name,
+                    subscribers (
+                        email,
+                        name
+                    )
+                ),
+                products (
+                    name
+                )
+            `)
+            .eq('id', subscription_id)
+            .single();
+
+        const subscriber = (subData?.companies as any)?.subscribers;
+        const companyId = (subData?.companies as any)?.id;
+        const productName = (subData?.products as any)?.name || 'Contratado';
+
+        if (subscriber?.email) {
+            await supabase.functions.invoke('send-notification', {
+                body: {
+                    channel: 'email',
+                    to: subscriber.email,
+                    subject: `Aviso Importante: Falha no Pagamento da sua Assinatura`,
+                    message: `Identificamos uma falha no processamento da renovação da sua assinatura do plano ${productName}. Caso não seja regularizado, ele poderá ser cancelado. Por favor, regularize via painel para evitar perda de acessos.`,
+                    template: 'billing',
+                    action_url: 'https://app.sincla.com.br/painel',
+                    company_id: companyId,
+                }
+            });
+            console.log(`[Billing Webhook] Notification sent to ${subscriber.email} for overdue ${productName}`);
+        }
     }
 
-    return { success: true, message: 'Payment failure recorded' }
+    return { success: true, message: 'Payment failure recorded and user notified' }
 }
 
 // ─── Product notification ────────────────────────────────────────────────────

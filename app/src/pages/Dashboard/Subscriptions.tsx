@@ -22,6 +22,8 @@ import { redirectToProduct } from '../../shared/services/cross-auth';
 import { listPaymentsBySubscription, cancelSubscription } from '../../shared/services/asaasService';
 import { notifications } from '@mantine/notifications';
 import { ConsumptionDashboard } from './components/ConsumptionDashboard';
+import { sendEmail } from '../../shared/services/notificationService';
+
 
 // ============================
 // Types
@@ -282,6 +284,16 @@ export function Subscriptions() {
             const res = await cancelSubscription(selectedSub.id);
             if (res.success) {
                 await supabase.from('subscriptions').update({ status: 'canceled', canceled_at: new Date().toISOString() }).eq('id', selectedSub.id);
+                
+                if (user?.email) {
+                    await sendEmail(
+                        user.email,
+                        'Confirmação de Cancelamento de Assinatura',
+                        `Sua assinatura do plano ${selectedSub.product?.name || 'Contratado'} foi cancelada com sucesso. Fique tranquilo, o seu acesso vigora normalmente até o fechamento do período já pago.`,
+                        'billing'
+                    );
+                }
+
                 notifications.show({ title: 'Cancelada', message: 'Assinatura cancelada com sucesso. O acesso vigora até o fim do ciclo.', color: 'green' });
                 setCancelModalOpen(false);
                 loadData();

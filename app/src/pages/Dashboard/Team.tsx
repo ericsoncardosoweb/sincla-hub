@@ -26,6 +26,8 @@ import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconMail, IconSearch, 
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
+import { sendEmail } from '../../shared/services/notificationService';
+
 
 interface TeamMember {
     id: string;
@@ -248,72 +250,59 @@ export function Team() {
                     await saveToolPermissions(newMember.id);
                 }
 
+                // Envia e-mail notificando o usuário existente
+                await sendEmail(
+                    values.email,
+                    'Você foi adicionado a uma nova empresa',
+                    `Você foi adicionado à empresa ${currentCompany.name} como ${roleLabels[values.role]}.`,
+                    'welcome',
+                    { action_url: `${window.location.origin}/painel` }
+                );
+
                 notifications.show({
                     title: 'Sucesso',
                     message: 'Membro adicionado com sucesso',
                     color: 'green',
                 });
             } else {
-                // User not registered — create account via signUp and send password reset
-                const tempPassword = crypto.randomUUID();
-                
-                // IMPORTANTE: Criamos um client "isolado" para signUp. 
-                // Isso previne que a plataforma faça auto-login com o usuário recém criado
-                // e deslogue o usuário atual (Administrador / Gestor).
-                const inviteClient = createClient(
-                    import.meta.env.VITE_SUPABASE_URL,
-                    import.meta.env.VITE_SUPABASE_ANON_KEY,
-                    {
-                        auth: {
-                            persistSession: false,
-                            autoRefreshToken: false,
-                            detectSessionInUrl: false
-                        }
+                // User not registered — create invite and send email
+                const { data: inviteData, error: inviteError } = await supabase
+                    .from('company_invites')
+                    .insert({
+                        company_id: currentCompany.id,
+                        email: values.email,
+                        role: values.role,
+                        user_type: values.user_type,
+                        invited_by: subscriber?.id,
+                        tool_permissions: toolPermissions
+                    })
+                    .select('id')
+                    .single();
+
+                if (inviteError) {
+                    // Check if unique constraint violated (already invited)
+                    if (inviteError.code === '23505') {
+                        throw new Error('Já existe um convite pendente para este e-mail nesta empresa.');
+                    }
+                    throw inviteError;
+                }
+
+                // Send Custom Invite Email pointing to Register
+                const registerUrl = `${window.location.origin}/cadastro?invite=${inviteData.id}&email=${encodeURIComponent(values.email)}`;
+                await sendEmail(
+                    values.email,
+                    `Convite para participar da equipe: ${currentCompany.name}`,
+                    `Você foi convidado para participar da empresa ${currentCompany.name} no nível de acesso ${roleLabels[values.role]}. Clique no botão abaixo para criar sua conta gratuita e aceitar o convite.`,
+                    'welcome',
+                    { 
+                        action_url: registerUrl,
+                        action_label: 'Criar minha Conta'
                     }
                 );
 
-                const { data: signUpData, error: signUpError } = await inviteClient.auth.signUp({
-                    email: values.email,
-                    password: tempPassword,
-                    options: {
-                        data: { invited_by: subscriber?.id, invited_to_company: currentCompany.id },
-                    },
-                });
-
-                if (signUpError) throw signUpError;
-
-                if (signUpData.user) {
-                    // Create subscriber record
-                    await supabase.from('subscribers').upsert({
-                        id: signUpData.user.id,
-                        email: values.email,
-                        name: values.email.split('@')[0],
-                    }, { onConflict: 'id' });
-
-                    // Add to company
-                    const { data: newMember, error: memberError } = await supabase.from('company_members').insert({
-                        company_id: currentCompany.id,
-                        user_id: signUpData.user.id,
-                        role: values.role,
-                        user_type: values.user_type,
-                    }).select('id').single();
-
-                    if (memberError) throw memberError;
-
-                    // Persist tool permissions
-                    if (newMember) {
-                        await saveToolPermissions(newMember.id);
-                    }
-
-                    // Send password reset so the user can set their own password
-                    await supabase.auth.resetPasswordForEmail(values.email, {
-                        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
-                    });
-                }
-
                 notifications.show({
                     title: 'Convite Enviado',
-                    message: `Um convite foi enviado para ${values.email}. O usuário receberá um email para definir sua senha.`,
+                    message: `Um convite foi enviado para ${values.email}. A pessoa será vinculada à empresa assim que concluir o cadastro.`,
                     color: 'blue',
                 });
             }
@@ -343,6 +332,15 @@ export function Team() {
 
             // Persist tool permissions
             await saveToolPermissions(editingMember.id);
+
+            // Avisar o usuário remotamente por email
+            await sendEmail(
+                editingMember.user.email,
+                'Atualização de Função/Permissões',
+                `Suas permissões e/ou nível de acesso na empresa ${currentCompany.name} foram atualizados para: ${roleLabels[values.role]}.`,
+                'system',
+                { action_url: `${window.location.origin}/painel` }
+            );
 
             notifications.show({
                 title: 'Sucesso',
@@ -383,6 +381,16 @@ export function Team() {
                 .eq('id', member.id);
 
             if (error) throw error;
+
+            // Envia notificação de segurança avisando da remoção (passando email apenas se user não for null)
+            if (member.user && member.user.email) {
+                await sendEmail(
+                    member.user.email,
+                    'Acesso Revogado',
+                    `Informamos que o seu acesso à empresa ${currentCompany.name} foi revogado pelo administrador da organização. Você não possui mais permissões para operar este ambiente.`,
+                    'security'
+                );
+            }
 
             notifications.show({
                 title: 'Sucesso',

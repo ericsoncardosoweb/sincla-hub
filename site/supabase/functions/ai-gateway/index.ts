@@ -307,6 +307,27 @@ Deno.serve(async (req: Request) => {
                     action,
                 },
             })
+
+            // Alerta critico (cruzou a barreira de 50000 tokens neste exato commit)
+            if (remainingCredits !== undefined && remainingCredits < 50000 && (remainingCredits + totalTokens) >= 50000) {
+                const { data: cData } = await supabaseAdmin.from('companies').select('subscribers(email)').eq('id', company_id).single()
+                const email = (cData?.subscribers as any)?.email
+                
+                if (email) {
+                    await supabaseAdmin.functions.invoke('send-notification', {
+                        body: {
+                            channel: 'email',
+                            to: email,
+                            subject: 'Aviso Crítico: Créditos de IA quase esgotados',
+                            message: `Os créditos de IA da sua empresa chegaram ao nível crítico (menos de 50.000 tokens). Realize o reload no Painel Sincla mais rápido possível para evitar bloqueios de atendimento nos satélites.`,
+                            template: 'alert',
+                            action_url: 'https://app.sincla.com.br/painel',
+                            company_id: company_id,
+                        }
+                    })
+                    console.log(`[AI Gateway] Low credits warning sent to ${email}`)
+                }
+            }
         }
 
         console.log(`[AI Gateway] OK | tokens: ${totalTokens} | remaining: ${remainingCredits ?? 'N/A'}`)

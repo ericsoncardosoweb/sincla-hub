@@ -109,11 +109,17 @@ export function Register() {
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Captura código de afiliado da URL
+    // Captura código de afiliado e email de convite da URL
     useEffect(() => {
         const ref = searchParams.get('ref');
         if (ref) saveRefCode(ref);
+
+        const inviteEmail = searchParams.get('email');
+        if (inviteEmail) {
+            setEmail(decodeURIComponent(inviteEmail));
+        }
     }, [searchParams]);
+
 
     const strength = useMemo(() => getStrength(password), [password]);
 
@@ -247,7 +253,9 @@ export function Register() {
                                 leftSection={<IconMail size={18} />}
                                 required
                                 classNames={{ input: classes.input }}
+                                disabled={!!searchParams.get('email')}
                             />
+
 
                             <div>
                                 <PasswordInput
