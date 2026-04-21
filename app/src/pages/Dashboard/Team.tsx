@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
 import {
     Container,
     Text,
@@ -17,23 +16,49 @@ import {
     Menu,
     rem,
     Divider,
-    Radio,
     Paper,
+    Switch,
+    Collapse,
+    Tooltip,
+    PasswordInput,
+    CopyButton,
+    Alert,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEdit, IconTrash, IconDotsVertical, IconMail, IconSearch, IconUsers, IconShieldCheck, IconRefresh } from '@tabler/icons-react';
+import {
+    IconPlus,
+    IconEdit,
+    IconTrash,
+    IconDotsVertical,
+    IconMail,
+    IconSearch,
+    IconUsers,
+    IconShieldCheck,
+    IconRefresh,
+    IconClock,
+    IconSend,
+    IconX,
+    IconKey,
+    IconAlertCircle,
+    IconCopy,
+    IconCheck,
+    IconLock,
+} from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
 import { sendEmail } from '../../shared/services/notificationService';
 
 
+// =============================================
+// Types
+// =============================================
+
 interface TeamMember {
     id: string;
     user_id: string;
-    role: 'owner' | 'admin' | 'manager' | 'member';
-    user_type: string;
+    role: 'owner' | 'admin' | 'member';
     created_at: string;
     user: {
         id: string;
@@ -43,111 +68,129 @@ interface TeamMember {
     };
 }
 
+interface PendingInvite {
+    id: string;
+    email: string;
+    role: string;
+    tool_permissions: Record<string, boolean>;
+    created_at: string;
+    expires_at: string;
+}
+
+type TeamRow =
+    | { kind: 'member'; data: TeamMember }
+    | { kind: 'invite'; data: PendingInvite };
+
 interface Product {
     id: string;
     name: string;
     icon: string | null;
 }
 
+// =============================================
+// Constants
+// =============================================
+
 const roleColors: Record<string, string> = {
     owner: 'red',
     admin: 'blue',
-    manager: 'green',
     member: 'gray',
 };
 
 const roleLabels: Record<string, string> = {
     owner: 'Proprietário',
     admin: 'Administrador',
-    manager: 'Gerente',
     member: 'Membro',
 };
 
 const roleDescriptions: Record<string, string> = {
-    admin: 'Acesso total, inclusive aos meios de pagamento das assinaturas',
-    manager: 'Acesso parcial, exceto para a gestão das assinaturas e empresa',
-    member: 'Acesso aos recursos básicos das ferramentas ou modo leitura',
+    admin: 'Acesso total ao painel, inclusive às assinaturas e configurações da empresa',
+    member: 'Acesso às ferramentas conforme as permissões definidas abaixo',
 };
 
-const userTypeLabels: Record<string, string> = {
-    collaborator: 'Colaborador',
-    manager: 'Gestor',
-    external: 'Externo',
-    student: 'Aluno',
-    customer: 'Cliente',
-};
+function generatePassword(length = 10): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#';
+    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
 
-const userTypeColors: Record<string, string> = {
-    collaborator: 'blue',
-    manager: 'violet',
-    external: 'orange',
-    student: 'teal',
-    customer: 'pink',
-};
+// =============================================
+// Component
+// =============================================
 
 export function Team() {
     const navigate = useNavigate();
     const { currentCompany, subscriber } = useAuth();
     const { isOwner, isAdmin } = useCompany();
-    const [members, setMembers] = useState<TeamMember[]>([]);
+
+    const [rows, setRows] = useState<TeamRow[]>([]);
     const [_loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
     const [search, setSearch] = useState('');
-    const [roleFilter, setRoleFilter] = useState<string | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
-    const [toolPermissions, setToolPermissions] = useState<Record<string, 'basic' | 'advanced'>>({});
+    // tool_permissions: product_id -> has_access (boolean)
+    const [toolAccess, setToolAccess] = useState<Record<string, boolean>>({});
+    const [provisionalPassword, setProvisionalPassword] = useState('');
+    const [useProvisional, setUseProvisional] = useState(false);
+    const [provisionalOpen, setProvisionalOpen] = useState(false);
+    const [createdPassword, setCreatedPassword] = useState<string | null>(null);
 
     const form = useForm({
         initialValues: {
             email: '',
-            role: 'member',
-            user_type: 'collaborator',
+            role: 'member' as 'admin' | 'member',
         },
     });
 
+    // =============================================
+    // Data Loading
+    // =============================================
+
     useEffect(() => {
         if (currentCompany) {
-            loadMembers();
+            loadAll();
             loadProducts();
         }
     }, [currentCompany]);
 
-    const loadMembers = async () => {
+    const loadAll = async () => {
         if (!currentCompany) return;
-
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('company_members')
-                .select(`
-          id,
-          user_id,
-          role,
-          user_type,
-          created_at,
-          user:subscribers!company_members_user_id_fkey (
-            id,
-            email,
-            name,
-            avatar_url
-          )
-        `)
-                .eq('company_id', currentCompany.id)
-                .order('created_at');
+            const [membersRes, invitesRes] = await Promise.all([
+                supabase
+                    .from('company_members')
+                    .select(`
+                        id,
+                        user_id,
+                        role,
+                        created_at,
+                        user:subscribers!company_members_user_id_fkey (
+                            id, email, name, avatar_url
+                        )
+                    `)
+                    .eq('company_id', currentCompany.id)
+                    .order('created_at'),
+                supabase
+                    .from('company_invites')
+                    .select('id, email, role, tool_permissions, created_at, expires_at')
+                    .eq('company_id', currentCompany.id)
+                    .order('created_at'),
+            ]);
 
-            if (error) throw error;
+            if (membersRes.error) throw membersRes.error;
 
-            // Filtrar membros com user null (subscriber ausente ou RLS bloqueado)
-            const validMembers = (data || []).filter((m: any) => m.user !== null);
-            setMembers(validMembers as unknown as TeamMember[]);
+            const validMembers: TeamRow[] = ((membersRes.data || []) as any[])
+                .filter((m) => m.user !== null)
+                .map((m) => ({ kind: 'member', data: m as TeamMember }));
+
+            const pendingInvites: TeamRow[] = ((invitesRes.data || []) as PendingInvite[])
+                .map((inv) => ({ kind: 'invite', data: inv }));
+
+            setRows([...validMembers, ...pendingInvites]);
         } catch (error) {
-            console.error('Error loading members:', error);
-            notifications.show({
-                title: 'Erro',
-                message: 'Não foi possível carregar os membros',
-                color: 'red',
-            });
+            console.error('Error loading team:', error);
+            notifications.show({ title: 'Erro', message: 'Não foi possível carregar a equipe', color: 'red' });
         } finally {
             setLoading(false);
         }
@@ -155,7 +198,6 @@ export function Team() {
 
     const loadProducts = async () => {
         if (!currentCompany) return;
-        // Carregar apenas produtos com assinatura ativa nesta empresa
         const { data: subs } = await supabase
             .from('subscriptions')
             .select('product_id, product:products!product_id (id, name, icon)')
@@ -168,62 +210,69 @@ export function Team() {
         setProducts(prods as Product[]);
     };
 
-    const initToolPermissions = (memberSettings?: Record<string, unknown>) => {
-        const perms: Record<string, 'basic' | 'advanced'> = {};
-        const saved = (memberSettings as any)?.tool_permissions || {};
-        products.forEach(p => {
-            perms[p.id] = saved[p.id] || 'basic';
+    // =============================================
+    // Modal helpers
+    // =============================================
+
+    const initToolAccess = (existingPerms?: Record<string, boolean>) => {
+        const access: Record<string, boolean> = {};
+        products.forEach((p) => {
+            access[p.id] = existingPerms?.[p.id] ?? false;
         });
-        setToolPermissions(perms);
+        setToolAccess(access);
     };
 
     const openInviteModal = () => {
         setEditingMember(null);
         form.reset();
-        initToolPermissions();
+        initToolAccess();
+        setUseProvisional(false);
+        setProvisionalOpen(false);
+        setProvisionalPassword('');
+        setCreatedPassword(null);
         setModalOpen(true);
     };
 
     const openEditModal = async (member: TeamMember) => {
         setEditingMember(member);
-        form.setValues({
-            email: member.user.email,
-            role: member.role,
-            user_type: member.user_type || 'collaborator',
+        form.setValues({ email: member.user.email, role: member.role === 'owner' ? 'admin' : (member.role as 'admin' | 'member') });
+
+        // Load existing tool access
+        const { data: accessData } = await supabase
+            .from('member_product_access')
+            .select('product_id, access_level')
+            .eq('company_member_id', member.id);
+
+        const existingAccess: Record<string, boolean> = {};
+        products.forEach((p) => {
+            existingAccess[p.id] = (accessData || []).some((a: any) => a.product_id === p.id);
         });
-        // Load existing tool permissions from member_product_access
-        if (currentCompany) {
-            const { data: accessData } = await supabase
-                .from('member_product_access')
-                .select('product_id, access_level')
-                .eq('company_member_id', member.id);
-            const perms: Record<string, 'basic' | 'advanced'> = {};
-            products.forEach(p => {
-                const found = (accessData || []).find((a: any) => a.product_id === p.id);
-                perms[p.id] = found ? (found.access_level === 'admin' || found.access_level === 'manager' ? 'advanced' : 'basic') : 'basic';
-            });
-            setToolPermissions(perms);
-        } else {
-            initToolPermissions();
-        }
+        setToolAccess(existingAccess);
+        setUseProvisional(false);
+        setProvisionalOpen(false);
+        setProvisionalPassword('');
+        setCreatedPassword(null);
         setModalOpen(true);
     };
+
+    // =============================================
+    // Actions
+    // =============================================
 
     const handleInvite = async (values: typeof form.values) => {
         if (!currentCompany) return;
 
         try {
-            // Check if user exists via RPC to bypass RLS on subscribers
+            // Check if user already exists
             const { data: rpcData, error: rpcError } = await supabase
                 .rpc('get_subscriber_id_by_email', { p_email: values.email })
                 .maybeSingle();
 
             if (rpcError) throw rpcError;
-            
             const existingUser = rpcData as { id: string } | null;
 
-            if (existingUser && existingUser.id) {
-                // Check if user is already a member before trying to insert to give a better error message
+            if (existingUser?.id) {
+                // User exists — check if already a member
                 const { data: memberCheck } = await supabase
                     .from('company_members')
                     .select('id')
@@ -235,22 +284,21 @@ export function Team() {
                     throw new Error('Este usuário já é membro desta empresa.');
                 }
 
-                // Add to company
-                const { data: newMember, error } = await supabase.from('company_members').insert({
-                    company_id: currentCompany.id,
-                    user_id: existingUser.id,
-                    role: values.role,
-                    user_type: values.user_type,
-                }).select('id').single();
+                // Add directly as member
+                const { data: newMember, error } = await supabase
+                    .from('company_members')
+                    .insert({
+                        company_id: currentCompany.id,
+                        user_id: existingUser.id,
+                        role: values.role,
+                        user_type: 'collaborator',
+                    })
+                    .select('id')
+                    .single();
 
                 if (error) throw error;
+                if (newMember) await saveToolPermissions(newMember.id);
 
-                // Persist tool permissions in member_product_access
-                if (newMember) {
-                    await saveToolPermissions(newMember.id);
-                }
-
-                // Envia e-mail notificando o usuário existente
                 await sendEmail(
                     values.email,
                     'Você foi adicionado a uma nova empresa',
@@ -259,63 +307,77 @@ export function Team() {
                     { action_url: `${window.location.origin}/painel` }
                 );
 
-                notifications.show({
-                    title: 'Sucesso',
-                    message: 'Membro adicionado com sucesso',
-                    color: 'green',
+                notifications.show({ title: 'Sucesso', message: 'Membro adicionado com sucesso', color: 'green' });
+            } else if (useProvisional && provisionalPassword) {
+                // New user — create with provisional password
+                const response = await supabase.functions.invoke('admin-create-user', {
+                    body: {
+                        email: values.email,
+                        password: provisionalPassword,
+                        company_id: currentCompany.id,
+                        role: values.role,
+                        tool_permissions: toolAccess,
+                        invited_by: subscriber?.id,
+                    },
                 });
+
+                if (response.error) throw new Error(response.error.message);
+
+                setCreatedPassword(provisionalPassword);
+                notifications.show({
+                    title: 'Usuário criado!',
+                    message: `Conta criada para ${values.email}. Anote a senha antes de fechar.`,
+                    color: 'green',
+                    autoClose: false,
+                });
+                // Stay open to show the password
+                loadAll();
+                return;
             } else {
-                // User not registered — create invite and send email
+                // New user — send invite email
+                // Remove any existing pending invite first (allow "reenvio" via new invite)
+                await supabase
+                    .from('company_invites')
+                    .delete()
+                    .eq('company_id', currentCompany.id)
+                    .eq('email', values.email);
+
                 const { data: inviteData, error: inviteError } = await supabase
                     .from('company_invites')
                     .insert({
                         company_id: currentCompany.id,
                         email: values.email,
                         role: values.role,
-                        user_type: values.user_type,
+                        user_type: 'collaborator',
                         invited_by: subscriber?.id,
-                        tool_permissions: toolPermissions
+                        tool_permissions: toolAccess,
                     })
                     .select('id')
                     .single();
 
-                if (inviteError) {
-                    // Check if unique constraint violated (already invited)
-                    if (inviteError.code === '23505') {
-                        throw new Error('Já existe um convite pendente para este e-mail nesta empresa.');
-                    }
-                    throw inviteError;
-                }
+                if (inviteError) throw inviteError;
 
-                // Send Custom Invite Email pointing to Register
                 const registerUrl = `${window.location.origin}/cadastro?invite=${inviteData.id}&email=${encodeURIComponent(values.email)}`;
                 await sendEmail(
                     values.email,
                     `Convite para participar da equipe: ${currentCompany.name}`,
-                    `Você foi convidado para participar da empresa ${currentCompany.name} no nível de acesso ${roleLabels[values.role]}. Clique no botão abaixo para criar sua conta gratuita e aceitar o convite.`,
+                    `Você foi convidado para participar da empresa ${currentCompany.name}. Clique abaixo para criar sua conta e aceitar o convite.`,
                     'welcome',
-                    { 
-                        action_url: registerUrl,
-                        action_label: 'Criar minha Conta'
-                    }
+                    { action_url: registerUrl, action_label: 'Criar minha Conta' }
                 );
 
                 notifications.show({
-                    title: 'Convite Enviado',
-                    message: `Um convite foi enviado para ${values.email}. A pessoa será vinculada à empresa assim que concluir o cadastro.`,
+                    title: 'Convite enviado!',
+                    message: `Um convite foi enviado para ${values.email}.`,
                     color: 'blue',
                 });
             }
 
             setModalOpen(false);
-            loadMembers();
+            loadAll();
         } catch (error: any) {
             console.error('Error inviting member:', error);
-            notifications.show({
-                title: 'Erro',
-                message: error.message || 'Não foi possível convidar o membro',
-                color: 'red',
-            });
+            notifications.show({ title: 'Erro', message: error.message || 'Não foi possível convidar o membro', color: 'red' });
         }
     };
 
@@ -325,136 +387,112 @@ export function Team() {
         try {
             const { error } = await supabase
                 .from('company_members')
-                .update({ role: values.role, user_type: values.user_type })
+                .update({ role: values.role })
                 .eq('id', editingMember.id);
 
             if (error) throw error;
-
-            // Persist tool permissions
             await saveToolPermissions(editingMember.id);
 
-            // Avisar o usuário remotamente por email
             await sendEmail(
                 editingMember.user.email,
-                'Atualização de Função/Permissões',
-                `Suas permissões e/ou nível de acesso na empresa ${currentCompany.name} foram atualizados para: ${roleLabels[values.role]}.`,
+                'Atualização de Permissões',
+                `Suas permissões na empresa ${currentCompany?.name} foram atualizadas.`,
                 'system',
                 { action_url: `${window.location.origin}/painel` }
             );
 
-            notifications.show({
-                title: 'Sucesso',
-                message: 'Função atualizada com sucesso',
-                color: 'green',
-            });
-
+            notifications.show({ title: 'Sucesso', message: 'Permissões atualizadas', color: 'green' });
             setModalOpen(false);
-            loadMembers();
+            loadAll();
         } catch (error: any) {
-            console.error('Error updating role:', error);
-            notifications.show({
-                title: 'Erro',
-                message: error.message || 'Não foi possível atualizar a função',
-                color: 'red',
-            });
+            notifications.show({ title: 'Erro', message: error.message || 'Não foi possível atualizar', color: 'red' });
         }
     };
 
     const handleRemove = async (member: TeamMember) => {
         if (member.role === 'owner') {
-            notifications.show({
-                title: 'Ação não permitida',
-                message: 'Não é possível remover o proprietário',
-                color: 'red',
-            });
+            notifications.show({ title: 'Ação não permitida', message: 'Não é possível remover o proprietário', color: 'red' });
             return;
         }
-
-        if (!confirm(`Remover ${member.user?.name || member.user?.email || 'este membro'} da equipe?`)) {
-            return;
-        }
+        if (!confirm(`Remover ${member.user?.name || member.user?.email || 'este membro'} da equipe?`)) return;
 
         try {
-            const { error } = await supabase
-                .from('company_members')
-                .delete()
-                .eq('id', member.id);
-
+            const { error } = await supabase.from('company_members').delete().eq('id', member.id);
             if (error) throw error;
 
-            // Envia notificação de segurança avisando da remoção (passando email apenas se user não for null)
-            if (member.user && member.user.email) {
+            if (member.user?.email) {
                 await sendEmail(
                     member.user.email,
                     'Acesso Revogado',
-                    `Informamos que o seu acesso à empresa ${currentCompany.name} foi revogado pelo administrador da organização. Você não possui mais permissões para operar este ambiente.`,
+                    `Seu acesso à empresa ${currentCompany?.name} foi revogado.`,
                     'security'
                 );
             }
 
-            notifications.show({
-                title: 'Sucesso',
-                message: 'Membro removido com sucesso',
-                color: 'green',
-            });
-
-            loadMembers();
+            notifications.show({ title: 'Sucesso', message: 'Membro removido', color: 'green' });
+            loadAll();
         } catch (error: any) {
-            console.error('Error removing member:', error);
-            notifications.show({
-                title: 'Erro',
-                message: error.message || 'Não foi possível remover o membro',
-                color: 'red',
-            });
+            notifications.show({ title: 'Erro', message: error.message || 'Não foi possível remover', color: 'red' });
         }
     };
 
-    const canManage = isOwner || isAdmin;
+    const handleResendInvite = async (invite: PendingInvite) => {
+        if (!currentCompany) return;
+        try {
+            // Delete and re-insert to reset expiry
+            await supabase.from('company_invites').delete().eq('id', invite.id);
 
-    // Persist member_product_access entries
-    const saveToolPermissions = async (memberId: string) => {
-        const entries = Object.entries(toolPermissions).map(([productId, level]) => ({
-            company_member_id: memberId,
-            product_id: productId,
-            access_level: level === 'advanced' ? 'admin' : 'user',
-            granted_by: subscriber?.id,
-        }));
+            const { data: newInvite, error } = await supabase
+                .from('company_invites')
+                .insert({
+                    company_id: currentCompany.id,
+                    email: invite.email,
+                    role: invite.role,
+                    user_type: 'collaborator',
+                    invited_by: subscriber?.id,
+                    tool_permissions: invite.tool_permissions,
+                })
+                .select('id')
+                .single();
 
-        if (entries.length === 0) return;
+            if (error) throw error;
 
-        // Delete existing and re-insert
-        await supabase
-            .from('member_product_access')
-            .delete()
-            .eq('company_member_id', memberId);
+            const registerUrl = `${window.location.origin}/cadastro?invite=${newInvite.id}&email=${encodeURIComponent(invite.email)}`;
+            await sendEmail(
+                invite.email,
+                `Lembrete: Convite para entrar na equipe ${currentCompany.name}`,
+                `Você tem um convite pendente para participar da empresa ${currentCompany.name}. Clique abaixo para criar sua conta.`,
+                'welcome',
+                { action_url: registerUrl, action_label: 'Criar minha Conta' }
+            );
 
-        const { error } = await supabase
-            .from('member_product_access')
-            .insert(entries);
-
-        if (error) console.error('Error saving tool permissions:', error);
+            notifications.show({ title: 'Convite reenviado!', message: `Email reenviado para ${invite.email}`, color: 'blue' });
+            loadAll();
+        } catch (error: any) {
+            notifications.show({ title: 'Erro', message: error.message || 'Não foi possível reenviar', color: 'red' });
+        }
     };
 
-    // Provision member to satellite tools
+    const handleCancelInvite = async (invite: PendingInvite) => {
+        if (!confirm(`Cancelar o convite para ${invite.email}?`)) return;
+        try {
+            const { error } = await supabase.from('company_invites').delete().eq('id', invite.id);
+            if (error) throw error;
+            notifications.show({ title: 'Convite cancelado', message: `Convite para ${invite.email} cancelado`, color: 'orange' });
+            loadAll();
+        } catch (error: any) {
+            notifications.show({ title: 'Erro', message: error.message || 'Não foi possível cancelar', color: 'red' });
+        }
+    };
+
     const handleProvision = async (member: TeamMember) => {
         try {
-            notifications.show({
-                id: `provision-${member.id}`,
-                title: 'Sincronizando...',
-                message: 'Provisionando acesso nas ferramentas...',
-                loading: true,
-                autoClose: false,
-            });
-
-            const response = await supabase.functions.invoke('provision-tool-user', {
-                body: { action: 'provision', member_id: member.id },
-            });
-
+            notifications.show({ id: `prov-${member.id}`, title: 'Sincronizando...', message: 'Provisionando acesso nas ferramentas...', loading: true, autoClose: false });
+            const response = await supabase.functions.invoke('provision-tool-user', { body: { action: 'provision', member_id: member.id } });
             if (response.error) throw response.error;
-
             const result = response.data;
             notifications.update({
-                id: `provision-${member.id}`,
+                id: `prov-${member.id}`,
                 title: result.errors > 0 ? 'Sincronização parcial' : 'Sincronizado!',
                 message: `${result.provisioned} ferramenta(s) sincronizada(s)${result.errors > 0 ? `, ${result.errors} erro(s)` : ''}`,
                 color: result.errors > 0 ? 'yellow' : 'green',
@@ -462,55 +500,77 @@ export function Team() {
                 autoClose: 4000,
             });
         } catch (error: any) {
-            console.error('Provision error:', error);
-            notifications.update({
-                id: `provision-${member.id}`,
-                title: 'Erro ao sincronizar',
-                message: error.message || 'Falha ao provisionar nas ferramentas',
-                color: 'red',
-                loading: false,
-                autoClose: 4000,
-            });
+            notifications.update({ id: `prov-${member.id}`, title: 'Erro', message: error.message, color: 'red', loading: false, autoClose: 4000 });
         }
     };
 
-    const filteredMembers = useMemo(() => {
-        return members.filter(m => {
-            if (!m.user) return false; // skip membros sem user
-            const matchesSearch = !search ||
-                (m.user.name || '').toLowerCase().includes(search.toLowerCase()) ||
-                m.user.email.toLowerCase().includes(search.toLowerCase());
-            const matchesRole = !roleFilter || m.role === roleFilter;
-            return matchesSearch && matchesRole;
+    // =============================================
+    // Permissions
+    // =============================================
+
+    const saveToolPermissions = async (memberId: string) => {
+        // Delete existing
+        await supabase.from('member_product_access').delete().eq('company_member_id', memberId);
+
+        const entries = Object.entries(toolAccess)
+            .filter(([, hasAccess]) => hasAccess)
+            .map(([productId]) => ({
+                company_member_id: memberId,
+                product_id: productId,
+                access_level: 'user',
+                granted_by: subscriber?.id,
+            }));
+
+        if (entries.length > 0) {
+            const { error } = await supabase.from('member_product_access').insert(entries);
+            if (error) console.error('Error saving tool permissions:', error);
+        }
+    };
+
+    // =============================================
+    // Derived state
+    // =============================================
+
+    const canManage = isOwner || isAdmin;
+
+    const filteredRows = useMemo(() => {
+        if (!search) return rows;
+        const q = search.toLowerCase();
+        return rows.filter((row) => {
+            if (row.kind === 'member') {
+                return (
+                    (row.data.user.name || '').toLowerCase().includes(q) ||
+                    row.data.user.email.toLowerCase().includes(q)
+                );
+            }
+            return row.data.email.toLowerCase().includes(q);
         });
-    }, [members, search, roleFilter]);
+    }, [rows, search]);
+
+    // =============================================
+    // Help content
+    // =============================================
 
     const helpContent = (
         <>
-            <Text size="sm">Neste módulo você gerencia a equipe da sua empresa. Aqui é possível:</Text>
+            <Text size="sm">Gerencie quem tem acesso à empresa e às ferramentas.</Text>
             <Text size="sm" component="ul" ml="md">
-                <li>Convidar usuários já cadastrados no Sincla (adiciona direto)</li>
-                <li>Enviar convites por email para novos usuários (cria conta + envia email de acesso)</li>
-                <li>Definir permissões por ferramenta (Avançado ou Básico)</li>
-                <li>Remover membros que não fazem mais parte</li>
-            </Text>
-            <Text size="sm" fw={500} mt="xs">Funções disponíveis:</Text>
-            <Text size="sm" component="ul" ml="md">
-                <li><strong>Administrador:</strong> Acesso total, inclusive aos meios de pagamento das assinaturas</li>
-                <li><strong>Gerente:</strong> Acesso parcial, exceto para a gestão das assinaturas e empresa</li>
-                <li><strong>Membro:</strong> Acesso aos recursos básicos das ferramentas ou modo leitura</li>
+                <li>Convide usuários já cadastrados no Sincla (adiciona direto)</li>
+                <li>Envie convites por email para novos usuários</li>
+                <li>Crie contas com senha provisória quando o email não funcionar</li>
+                <li>Defina quais ferramentas cada membro pode acessar</li>
             </Text>
         </>
     );
 
+    // =============================================
+    // Render
+    // =============================================
+
     if (!currentCompany) {
         return (
             <Container size="xl" py="md">
-                <PageHeader
-                    title="Equipe"
-                    subtitle="Gerencie os membros da sua empresa"
-                    helpContent={helpContent}
-                />
+                <PageHeader title="Equipe" subtitle="Gerencie os membros da sua empresa" helpContent={helpContent} />
                 <EmptyState
                     icon={<IconUsers size={28} />}
                     title="Nenhuma empresa selecionada"
@@ -533,40 +593,25 @@ export function Team() {
                 helpContent={helpContent}
             />
 
-            {/* Search & Filters */}
-            <Group mb="md" gap="sm">
+            {/* Search */}
+            <Group mb="md">
                 <TextInput
                     placeholder="Buscar por nome ou email..."
                     leftSection={<IconSearch size={16} />}
                     value={search}
                     onChange={(e) => setSearch(e.currentTarget.value)}
-                    style={{ flex: 1, maxWidth: 320 }}
-                />
-                <Select
-                    placeholder="Todas as funções"
-                    clearable
-                    data={[
-                        { value: 'owner', label: 'Proprietário' },
-                        { value: 'admin', label: 'Administrador' },
-                        { value: 'manager', label: 'Gerente' },
-                        { value: 'member', label: 'Membro' },
-                    ]}
-                    value={roleFilter}
-                    onChange={setRoleFilter}
-                    w={180}
+                    style={{ flex: 1, maxWidth: 360 }}
                 />
             </Group>
 
-            {filteredMembers.length === 0 ? (
+            {filteredRows.length === 0 ? (
                 <EmptyState
                     icon={<IconUsers size={28} />}
-                    title={members.length === 0 ? 'Nenhum membro ainda' : 'Nenhum resultado encontrado'}
-                    description={members.length === 0
-                        ? 'Convide membros da sua equipe para colaborar na empresa.'
-                        : 'Tente ajustar os filtros ou a busca.'}
-                    actionLabel={members.length === 0 && canManage ? 'Convidar Membro' : undefined}
+                    title={rows.length === 0 ? 'Nenhum membro ainda' : 'Nenhum resultado encontrado'}
+                    description={rows.length === 0 ? 'Convide membros da equipe para colaborar.' : 'Tente ajustar a busca.'}
+                    actionLabel={rows.length === 0 && canManage ? 'Convidar Membro' : undefined}
                     actionIcon={<IconPlus size={16} />}
-                    onAction={members.length === 0 && canManage ? openInviteModal : undefined}
+                    onAction={rows.length === 0 && canManage ? openInviteModal : undefined}
                 />
             ) : (
                 <Table striped highlightOnHover>
@@ -575,184 +620,281 @@ export function Team() {
                             <Table.Th>Membro</Table.Th>
                             <Table.Th>Email</Table.Th>
                             <Table.Th>Função</Table.Th>
-                            <Table.Th>Tipo</Table.Th>
                             <Table.Th>Desde</Table.Th>
                             {canManage && <Table.Th>Ações</Table.Th>}
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                        {filteredMembers.map((member) => (
-                            <Table.Tr key={member.id}>
-                                <Table.Td>
-                                    <Group gap="sm">
-                                        <Avatar
-                                            src={member.user.avatar_url}
-                                            radius="xl"
-                                            size="sm"
-                                            color="blue"
-                                        >
-                                            {(member.user?.name || member.user?.email || '?').charAt(0).toUpperCase()}
-                                        </Avatar>
-                                        <Text size="sm" fw={500}>
-                                            {member.user.name || 'Sem nome'}
-                                        </Text>
-                                    </Group>
-                                </Table.Td>
-                                <Table.Td>
-                                    <Text size="sm" c="dimmed">{member.user.email}</Text>
-                                </Table.Td>
-                                <Table.Td>
-                                    <Badge color={roleColors[member.role]} variant="light">
-                                        {roleLabels[member.role]}
-                                    </Badge>
-                                </Table.Td>
-                                <Table.Td>
-                                    <Badge color={userTypeColors[member.user_type] || 'gray'} variant="dot" size="sm">
-                                        {userTypeLabels[member.user_type] || member.user_type}
-                                    </Badge>
-                                </Table.Td>
-                                <Table.Td>
-                                    <Text size="sm" c="dimmed">
-                                        {new Date(member.created_at).toLocaleDateString('pt-BR')}
-                                    </Text>
-                                </Table.Td>
-                                {canManage && (
-                                    <Table.Td>
-                                        {member.role !== 'owner' && member.user_id !== subscriber?.id && (
-                                            <Menu shadow="md" width={150}>
-                                                <Menu.Target>
-                                                    <ActionIcon variant="subtle">
-                                                        <IconDotsVertical size={16} />
-                                                    </ActionIcon>
-                                                </Menu.Target>
-                                                <Menu.Dropdown>
-                                                    <Menu.Item
-                                                        leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}
-                                                        onClick={() => openEditModal(member)}
-                                                    >
-                                                        Editar Função
-                                                    </Menu.Item>
-                                                    <Menu.Item
-                                                        color="red"
-                                                        leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
-                                                        onClick={() => handleRemove(member)}
-                                                    >
-                                                        Remover
-                                                    </Menu.Item>
-                                                    <Menu.Divider />
-                                                    <Menu.Item
-                                                        leftSection={<IconRefresh style={{ width: rem(14), height: rem(14) }} />}
-                                                        onClick={() => handleProvision(member)}
-                                                    >
-                                                        Sincronizar
-                                                    </Menu.Item>
-                                                </Menu.Dropdown>
-                                            </Menu>
+                        {filteredRows.map((row) => {
+                            if (row.kind === 'invite') {
+                                const inv = row.data;
+                                const isExpired = new Date(inv.expires_at) < new Date();
+                                return (
+                                    <Table.Tr key={`invite-${inv.id}`} style={{ opacity: isExpired ? 0.6 : 1 }}>
+                                        <Table.Td>
+                                            <Group gap="sm">
+                                                <Avatar radius="xl" size="sm" color="gray">
+                                                    <IconMail size={14} />
+                                                </Avatar>
+                                                <Text size="sm" c="dimmed" fs="italic">—</Text>
+                                            </Group>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Text size="sm">{inv.email}</Text>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Group gap="xs">
+                                                <Badge color={isExpired ? 'red' : 'orange'} variant="light" leftSection={<IconClock size={10} />}>
+                                                    {isExpired ? 'Expirado' : 'Pendente'}
+                                                </Badge>
+                                                <Badge color={roleColors[inv.role] || 'gray'} variant="dot" size="sm">
+                                                    {roleLabels[inv.role] || inv.role}
+                                                </Badge>
+                                            </Group>
+                                        </Table.Td>
+                                        <Table.Td>
+                                            <Text size="sm" c="dimmed">
+                                                {new Date(inv.created_at).toLocaleDateString('pt-BR')}
+                                            </Text>
+                                        </Table.Td>
+                                        {canManage && (
+                                            <Table.Td>
+                                                <Group gap="xs">
+                                                    <Tooltip label="Reenviar convite">
+                                                        <ActionIcon variant="subtle" color="blue" onClick={() => handleResendInvite(inv)}>
+                                                            <IconSend size={15} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                    <Tooltip label="Cancelar convite">
+                                                        <ActionIcon variant="subtle" color="red" onClick={() => handleCancelInvite(inv)}>
+                                                            <IconX size={15} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                </Group>
+                                            </Table.Td>
                                         )}
+                                    </Table.Tr>
+                                );
+                            }
+
+                            const member = row.data;
+                            return (
+                                <Table.Tr key={`member-${member.id}`}>
+                                    <Table.Td>
+                                        <Group gap="sm">
+                                            <Avatar src={member.user.avatar_url} radius="xl" size="sm" color="blue">
+                                                {(member.user?.name || member.user?.email || '?').charAt(0).toUpperCase()}
+                                            </Avatar>
+                                            <Text size="sm" fw={500}>{member.user.name || 'Sem nome'}</Text>
+                                        </Group>
                                     </Table.Td>
-                                )}
-                            </Table.Tr>
-                        ))}
+                                    <Table.Td>
+                                        <Text size="sm" c="dimmed">{member.user.email}</Text>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Badge color={roleColors[member.role]} variant="light">
+                                            {roleLabels[member.role]}
+                                        </Badge>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <Text size="sm" c="dimmed">
+                                            {new Date(member.created_at).toLocaleDateString('pt-BR')}
+                                        </Text>
+                                    </Table.Td>
+                                    {canManage && (
+                                        <Table.Td>
+                                            {member.role !== 'owner' && member.user_id !== subscriber?.id && (
+                                                <Menu shadow="md" width={160}>
+                                                    <Menu.Target>
+                                                        <ActionIcon variant="subtle">
+                                                            <IconDotsVertical size={16} />
+                                                        </ActionIcon>
+                                                    </Menu.Target>
+                                                    <Menu.Dropdown>
+                                                        <Menu.Item
+                                                            leftSection={<IconEdit style={{ width: rem(14) }} />}
+                                                            onClick={() => openEditModal(member)}
+                                                        >
+                                                            Editar Permissões
+                                                        </Menu.Item>
+                                                        <Menu.Item
+                                                            leftSection={<IconRefresh style={{ width: rem(14) }} />}
+                                                            onClick={() => handleProvision(member)}
+                                                        >
+                                                            Sincronizar
+                                                        </Menu.Item>
+                                                        <Menu.Divider />
+                                                        <Menu.Item
+                                                            color="red"
+                                                            leftSection={<IconTrash style={{ width: rem(14) }} />}
+                                                            onClick={() => handleRemove(member)}
+                                                        >
+                                                            Remover
+                                                        </Menu.Item>
+                                                    </Menu.Dropdown>
+                                                </Menu>
+                                            )}
+                                        </Table.Td>
+                                    )}
+                                </Table.Tr>
+                            );
+                        })}
                     </Table.Tbody>
                 </Table>
             )}
 
-            {/* Modal */}
+            {/* =============================================
+                Modal — Convidar / Editar Membro
+            ============================================= */}
             <Modal
                 opened={modalOpen}
-                onClose={() => setModalOpen(false)}
-                title={editingMember ? 'Editar Membro' : 'Convidar Membro'}
+                onClose={() => { setModalOpen(false); setCreatedPassword(null); }}
+                title={editingMember ? 'Editar Permissões' : 'Convidar Membro'}
                 size="md"
             >
-                <form onSubmit={form.onSubmit(editingMember ? handleUpdateRole : handleInvite)}>
+                {/* Password created confirmation screen */}
+                {createdPassword ? (
                     <Stack gap="md">
-                        <TextInput
-                            label="Email"
-                            placeholder="email@exemplo.com"
-                            leftSection={<IconMail size={16} />}
-                            disabled={!!editingMember}
-                            required
-                            {...form.getInputProps('email')}
-                        />
-
-                        <Select
-                            label="Função"
-                            data={[
-                                { value: 'admin', label: 'Administrador' },
-                                { value: 'manager', label: 'Gerente' },
-                                { value: 'member', label: 'Membro' },
-                            ]}
-                            required
-                            comboboxProps={{ withinPortal: true, zIndex: 1000000 }}
-                            {...form.getInputProps('role')}
-                        />
-
-                        <Select
-                            label="Tipo de Acesso"
-                            description="Define o perfil do membro dentro da empresa"
-                            data={[
-                                { value: 'collaborator', label: 'Colaborador — Funcionário operacional' },
-                                { value: 'manager', label: 'Gestor — Configura ferramentas' },
-                                { value: 'external', label: 'Externo — Consultor, contador' },
-                                { value: 'student', label: 'Aluno — Aprendiz, treinando' },
-                                { value: 'customer', label: 'Cliente — B2C promovido' },
-                            ]}
-                            required
-                            comboboxProps={{ withinPortal: true, zIndex: 1000000 }}
-                            {...form.getInputProps('user_type')}
-                        />
-
-                        {/* Role description */}
-                        {form.values.role && roleDescriptions[form.values.role] && (
-                            <Text size="xs" c="dimmed" mt={-8}>
-                                <IconShieldCheck size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-                                {roleDescriptions[form.values.role]}
-                            </Text>
-                        )}
-
-                        {/* Tool permissions */}
-                        {products.length > 0 && (
-                            <>
-                                <Divider label="Permissões por Ferramenta" labelPosition="center" />
-                                <Text size="xs" c="dimmed">
-                                    <strong>Avançado:</strong> edição em todos os recursos da ferramenta.
-                                    <strong> Básico:</strong> acesso aos dados mais básicos e modo leitura.
-                                    Permissões avançadas podem ser refinadas pelo gestor dentro de cada ferramenta.
-                                </Text>
-                                <Stack gap="xs">
-                                    {products.map(product => (
-                                        <Paper key={product.id} p="sm" withBorder radius="sm">
-                                            <Group justify="space-between" align="center">
-                                                <Text size="sm" fw={500}>{product.name}</Text>
-                                                <Radio.Group
-                                                    value={toolPermissions[product.id] || 'basic'}
-                                                    onChange={(value) => setToolPermissions(prev => ({
-                                                        ...prev,
-                                                        [product.id]: value as 'basic' | 'advanced',
-                                                    }))}
-                                                >
-                                                    <Group gap="md">
-                                                        <Radio value="basic" label="Básico" size="xs" />
-                                                        <Radio value="advanced" label="Avançado" size="xs" />
-                                                    </Group>
-                                                </Radio.Group>
-                                            </Group>
-                                        </Paper>
-                                    ))}
-                                </Stack>
-                            </>
-                        )}
-
-                        <Group justify="flex-end" mt="md">
-                            <Button variant="subtle" onClick={() => setModalOpen(false)}>
-                                Cancelar
-                            </Button>
-                            <Button type="submit">
-                                {editingMember ? 'Salvar' : 'Convidar'}
-                            </Button>
-                        </Group>
+                        <Alert icon={<IconCheck size={16} />} color="green" title="Usuário criado com sucesso!">
+                            A conta foi criada e o usuário já pode acessar a plataforma. Anote as credenciais abaixo e repasse pessoalmente.
+                        </Alert>
+                        <Paper p="md" withBorder radius="sm" bg="gray.0">
+                            <Stack gap="xs">
+                                <Text size="xs" c="dimmed" fw={500}>SENHA PROVISÓRIA</Text>
+                                <Group gap="xs">
+                                    <Text fw={700} ff="monospace" size="lg" style={{ flex: 1 }}>{createdPassword}</Text>
+                                    <CopyButton value={createdPassword}>
+                                        {({ copied, copy }) => (
+                                            <Button size="xs" variant="light" color={copied ? 'green' : 'blue'} leftSection={copied ? <IconCheck size={14} /> : <IconCopy size={14} />} onClick={copy}>
+                                                {copied ? 'Copiado!' : 'Copiar'}
+                                            </Button>
+                                        )}
+                                    </CopyButton>
+                                </Group>
+                                <Text size="xs" c="dimmed">Recomendamos pedir ao usuário para alterar a senha no primeiro acesso.</Text>
+                            </Stack>
+                        </Paper>
+                        <Button onClick={() => { setModalOpen(false); setCreatedPassword(null); }}>
+                            Concluir
+                        </Button>
                     </Stack>
-                </form>
+                ) : (
+                    <form onSubmit={form.onSubmit(editingMember ? handleUpdateRole : handleInvite)}>
+                        <Stack gap="md">
+                            <TextInput
+                                label="Email"
+                                placeholder="email@exemplo.com"
+                                leftSection={<IconMail size={16} />}
+                                disabled={!!editingMember}
+                                required
+                                {...form.getInputProps('email')}
+                            />
+
+                            <Select
+                                label="Função"
+                                data={[
+                                    { value: 'admin', label: 'Administrador' },
+                                    { value: 'member', label: 'Membro' },
+                                ]}
+                                required
+                                comboboxProps={{ withinPortal: true, zIndex: 1000000 }}
+                                {...form.getInputProps('role')}
+                            />
+
+                            {form.values.role && roleDescriptions[form.values.role] && (
+                                <Text size="xs" c="dimmed" mt={-8}>
+                                    <IconShieldCheck size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+                                    {roleDescriptions[form.values.role]}
+                                </Text>
+                            )}
+
+                            {/* Tool access toggles */}
+                            {products.length > 0 && (
+                                <>
+                                    <Divider label="Acesso às Ferramentas" labelPosition="center" />
+                                    <Stack gap="xs">
+                                        {products.map((product) => (
+                                            <Paper key={product.id} p="sm" withBorder radius="sm">
+                                                <Group justify="space-between" align="center">
+                                                    <Text size="sm" fw={500}>{product.name}</Text>
+                                                    <Switch
+                                                        checked={toolAccess[product.id] ?? false}
+                                                        onChange={(e) =>
+                                                            setToolAccess((prev) => ({
+                                                                ...prev,
+                                                                [product.id]: e.currentTarget.checked,
+                                                            }))
+                                                        }
+                                                        label={toolAccess[product.id] ? 'Com acesso' : 'Sem acesso'}
+                                                        labelPosition="left"
+                                                        size="sm"
+                                                        color="blue"
+                                                    />
+                                                </Group>
+                                            </Paper>
+                                        ))}
+                                    </Stack>
+                                </>
+                            )}
+
+                            {/* Provisional password — only for new invites */}
+                            {!editingMember && (
+                                <>
+                                    <Divider />
+                                    <Paper p="sm" withBorder radius="sm" style={{ borderStyle: 'dashed' }}>
+                                        <Group justify="space-between" mb={provisionalOpen ? 'sm' : 0}>
+                                            <Group gap="xs">
+                                                <IconLock size={15} />
+                                                <Text size="sm" fw={500}>Cadastrar com senha provisória</Text>
+                                            </Group>
+                                            <Switch
+                                                size="sm"
+                                                checked={provisionalOpen}
+                                                onChange={(e) => {
+                                                    setProvisionalOpen(e.currentTarget.checked);
+                                                    setUseProvisional(e.currentTarget.checked);
+                                                    if (!e.currentTarget.checked) setProvisionalPassword('');
+                                                }}
+                                            />
+                                        </Group>
+                                        <Collapse in={provisionalOpen}>
+                                            <Stack gap="xs" mt="sm">
+                                                <Alert icon={<IconAlertCircle size={14} />} color="orange" variant="light" py="xs">
+                                                    Use apenas se o email do convidado não está funcionando. O usuário já poderá acessar com a senha fornecida.
+                                                </Alert>
+                                                <Group gap="xs" align="flex-end">
+                                                    <PasswordInput
+                                                        label="Senha provisória"
+                                                        placeholder="Mínimo 6 caracteres"
+                                                        value={provisionalPassword}
+                                                        onChange={(e) => setProvisionalPassword(e.currentTarget.value)}
+                                                        style={{ flex: 1 }}
+                                                        leftSection={<IconKey size={14} />}
+                                                    />
+                                                    <Button
+                                                        variant="light"
+                                                        size="sm"
+                                                        mb={1}
+                                                        onClick={() => setProvisionalPassword(generatePassword())}
+                                                    >
+                                                        Gerar
+                                                    </Button>
+                                                </Group>
+                                            </Stack>
+                                        </Collapse>
+                                    </Paper>
+                                </>
+                            )}
+
+                            <Group justify="flex-end" mt="md">
+                                <Button variant="subtle" onClick={() => setModalOpen(false)}>Cancelar</Button>
+                                <Button type="submit">
+                                    {editingMember ? 'Salvar' : useProvisional && provisionalPassword ? 'Criar Conta' : 'Enviar Convite'}
+                                </Button>
+                            </Group>
+                        </Stack>
+                    </form>
+                )}
             </Modal>
         </Container>
     );

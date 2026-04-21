@@ -16,6 +16,7 @@ import {
     IconTrash 
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
+
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
 import { redirectToProduct } from '../../shared/services/cross-auth';
@@ -116,7 +117,7 @@ const planLabels: Record<string, string> = {
 export function Subscriptions() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const { currentCompany } = useAuth();
+    const { currentCompany, subscriber } = useAuth();
     const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<string | null>('assinaturas');
@@ -285,9 +286,9 @@ export function Subscriptions() {
             if (res.success) {
                 await supabase.from('subscriptions').update({ status: 'canceled', canceled_at: new Date().toISOString() }).eq('id', selectedSub.id);
                 
-                if (user?.email) {
+                if (subscriber?.email) {
                     await sendEmail(
-                        user.email,
+                        subscriber.email,
                         'Confirmação de Cancelamento de Assinatura',
                         `Sua assinatura do plano ${selectedSub.product?.name || 'Contratado'} foi cancelada com sucesso. Fique tranquilo, o seu acesso vigora normalmente até o fechamento do período já pago.`,
                         'billing'
