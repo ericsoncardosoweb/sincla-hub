@@ -263,13 +263,16 @@ export function Team() {
         if (!currentCompany) return;
 
         try {
-            // Check if user already exists
+            // Check if user already exists — tratamento resiliente: se o RPC falhar
+            // por questão de permissão, assume que o usuário não existe e segue com convite
             const { data: rpcData, error: rpcError } = await supabase
                 .rpc('get_subscriber_id_by_email', { p_email: values.email })
                 .maybeSingle();
 
-            if (rpcError) throw rpcError;
-            const existingUser = rpcData as { id: string } | null;
+            if (rpcError) {
+                console.warn('[Team] RPC get_subscriber_id_by_email falhou, seguindo com convite:', rpcError.message);
+            }
+            const existingUser = rpcError ? null : (rpcData as { id: string } | null);
 
             if (existingUser?.id) {
                 // User exists — check if already a member
@@ -748,9 +751,20 @@ export function Team() {
             ============================================= */}
             <Modal
                 opened={modalOpen}
-                onClose={() => { setModalOpen(false); setCreatedPassword(null); }}
+                onClose={() => {
+                    setModalOpen(false);
+                    setCreatedPassword(null);
+                    setEditingMember(null);
+                    setToolAccess({});
+                    setUseProvisional(false);
+                    setProvisionalOpen(false);
+                    setProvisionalPassword('');
+                    form.reset();
+                }}
                 title={editingMember ? 'Editar Permissões' : 'Convidar Membro'}
                 size="md"
+                closeOnClickOutside={false}
+                closeOnEscape={false}
             >
                 {/* Password created confirmation screen */}
                 {createdPassword ? (
