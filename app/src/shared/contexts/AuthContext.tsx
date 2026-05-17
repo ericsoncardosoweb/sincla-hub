@@ -44,6 +44,7 @@ export interface Company {
   website: string | null;
   custom_domain: string | null;
   logo_url: string | null;
+  logo_dark_url: string | null;
   favicon_url: string | null;
   primary_color: string;
   secondary_color: string;

@@ -37,6 +37,7 @@ export interface Company {
     // Personalização (Branding)
     custom_domain: string | null;
     logo_url: string | null;
+    logo_dark_url: string | null;
     favicon_url: string | null;
     primary_color: string;
     secondary_color: string;
@@ -60,6 +61,7 @@ export interface CompanyInsert {
     cnpj?: string;
     custom_domain?: string;
     logo_url?: string;
+    logo_dark_url?: string;
     favicon_url?: string;
     primary_color?: string;
     secondary_color?: string;

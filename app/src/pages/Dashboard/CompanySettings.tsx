@@ -37,11 +37,15 @@ export function CompanySettings() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [uploadedLogoUrl, setUploadedLogoUrl] = useState<string | null>(null);
+    const [logoDarkFile, setLogoDarkFile] = useState<File | null>(null);
+    const [logoDarkPreview, setLogoDarkPreview] = useState<string | null>(null);
+    const [uploadedLogoDarkUrl, setUploadedLogoDarkUrl] = useState<string | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [uploadedFaviconUrl, setUploadedFaviconUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [removedLogo, setRemovedLogo] = useState(false);
+    const [removedLogoDark, setRemovedLogoDark] = useState(false);
     const [removedFavicon, setRemovedFavicon] = useState(false);
     const [slugValue, setSlugValue] = useState('');
     const [slugError, setSlugError] = useState('');
@@ -79,10 +83,14 @@ export function CompanySettings() {
             setUploadedLogoUrl(null);
             setLogoPreview(null);
             setLogoFile(null);
+            setUploadedLogoDarkUrl(null);
+            setLogoDarkPreview(null);
+            setLogoDarkFile(null);
             setUploadedFaviconUrl(null);
             setFaviconPreview(null);
             setFaviconFile(null);
             setRemovedLogo(false);
+            setRemovedLogoDark(false);
             setRemovedFavicon(false);
             setSlugValue(normalizeSlug(currentCompany.slug || ''));
             setSlugError('');
@@ -132,6 +140,50 @@ export function CompanySettings() {
             });
             setLogoPreview(null);
             setLogoFile(null);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Handle logo dark file selection => immediate upload
+    const handleLogoDarkChange = async (file: File | null) => {
+        if (!file || !currentCompany) return;
+        setLogoDarkFile(file);
+        setLogoDarkPreview(URL.createObjectURL(file));
+
+        setUploading(true);
+        try {
+            const oldLogoDarkUrl = (currentCompany as any).logo_dark_url;
+            if (oldLogoDarkUrl && oldLogoDarkUrl.includes('sincla-storage.b-cdn.net')) {
+                const oldPath = oldLogoDarkUrl.replace('https://sincla-storage.b-cdn.net/', '');
+                await deleteFile(oldPath);
+            }
+
+            const result = await uploadEmpresaAsset(currentCompany.slug, 'logo-dark', file);
+            if (result.success && result.url) {
+                setUploadedLogoDarkUrl(result.url);
+                notifications.show({
+                    title: 'Logo negativo enviado',
+                    message: 'Logo negativo carregado com sucesso! Clique em Salvar para confirmar.',
+                    color: 'green',
+                });
+            } else {
+                notifications.show({
+                    title: 'Erro no upload',
+                    message: result.error || 'Não foi possível enviar o logo negativo',
+                    color: 'red',
+                });
+                setLogoDarkPreview(null);
+                setLogoDarkFile(null);
+            }
+        } catch {
+            notifications.show({
+                title: 'Erro no upload',
+                message: 'Falha ao enviar o logo negativo',
+                color: 'red',
+            });
+            setLogoDarkPreview(null);
+            setLogoDarkFile(null);
         } finally {
             setUploading(false);
         }
@@ -243,6 +295,15 @@ export function CompanySettings() {
                 logoUrl = (currentCompany as any).logo_url || null;
             }
 
+            let logoDarkUrl: string | null = null;
+            if (removedLogoDark) {
+                logoDarkUrl = null;
+            } else if (uploadedLogoDarkUrl) {
+                logoDarkUrl = uploadedLogoDarkUrl.split('?')[0] + `?v=${Date.now()}`;
+            } else {
+                logoDarkUrl = (currentCompany as any).logo_dark_url || null;
+            }
+
             let faviconUrl: string | null = null;
             if (removedFavicon) {
                 faviconUrl = null;
@@ -272,6 +333,7 @@ export function CompanySettings() {
                     primary_color: values.primary_color,
                     secondary_color: values.secondary_color,
                     logo_url: logoUrl || null,
+                    logo_dark_url: logoDarkUrl || null,
                     favicon_url: faviconUrl || null,
                     custom_domain: values.custom_domain?.trim() || null,
                     // Store extra info in settings JSONB
@@ -482,6 +544,53 @@ export function CompanySettings() {
                                         )}
                                         {removedLogo && (
                                             <Text size="xs" c="red">Logo será removido ao salvar</Text>
+                                        )}
+                                    </Group>
+                                </div>
+
+                                <Divider my="sm" />
+
+                                <div>
+                                    <Text size="sm" fw={500} mb="xs">Logo Negativo</Text>
+                                    <Text size="xs" c="dimmed" mb="sm">Versão para fundos escuros (modo dark). Recomendado: logo branco ou em tom claro com fundo transparente (PNG).</Text>
+                                    <Group>
+                                        <Avatar
+                                            src={removedLogoDark ? null : (logoDarkPreview || (currentCompany as any).logo_dark_url)}
+                                            size="xl"
+                                            radius="md"
+                                            color="dark"
+                                            styles={{ root: { backgroundColor: '#1a1b1e' } }}
+                                        >
+                                            {currentCompany.name.charAt(0)}
+                                        </Avatar>
+                                        <FileInput
+                                            placeholder="Selecionar arquivo"
+                                            accept="image/*"
+                                            leftSection={<IconUpload size={16} />}
+                                            value={logoDarkFile}
+                                            onChange={(file) => { setRemovedLogoDark(false); handleLogoDarkChange(file); }}
+                                            disabled={!canEdit || uploading}
+                                        />
+                                        {(logoDarkPreview || (currentCompany as any).logo_dark_url) && !removedLogoDark && (
+                                            <Tooltip label="Remover logo negativo">
+                                                <ActionIcon
+                                                    variant="light"
+                                                    color="red"
+                                                    size="lg"
+                                                    onClick={() => {
+                                                        setRemovedLogoDark(true);
+                                                        setLogoDarkFile(null);
+                                                        setLogoDarkPreview(null);
+                                                        setUploadedLogoDarkUrl(null);
+                                                    }}
+                                                    disabled={!canEdit}
+                                                >
+                                                    <IconTrash size={16} />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        )}
+                                        {removedLogoDark && (
+                                            <Text size="xs" c="red">Logo negativo será removido ao salvar</Text>
                                         )}
                                     </Group>
                                 </div>

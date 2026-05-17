@@ -17,6 +17,7 @@ interface CompanyContextType {
     // Branding
     branding: {
         logo: string | null;
+        logoDark: string | null;
         favicon: string | null;
         primaryColor: string;
         secondaryColor: string;
@@ -42,6 +43,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
     const branding = useMemo(() => ({
         logo: currentCompany?.logo_url || null,
+        logoDark: currentCompany?.logo_dark_url || null,
         favicon: currentCompany?.favicon_url || null,
         primaryColor: currentCompany?.primary_color || '#0087ff',
         secondaryColor: currentCompany?.secondary_color || '#ff8c00',

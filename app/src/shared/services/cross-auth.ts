@@ -20,6 +20,7 @@ interface CrossTokenPayload {
     product_id: string;
     branding: {
         logo_url: string | null;
+        logo_dark_url: string | null;
         favicon_url: string | null;
         primary_color: string;
         secondary_color: string;
