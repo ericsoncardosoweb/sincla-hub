@@ -19,10 +19,11 @@ import {
     ActionIcon,
     Tooltip,
     Alert,
+    Select,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected, IconShield } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
@@ -62,12 +63,18 @@ export function CompanySettings() {
             primary_color: '#228be6',
             secondary_color: '#1971c2',
             custom_domain: '',
+            // LGPD Fields
+            privacy_dpo_name: '',
+            privacy_dpo_email: '',
+            privacy_dpo_phone: '',
+            privacy_retention_months: '60',
         },
     });
 
     useEffect(() => {
         if (currentCompany) {
             const s = (currentCompany as any).settings || {};
+            const privacy = s.privacy || {};
             form.setValues({
                 name: currentCompany.name,
                 cnpj: currentCompany.cnpj || '',
@@ -78,6 +85,11 @@ export function CompanySettings() {
                 primary_color: currentCompany.primary_color || '#228be6',
                 secondary_color: currentCompany.secondary_color || '#1971c2',
                 custom_domain: (currentCompany as any).custom_domain || '',
+                // LGPD fields
+                privacy_dpo_name: privacy.dpo_name || '',
+                privacy_dpo_email: privacy.dpo_email || '',
+                privacy_dpo_phone: privacy.dpo_phone || '',
+                privacy_retention_months: privacy.retention_months !== undefined ? String(privacy.retention_months) : '60',
             });
             // Reset upload state
             setUploadedLogoUrl(null);
@@ -343,6 +355,12 @@ export function CompanySettings() {
                         phone: values.phone || null,
                         address: values.address || null,
                         website: values.website || null,
+                        privacy: {
+                            dpo_name: values.privacy_dpo_name || null,
+                            dpo_email: values.privacy_dpo_email || null,
+                            dpo_phone: values.privacy_dpo_phone || null,
+                            retention_months: values.privacy_retention_months ? Number(values.privacy_retention_months) : null,
+                        }
                     },
                 })
                 .eq('id', currentCompany.id)
@@ -448,6 +466,9 @@ export function CompanySettings() {
                         </Tabs.Tab>
                         <Tabs.Tab value="notifications" leftSection={<IconBell size={16} />}>
                             Notificações
+                        </Tabs.Tab>
+                        <Tabs.Tab value="privacy" leftSection={<IconShield size={16} />}>
+                            Privacidade & LGPD
                         </Tabs.Tab>
                     </Tabs.List>
 
@@ -787,6 +808,72 @@ export function CompanySettings() {
                                     label="Produtos e novidades"
                                     description="Receba notificações sobre nossos produtos e novidades"
                                     defaultChecked
+                                />
+                            </Stack>
+                        </Card>
+                    </Tabs.Panel>
+
+                    {/* Privacy & LGPD Settings */}
+                    <Tabs.Panel value="privacy">
+                        <Card shadow="sm" padding="lg" radius="md">
+                            <Stack gap="md">
+                                <Alert variant="light" color="blue" title="Transparência e Responsabilidades (LGPD)" icon={<IconShield size={20} />}>
+                                    <Text size="sm" mb="xs">
+                                        Perante a Lei Geral de Proteção de Dados (Lei nº 13.709/2018):
+                                    </Text>
+                                    <Text size="xs" component="ul" ml="md" style={{ listStyleType: 'disc' }}>
+                                        <li><strong>Sua Empresa</strong> atua como a <strong>Controladora</strong> dos dados pessoais dos seus colaboradores, alunos e contatos, detendo a responsabilidade legal sobre as finalidades, bases legais e direitos dos titulares.</li>
+                                        <li><strong>A Sincla</strong> atua estritamente como <strong>Operadora</strong>, processando as informações de forma segura sob as diretrizes e instruções técnicas da Controladora.</li>
+                                    </Text>
+                                    <Text size="xs" mt="xs" c="dimmed">
+                                        É de responsabilidade da empresa manter os dados atualizados e responder a solicitações de direitos dos titulares.
+                                    </Text>
+                                </Alert>
+
+                                <Divider label="Encarregado de Proteção de Dados (DPO)" labelPosition="left" />
+                                <Text size="xs" c="dimmed">
+                                    Informe os dados do profissional responsável por atuar como canal de comunicação entre a sua empresa, os titulares dos dados e a Autoridade Nacional de Proteção de Dados (ANPD).
+                                </Text>
+
+                                <TextInput
+                                    label="Nome do Encarregado (DPO)"
+                                    placeholder="Nome Completo do DPO"
+                                    disabled={!canEdit}
+                                    {...form.getInputProps('privacy_dpo_name')}
+                                />
+
+                                <Group grow>
+                                    <TextInput
+                                        label="Email de Contato do DPO"
+                                        placeholder="dpo@empresa.com"
+                                        disabled={!canEdit}
+                                        {...form.getInputProps('privacy_dpo_email')}
+                                    />
+                                    <TextInput
+                                        label="Telefone / WhatsApp do DPO"
+                                        placeholder="(11) 99999-9999"
+                                        disabled={!canEdit}
+                                        {...form.getInputProps('privacy_dpo_phone')}
+                                    />
+                                </Group>
+
+                                <Divider label="Retenção e Descarte de Dados" labelPosition="left" />
+                                <Text size="xs" c="dimmed">
+                                    Defina o prazo de retenção para informações históricas de colaboradores e membros após desligamento, término de contrato ou inatividade prolongada. Após o período, os dados deverão ser anonimizados ou descartados de acordo com a política interna da empresa.
+                                </Text>
+
+                                <Select
+                                    label="Prazo de Retenção de Dados"
+                                    placeholder="Selecione o prazo de retenção"
+                                    disabled={!canEdit}
+                                    data={[
+                                        { value: '12', label: '12 meses (1 ano)' },
+                                        { value: '24', label: '24 meses (2 anos)' },
+                                        { value: '60', label: '60 meses (5 anos) - Recomendado' },
+                                        { value: '120', label: '120 meses (10 anos)' },
+                                        { value: '0', label: 'Indeterminado (Sem descarte automático)' },
+                                    ]}
+                                    {...form.getInputProps('privacy_retention_months')}
                                 />
                             </Stack>
                         </Card>

@@ -49,6 +49,7 @@ const legalLinks = [
     { label: 'Política de privacidade', href: '/politicas-de-privacidade' },
     { label: 'Termos de uso', href: '/termos-de-uso' },
     { label: 'Políticas de compra', href: '/politicas-de-compra' },
+    { label: 'Suporte LGPD', href: '/suporte-lgpd' },
 ];
 
 // Redes sociais

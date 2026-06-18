@@ -11,7 +11,7 @@ import { Landing } from './site/pages/Landing';
 // Company pages
 import { Empresa, Carreiras, Eventos, Blog, Investidores, Fundacao, Imprensa, Contato } from './site/pages/company';
 // Resources pages
-import { Suporte, Compras, Comunidade, BaseConhecimento, Marketplace, MinhaConta, TicketSuporte } from './site/pages/resources';
+import { Suporte, Compras, Comunidade, BaseConhecimento, Marketplace, MinhaConta, TicketSuporte, SuporteLgpd } from './site/pages/resources';
 // Learn More pages
 import { Parceiros, Treinamento, Documentacao, Desenvolvedores, ServicosCorporativos, Recursos } from './site/pages/learn-more';
 // Legal pages
@@ -51,6 +51,8 @@ function App() {
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/minha-conta" element={<MinhaConta />} />
             <Route path="/ticket-suporte" element={<TicketSuporte />} />
+            <Route path="/suporte-lgpd" element={<SuporteLgpd />} />
+
             {/* Learn More */}
             <Route path="/parceiros" element={<Parceiros />} />
             <Route path="/treinamento" element={<Treinamento />} />

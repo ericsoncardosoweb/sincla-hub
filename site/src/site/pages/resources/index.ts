@@ -5,3 +5,4 @@ export { BaseConhecimento } from './BaseConhecimento';
 export { Marketplace } from './Marketplace';
 export { MinhaConta } from './MinhaConta';
 export { TicketSuporte } from './TicketSuporte';
+export { SuporteLgpd } from './SuporteLgpd';
