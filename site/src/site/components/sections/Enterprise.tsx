@@ -108,17 +108,20 @@ export function Enterprise() {
                             </List>
                         </Box>
 
-                        <Stack gap="md" align="flex-start">
-                            <Box className={classes.priceBox}>
-                                <Text size="sm" className={classes.priceLabel}>A partir de</Text>
-                                <Group gap="xs" align="baseline">
-                                    <Text className={classes.price}>R$</Text>
-                                    <Text className={classes.priceValue}>997</Text>
-                                    <Text size="sm" className={classes.pricePeriod}>/mês</Text>
-                                </Group>
-                                <Text size="xs" className={classes.priceNote}>Para até 50 colaboradores</Text>
+                        <Stack gap="md" align="flex-start" style={{ maxWidth: '320px' }}>
+                            <Box mb="xs">
+                                <Text fw={700} size="xl" mb="xs" style={{ color: '#ffffff' }}>
+                                    Planos sob medida para o seu negócio
+                                </Text>
+                                <Text size="sm" style={{ color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.5 }}>
+                                    Desenvolvemos propostas personalizadas com base no tamanho da sua equipe e nos módulos que fizerem sentido para a sua rotina.
+                                </Text>
                             </Box>
                             <Button
+                                component="a"
+                                href="https://wa.me/5511999999999?text=Olá! Gostaria de falar com um consultor sobre os planos do ecossistema Sincla."
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 size="lg"
                                 variant="gradient"
                                 gradient={{ from: '#ff8c00', to: '#ff6600', deg: 135 }}
@@ -128,7 +131,7 @@ export function Enterprise() {
                                 Falar com Consultor
                             </Button>
                             <Text size="xs" className={classes.ctaMicrocopy}>
-                                Sem compromisso • Resposta em 24h
+                                Sem compromisso • Resposta imediata via WhatsApp
                             </Text>
                         </Stack>
                     </Group>

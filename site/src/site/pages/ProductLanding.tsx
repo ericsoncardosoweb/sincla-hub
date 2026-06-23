@@ -210,7 +210,7 @@ export function ProductLanding({ overrideSlug }: { overrideSlug?: string }) {
         <div style={{ background: 'var(--bg-dark, #0a0a0f)', color: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Header />
 
-            <main style={{ flex: 1 }}>
+            <main style={{ flex: 1 }} className="animate-fade-in" key={productKey}>
                 {/* Hero Section */}
                 <section className={classes.heroSection}>
                     <Container size="xl" className={classes.heroContainer}>

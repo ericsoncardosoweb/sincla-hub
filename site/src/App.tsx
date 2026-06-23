@@ -11,6 +11,8 @@ import { Landing } from './site/pages/Landing';
 import { SuporteLgpd } from './site/pages/SuporteLgpd';
 import { LegalPage } from './site/pages/LegalPage';
 import { ProductLanding } from './site/pages/ProductLanding';
+import { ScrollToTop } from './site/components/common/ScrollToTop';
+import { WhatsappFloat } from './site/components/common/WhatsappFloat';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +29,8 @@ function App() {
       <MantineProvider theme={theme} defaultColorScheme="light">
         <Notifications position="top-right" />
         <BrowserRouter>
+          <ScrollToTop />
+          <WhatsappFloat />
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/suporte-lgpd" element={<SuporteLgpd />} />

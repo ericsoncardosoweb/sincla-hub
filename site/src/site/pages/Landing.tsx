@@ -6,7 +6,6 @@ import { Stats } from '../components/sections/Stats';
 import { TeamSolutions } from '../components/sections/TeamSolutions';
 import { Testimonials } from '../components/sections/Testimonials';
 import { HowItWorks } from '../components/sections/HowItWorks';
-import { Platforms } from '../components/sections/Platforms';
 import { Enterprise } from '../components/sections/Enterprise';
 import { Support } from '../components/sections/Support';
 import { CtaBanner } from '../components/sections/CtaBanner';
@@ -23,14 +22,13 @@ export function Landing() {
 
             <ScrollProgress />
             <Header />
-            <main id="main-content">
+            <main id="main-content" className="animate-fade-in">
                 <Hero signupUrl={SIGNUP_URL} />
                 <ProductShowcase signupUrl={SIGNUP_URL} />
                 <Stats />
                 <TeamSolutions />
                 <Testimonials />
                 <HowItWorks signupUrl={SIGNUP_URL} />
-                <Platforms />
                 <Enterprise />
                 <Support />
                 <CtaBanner signupUrl={SIGNUP_URL} />
