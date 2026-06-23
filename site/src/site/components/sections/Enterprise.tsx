@@ -6,25 +6,25 @@ const benefits = [
     {
         icon: IconUsers,
         title: 'Gestão Unificada',
-        description: 'Gerencie todos os acessos em um único painel.',
+        description: 'Gerencie todas as licenças e acessos de pessoas em um único painel.',
     },
     {
         icon: IconDiscount,
-        title: '50% de Desconto',
-        description: 'Ferramentas pessoais com desconto para colaboradores.',
+        title: 'Descontos Progressivos',
+        description: 'Economize ao ativar novos módulos integrados no ecossistema.',
     },
     {
         icon: IconBuilding,
         title: 'Pacotes Combinados',
-        description: 'RH + EAD + Intranet com descontos progressivos.',
+        description: 'Combine RH + Recrutamento + EAD em uma fatura única reduzida.',
     },
 ];
 
 const enterpriseFeatures = [
     'Painel administrativo centralizado',
     'Gestão de licenças por colaborador',
-    'Faturamento consolidado',
-    'Suporte prioritário 24/7',
+    'Faturamento consolidado em nota única',
+    'Suporte prioritário via WhatsApp e Telefone',
 ];
 
 export function Enterprise() {
@@ -42,7 +42,7 @@ export function Enterprise() {
                         <span className={classes.gradient}>empresa</span>
                     </Title>
                     <Text className={classes.subtitle} ta="center" maw={500}>
-                        Ferramentas integradas para sua equipe, com descontos exclusivos.
+                        Todas as soluções de pessoas que você precisa em uma fatura unificada e sob medida.
                     </Text>
                 </Stack>
 
@@ -87,10 +87,10 @@ export function Enterprise() {
                                 </Text>
                             </Box>
                             <Title order={3} mb="sm" className={classes.ctaTitle}>
-                                Tudo que sua empresa precisa
+                                O poder do ecossistema Sincla em escala
                             </Title>
                             <Text className={classes.ctaDescription} mb="lg">
-                                Acesse todas as plataformas Sincla com condições especiais e suporte dedicado.
+                                Centralize seu RH, atração de talentos com IA e treinamentos corporativos sob uma mesma governança, economizando tempo e eliminando taxas de múltiplos sistemas.
                             </Text>
                             <List
                                 spacing="xs"

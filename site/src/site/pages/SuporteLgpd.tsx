@@ -13,9 +13,9 @@ import {
     IconFileSpreadsheet,
     IconCheck
 } from '@tabler/icons-react';
-import { Header } from '../../components/layout/Header';
-import { Footer } from '../../components/layout/Footer';
-import { SignatureVisual } from '../../components/signature-visual';
+import { Header } from '../components/layout/Header';
+import { Footer } from '../components/layout/Footer';
+import { SignatureVisual } from '../components/signature-visual';
 
 export function SuporteLgpd() {
     const SIGNUP_URL = 'https://app.sincla.com.br/cadastro';

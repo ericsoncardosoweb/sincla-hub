@@ -6,20 +6,20 @@ const steps = [
     {
         number: 1,
         icon: IconIdBadge2,
-        title: 'Cadastre você',
-        description: 'Seus dados pessoais viram sua identidade única. Um login para tudo.',
+        title: 'Crie sua conta',
+        description: 'Seus dados de acesso viram sua identidade corporativa única. Um login para tudo.',
     },
     {
         number: 2,
         icon: IconBuilding,
-        title: 'Vincule sua empresa',
-        description: 'Digite o CNPJ e buscamos tudo automaticamente. Zero digitação.',
+        title: 'Vincule a empresa',
+        description: 'Digite o CNPJ e nosso sistema preenche o resto automaticamente. Zero digitação.',
     },
     {
         number: 3,
         icon: IconApps,
-        title: 'Ative módulos',
-        description: 'RH, EAD, Finanças — seus dados já estarão preenchidos.',
+        title: 'Ative os módulos',
+        description: 'RH, Recrutamento ou EAD — ative com um clique sem preencher dados repetidos.',
     },
 ];
 
@@ -41,12 +41,12 @@ export function HowItWorks({ signupUrl }: HowItWorksProps) {
                         </Box>
 
                         <Title order={2} ta="center" className={classes.title}>
-                            Um cadastro.{' '}
-                            <span className={classes.gradient}>Acesso completo.</span>
+                            Como o ecossistema{' '}
+                            <span className={classes.gradient}>elimina o retrabalho</span>
                         </Title>
 
                         <Text ta="center" className={classes.subtitle} maw={550}>
-                            Preencha uma vez. Seus dados viajam com você para qualquer módulo.
+                            Preencha suas informações uma única vez. Elas viajam de forma segura e instantânea por todas as ferramentas da plataforma.
                         </Text>
                     </Stack>
 

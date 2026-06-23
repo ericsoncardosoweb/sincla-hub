@@ -3,19 +3,8 @@ import { Group, Button, Container, Burger, Drawer, Stack, Text, Box, SimpleGrid,
 import { useDisclosure, useClickOutside } from '@mantine/hooks';
 import {
     IconChevronDown,
-    IconUsers,
-    IconBuilding,
     IconRocket,
-    IconTargetArrow,
     IconHeadset,
-    IconBook,
-    IconCertificate,
-    IconNews,
-    IconShieldCheck,
-    IconTrendingUp,
-    IconPuzzle,
-    IconCloud,
-    IconLock,
     IconArrowRight,
     IconSearch,
     IconGridDots,
@@ -29,67 +18,12 @@ import classes from './Header.module.css';
 
 // Dados dos Produtos com logos SVG
 const products = [
-    { logo: '/logos/sincla-rh.svg', name: 'Sincla RH', description: 'Gestão de pessoas completa', color: '#0066CC', href: '#' },
-    { logo: '/logos/sincla-ead.svg', name: 'Sincla EAD', description: 'Treinamentos e cursos', color: '#FF6600', href: '#' },
-    { logo: '/logos/sincla-bolso.svg', name: 'Sincla Bolso', description: 'Finanças pessoais', color: '#10b981', href: '#' },
-    { logo: '/logos/sincla-leads.svg', name: 'Sincla Leads', description: 'Captação de clientes', color: '#DC2626', href: '#' },
-    { logo: '/logos/sincla-agenda.svg', name: 'Sincla Agenda', description: 'Agendamentos inteligentes', color: '#f59e0b', href: '#' },
-    { logo: '/logos/sincla-intranet.svg', name: 'Sincla Intranet', description: 'Comunicação interna', color: '#ef4444', href: '#', comingSoon: true },
+    { logo: '/logos/sincla-rh.svg', name: 'Sincla RH', description: 'Gestão de pessoas completa', color: '#0066CC', href: '/rh' },
+    { logo: '/logos/sincla-recrutamento.svg', name: 'Sincla Recrutamento', description: 'Atração e seleção de talentos', color: '#8B5CF6', href: '/recrutamento' },
+    { logo: '/logos/sincla-ead.svg', name: 'Sincla EAD', description: 'Treinamentos e cursos', color: '#FF6600', href: '/ead' },
 ];
 
-// Dados das Soluções
-const solutionsByUseCase = [
-    { label: 'Gestão de equipes', href: '#' },
-    { label: 'Treinamento corporativo', href: '#' },
-    { label: 'Captação de leads', href: '#' },
-    { label: 'Controle financeiro', href: '#' },
-];
-
-const solutionsByTeam = [
-    { label: 'RH e Gestão de Pessoas', href: '#' },
-    { label: 'Marketing e Vendas', href: '#' },
-    { label: 'Financeiro', href: '#' },
-    { label: 'TI e Operações', href: '#' },
-];
-
-const solutionsBySize = [
-    { label: 'Startups', href: '#' },
-    { label: 'PMEs', href: '#' },
-    { label: 'Empresas', href: '#' },
-    { label: 'Autônomos', href: '#' },
-];
-
-// Dados do Por que Sincla
-const whySinclaItems = [
-    { icon: IconPuzzle, title: 'Ecossistema Unificado', description: 'Um cadastro, acesso a tudo', href: '#' },
-    { icon: IconCloud, title: 'Na Nuvem', description: 'Acesse de qualquer lugar', href: '#' },
-    { icon: IconLock, title: 'Segurança', description: 'Seus dados protegidos', href: '#' },
-    { icon: IconTrendingUp, title: 'Escalável', description: 'Cresce com sua empresa', href: '#' },
-];
-
-// Dados dos Recursos
-const supportItems = [
-    { label: 'Central de Ajuda', href: '#suporte' },
-    { label: 'Suporte Técnico', href: '#' },
-    { label: 'Fale com Consultor', href: '#' },
-    { label: 'Status do Sistema', href: '#' },
-];
-
-const resourceItems = [
-    { label: 'Blog', href: '#' },
-    { label: 'Documentação', href: '#' },
-    { label: 'Webinars', href: '#' },
-    { label: 'Cases de Sucesso', href: '#' },
-];
-
-const communityItems = [
-    { label: 'Programa de Parceiros', href: '#parceiros' },
-    { label: 'Comunidade', href: '#' },
-    { label: 'Certificações', href: '#' },
-    { label: 'Eventos', href: '#' },
-];
-
-type MenuKey = 'produtos' | 'solucoes' | 'porque' | 'recursos' | null;
+type MenuKey = 'produtos' | null;
 
 // Simulação de estado de autenticação (em produção viria de um contexto/store)
 interface User {
@@ -171,43 +105,24 @@ export function Header() {
                             </span>
                         </Box>
 
-                        {/* Soluções */}
-                        <Box
-                            className={`${classes.navItem} ${activeMenu === 'solucoes' ? classes.active : ''}`}
-                            onMouseEnter={() => handleMenuEnter('solucoes')}
-                        >
-                            <span className={classes.navLink}>
-                                Soluções
-                                <IconChevronDown size={14} className={classes.chevron} />
-                            </span>
-                        </Box>
-
-                        {/* Por que Sincla */}
-                        <Box
-                            className={`${classes.navItem} ${activeMenu === 'porque' ? classes.active : ''}`}
-                            onMouseEnter={() => handleMenuEnter('porque')}
-                        >
-                            <span className={classes.navLink}>
-                                Por que Sincla?
-                                <IconChevronDown size={14} className={classes.chevron} />
-                            </span>
-                        </Box>
-
-                        {/* +Mais (Recursos) */}
-                        <Box
-                            className={`${classes.navItem} ${activeMenu === 'recursos' ? classes.active : ''}`}
-                            onMouseEnter={() => handleMenuEnter('recursos')}
-                        >
-                            <span className={classes.navLink}>
-                                +Mais
-                                <IconChevronDown size={14} className={classes.chevron} />
-                            </span>
-                        </Box>
-
-                        {/* Empresas - link direto (último) */}
+                        {/* Como Funciona */}
                         <Box className={classes.navItem} onMouseEnter={handleMenuLeave}>
-                            <a href="#empresas" className={classes.navLink}>
-                                Empresas
+                            <a href="/#como-funciona" className={classes.navLink}>
+                                Como Funciona
+                            </a>
+                        </Box>
+
+                        {/* Suporte */}
+                        <Box className={classes.navItem} onMouseEnter={handleMenuLeave}>
+                            <a href="/#suporte" className={classes.navLink}>
+                                Suporte & FAQ
+                            </a>
+                        </Box>
+
+                        {/* Contato */}
+                        <Box className={classes.navItem} onMouseEnter={handleMenuLeave}>
+                            <a href="/#suporte" className={classes.navLink}>
+                                Contato
                             </a>
                         </Box>
                     </Group>
@@ -430,9 +345,6 @@ export function Header() {
                                             <Box>
                                                 <Group gap="xs">
                                                     <Text fw={600} className={classes.productName}>{product.name}</Text>
-                                                    {product.comingSoon && (
-                                                        <span className={classes.comingSoonTag}>Em breve</span>
-                                                    )}
                                                 </Group>
                                                 <Text size="sm" className={classes.productDesc}>{product.description}</Text>
                                             </Box>
@@ -441,7 +353,7 @@ export function Header() {
                                 </SimpleGrid>
 
                                 <Box className={classes.menuFooter}>
-                                    <a href="#produtos" className={classes.menuFooterLink}>
+                                    <a href="/#produtos" className={classes.menuFooterLink}>
                                         <IconArrowRight size={16} />
                                         Ver todos os produtos
                                     </a>
@@ -459,6 +371,8 @@ export function Header() {
                                         Cadastre uma vez, use em todo lugar. Um ecossistema completo para sua empresa.
                                     </Text>
                                     <Button
+                                        component="a"
+                                        href="https://app.sincla.com.br"
                                         variant="light"
                                         color="blue"
                                         size="sm"
@@ -466,175 +380,6 @@ export function Header() {
                                         rightSection={<IconArrowRight size={14} />}
                                     >
                                         Conhecer o Hub
-                                    </Button>
-                                </Box>
-                            </Box>
-                        </Box>
-                    )}
-
-                    {/* Menu Soluções */}
-                    {activeMenu === 'solucoes' && (
-                        <Box className={classes.megaMenu}>
-                            <Box className={classes.solutionsGrid}>
-                                <Box>
-                                    <Text className={classes.menuLabel}>POR CASO DE USO</Text>
-                                    <Stack gap="xs" mt="md">
-                                        {solutionsByUseCase.map((item) => (
-                                            <a key={item.label} href={item.href} className={classes.solutionLink}>
-                                                {item.label}
-                                            </a>
-                                        ))}
-                                    </Stack>
-                                </Box>
-
-                                <Box>
-                                    <Text className={classes.menuLabel}>POR EQUIPE</Text>
-                                    <Stack gap="xs" mt="md">
-                                        {solutionsByTeam.map((item) => (
-                                            <a key={item.label} href={item.href} className={classes.solutionLink}>
-                                                {item.label}
-                                            </a>
-                                        ))}
-                                    </Stack>
-                                </Box>
-
-                                <Box>
-                                    <Text className={classes.menuLabel}>POR TAMANHO</Text>
-                                    <Stack gap="xs" mt="md">
-                                        {solutionsBySize.map((item) => (
-                                            <a key={item.label} href={item.href} className={classes.solutionLink}>
-                                                {item.label}
-                                            </a>
-                                        ))}
-                                    </Stack>
-                                </Box>
-                            </Box>
-
-                            <Box className={classes.megaMenuSidebar}>
-                                <Text className={classes.menuLabel}>IA INTEGRADA</Text>
-                                <Box className={classes.highlightCard}>
-                                    <ThemeIcon size={40} radius="md" variant="gradient" gradient={{ from: '#8b5cf6', to: '#a78bfa' }}>
-                                        <IconTargetArrow size={20} />
-                                    </ThemeIcon>
-                                    <Text fw={600} mt="sm" className={classes.highlightTitle}>Sincla AI</Text>
-                                    <Text size="sm" className={classes.highlightDesc}>
-                                        Inteligência artificial em todas as plataformas para automatizar tarefas.
-                                    </Text>
-                                </Box>
-                            </Box>
-                        </Box>
-                    )}
-
-                    {/* Menu Por que Sincla */}
-                    {activeMenu === 'porque' && (
-                        <Box className={classes.megaMenu}>
-                            <Box className={classes.whySinclaGrid}>
-                                {whySinclaItems.map((item) => (
-                                    <a key={item.title} href={item.href} className={classes.whyCard}>
-                                        <ThemeIcon
-                                            size={48}
-                                            radius="md"
-                                            variant="light"
-                                            color="blue"
-                                            className={classes.whyIcon}
-                                        >
-                                            <item.icon size={24} stroke={1.5} />
-                                        </ThemeIcon>
-                                        <Text fw={600} mt="sm" className={classes.whyTitle}>{item.title}</Text>
-                                        <Text size="sm" className={classes.whyDesc}>{item.description}</Text>
-                                    </a>
-                                ))}
-                            </Box>
-
-                            <Box className={classes.megaMenuSidebar}>
-                                <Text className={classes.menuLabel}>CONFIANÇA</Text>
-                                <Box className={classes.highlightCard}>
-                                    <ThemeIcon size={40} radius="md" variant="gradient" gradient={{ from: '#10b981', to: '#34d399' }}>
-                                        <IconShieldCheck size={20} />
-                                    </ThemeIcon>
-                                    <Text fw={600} mt="sm" className={classes.highlightTitle}>+500 Empresas</Text>
-                                    <Text size="sm" className={classes.highlightDesc}>
-                                        Confiam no ecossistema Sincla para gerenciar seus negócios.
-                                    </Text>
-                                    <Button
-                                        variant="light"
-                                        color="teal"
-                                        size="sm"
-                                        mt="md"
-                                        rightSection={<IconArrowRight size={14} />}
-                                    >
-                                        Ver cases
-                                    </Button>
-                                </Box>
-                            </Box>
-                        </Box>
-                    )}
-
-                    {/* Menu Recursos */}
-                    {activeMenu === 'recursos' && (
-                        <Box className={classes.megaMenu}>
-                            <Box className={classes.resourcesGrid}>
-                                <Box>
-                                    <Group gap="xs" mb="md">
-                                        <IconHeadset size={18} color="#0087ff" />
-                                        <Text className={classes.menuLabel}>SUPORTE</Text>
-                                    </Group>
-                                    <Stack gap="xs">
-                                        {supportItems.map((item) => (
-                                            <a key={item.label} href={item.href} className={classes.resourceLink}>
-                                                {item.label}
-                                            </a>
-                                        ))}
-                                    </Stack>
-                                </Box>
-
-                                <Box>
-                                    <Group gap="xs" mb="md">
-                                        <IconBook size={18} color="#0087ff" />
-                                        <Text className={classes.menuLabel}>APRENDER</Text>
-                                    </Group>
-                                    <Stack gap="xs">
-                                        {resourceItems.map((item) => (
-                                            <a key={item.label} href={item.href} className={classes.resourceLink}>
-                                                {item.label}
-                                            </a>
-                                        ))}
-                                    </Stack>
-                                </Box>
-
-                                <Box>
-                                    <Group gap="xs" mb="md">
-                                        <IconUsers size={18} color="#0087ff" />
-                                        <Text className={classes.menuLabel}>COMUNIDADE</Text>
-                                    </Group>
-                                    <Stack gap="xs">
-                                        {communityItems.map((item) => (
-                                            <a key={item.label} href={item.href} className={classes.resourceLink}>
-                                                {item.label}
-                                            </a>
-                                        ))}
-                                    </Stack>
-                                </Box>
-                            </Box>
-
-                            <Box className={classes.megaMenuSidebar}>
-                                <Text className={classes.menuLabel}>NOVIDADES</Text>
-                                <Box className={classes.highlightCard}>
-                                    <ThemeIcon size={40} radius="md" variant="gradient" gradient={{ from: '#f59e0b', to: '#fbbf24' }}>
-                                        <IconNews size={20} />
-                                    </ThemeIcon>
-                                    <Text fw={600} mt="sm" className={classes.highlightTitle}>Blog Sincla</Text>
-                                    <Text size="sm" className={classes.highlightDesc}>
-                                        Dicas, novidades e tendências para gestão de negócios.
-                                    </Text>
-                                    <Button
-                                        variant="light"
-                                        color="orange"
-                                        size="sm"
-                                        mt="md"
-                                        rightSection={<IconArrowRight size={14} />}
-                                    >
-                                        Ler artigos
                                     </Button>
                                 </Box>
                             </Box>
@@ -722,17 +467,13 @@ export function Header() {
                     ))}
 
                     <Text className={classes.mobileMenuLabel} mt="md">Navegação</Text>
-                    <a href="#empresas" className={classes.mobileNavLink} onClick={close}>
-                        <IconBuilding size={20} />
-                        Empresas
+                    <a href="/#como-funciona" className={classes.mobileNavLink} onClick={close}>
+                        <IconRocket size={20} />
+                        Como Funciona
                     </a>
-                    <a href="#parceiros" className={classes.mobileNavLink} onClick={close}>
-                        <IconCertificate size={20} />
-                        Parceiros
-                    </a>
-                    <a href="#suporte" className={classes.mobileNavLink} onClick={close}>
+                    <a href="/#suporte" className={classes.mobileNavLink} onClick={close}>
                         <IconHeadset size={20} />
-                        Suporte
+                        Suporte & FAQ
                     </a>
                 </Stack>
             </Drawer>

@@ -1,0 +1,272 @@
+.heroSection {
+    position: relative;
+    padding-top: 140px;
+    padding-bottom: 80px;
+    background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.015) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0a0f 0%, #101017 100%);
+    overflow: hidden;
+}
+
+.heroContainer {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+@media (max-width: 992px) {
+    .heroContainer {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        padding-top: 40px;
+        text-align: center;
+    }
+}
+
+.heroContent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+@media (max-width: 992px) {
+    .heroContent {
+        align-items: center;
+    }
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.highlight {
+    background: linear-gradient(135deg, var(--highlight-color) 0%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 540px;
+}
+
+.ctaGroup {
+    width: 100%;
+}
+
+@media (max-width: 576px) {
+    .ctaGroup {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .ctaGroup > * {
+        width: 100%;
+    }
+}
+
+.primaryCta {
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.primaryCta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+}
+
+.secondaryCta {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.secondaryCta:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.videoWrapper {
+    width: 100%;
+}
+
+/* Recursos / Benefícios */
+.benefitsSection {
+    padding: 100px 0;
+    background: #101017;
+}
+
+.sectionTitle {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.gradient {
+    background: linear-gradient(135deg, var(--gradient-color) 0%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sectionSubtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    max-width: 520px;
+}
+
+.benefitCard {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 16px !important;
+    padding: 32px !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.benefitCard:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.cardTitle {
+    color: #ffffff;
+}
+
+.cardDescription {
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.6;
+}
+
+/* Integração */
+.integrationSection {
+    padding: 80px 0;
+    background: #0d0d14;
+}
+
+.integrationCard {
+    background: rgba(255, 255, 255, 0.015) !important;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05)) !important;
+    border-radius: 20px !important;
+    padding: 48px !important;
+}
+
+@media (max-width: 768px) {
+    .integrationCard {
+        padding: 32px 24px !important;
+    }
+}
+
+.integrationTitle {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.integrationSubtitle {
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.pointTitle {
+    color: #ffffff;
+}
+
+.pointDescription {
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.5;
+}
+
+/* FAQ */
+.faqSection {
+    padding: 100px 0;
+    background: #101017;
+}
+
+.accordion {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.accordionItem {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.accordionControl {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    padding: 20px 24px !important;
+}
+
+.accordionControl:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.accordionAnswer {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    padding: 0 24px 20px 24px !important;
+}
+
+/* CTA */
+.ctaBannerSection {
+    padding: 100px 0;
+    background: linear-gradient(180deg, #101017 0%, #0a0a0f 100%);
+}
+
+.ctaCard {
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 100%),
+                rgba(255, 255, 255, 0.01) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 24px !important;
+    padding: 60px 40px !important;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ctaTitle {
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 16px;
+}
+
+.ctaSubtitle {
+    color: rgba(255, 255, 255, 0.65);
+    max-width: 480px;
+    font-size: 1.05rem;
+}
+
+.ctaButton {
+    font-weight: 600;
+    padding: 0 36px;
+    transition: transform 0.2s;
+}
+
+.ctaButton:hover {
+    transform: scale(1.03);
+}

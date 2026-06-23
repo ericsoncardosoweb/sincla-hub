@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Container, Title, Text, Button, Group, Box } from '@mantine/core';
 import { IconArrowRight } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import classes from './ProductShowcase.module.css';
 
 interface ProductShowcaseProps {
@@ -13,35 +14,35 @@ const showcaseProducts = [
         id: 'rh',
         logo: '/logos/sincla-rh.svg',
         name: 'Sincla RH',
-        headline: 'Gerencie sua equipe',
-        subheadline: 'com inteligência',
-        description: 'Controle ponto, férias, folha de pagamento e toda a jornada do colaborador em uma única plataforma com automação inteligente.',
-        ctaText: 'Obtenha grátis',
+        headline: 'A paz de espírito de um RH',
+        subheadline: 'que roda no piloto automático',
+        description: 'Esqueça as cobranças manuais de ponto, a bagunça em planilhas de férias e o estresse do fechamento da folha. Centralize e automatize toda a jornada dos colaboradores em um painel que trabalha por você.',
+        ctaText: 'Começar agora',
         exploreText: 'Conheça o Sincla RH',
         color: '#0066CC',
         bgColor: 'rgba(0, 102, 204, 0.08)',
         testimonial: {
             logo: '🏢',
             company: 'TechCorp',
-            text: 'O Sincla RH reduziu nosso tempo de gestão de pessoas em 60%. A automação de ponto e férias é fantástica.',
+            text: 'O Sincla RH eliminou o trabalho manual de semanas. A gestão de ponto e a planilha de férias agora rodam sozinhas.',
             link: 'Veja a história.',
         },
     },
     {
-        id: 'agenda',
-        logo: '/logos/sincla-agenda.svg',
-        name: 'Sincla Agenda',
-        headline: 'Agendamentos',
-        subheadline: 'que funcionam sozinhos',
-        description: 'Seus clientes agendam online 24/7, você recebe notificações e lembretes automáticos. Sem conflitos, sem retrabalho.',
-        ctaText: 'Obtenha grátis',
-        exploreText: 'Conheça o Sincla Agenda',
-        color: '#f59e0b',
-        bgColor: 'rgba(245, 158, 11, 0.08)',
+        id: 'recrutamento',
+        logo: '/logos/sincla-recrutamento.svg',
+        name: 'Sincla Recrutamento',
+        headline: 'Contrate a pessoa certa,',
+        subheadline: 'sem palpites ou frustrações',
+        description: 'Pare de desperdiçar horas analisando currículos frios que não se encaixam na sua cultura. Divulgue vagas nos maiores canais e use a inteligência artificial com Profiler comportamental DISC para identificar e filtrar o talento perfeito no funil visual.',
+        ctaText: 'Testar gratuitamente',
+        exploreText: 'Conheça o Recrutamento',
+        color: '#8B5CF6',
+        bgColor: 'rgba(139, 92, 246, 0.08)',
         testimonial: {
-            logo: '💈',
-            company: 'Barbearia Premium',
-            text: 'Nossos clientes adoram agendar pelo celular. Reduzimos faltas em 40% com os lembretes automáticos.',
+            logo: '🎯',
+            company: 'VagaCerta',
+            text: 'Descobrimos o candidato ideal em metade do tempo graças ao filtro comportamental DISC e à triagem automática de IA.',
             link: 'Leia a história.',
         },
     },
@@ -49,54 +50,18 @@ const showcaseProducts = [
         id: 'ead',
         logo: '/logos/sincla-ead.svg',
         name: 'Sincla EAD',
-        headline: 'Treine sua equipe',
-        subheadline: 'de forma escalável',
-        description: 'Crie cursos, trilhas de aprendizado e acompanhe o desenvolvimento da sua equipe em tempo real com certificados automáticos.',
-        ctaText: 'Obtenha grátis',
+        headline: 'Capacite toda a sua equipe,',
+        subheadline: 'sem repetir o mesmo treinamento',
+        description: 'Chega de treinamentos maçantes gravados que ninguém assiste. Hospede cursos dinâmicos, organize trilhas de desenvolvimento focadas e ofereça certificados automáticos integrados à ficha do funcionário.',
+        ctaText: 'Começar agora',
         exploreText: 'Conheça o Sincla EAD',
         color: '#FF6600',
         bgColor: 'rgba(255, 102, 0, 0.08)',
         testimonial: {
             logo: '🎓',
             company: 'Educorp',
-            text: 'Treinamos 500 colaboradores em 3 meses usando o Sincla EAD. A plataforma é intuitiva e completa.',
+            text: 'Treinamos e integramos 500 colaboradores com o Sincla EAD. A integração nativa ao cadastro de RH poupou dezenas de horas de configuração.',
             link: 'Veja o case.',
-        },
-    },
-    {
-        id: 'bolso',
-        logo: '/logos/sincla-bolso.svg',
-        name: 'Sincla Bolso',
-        headline: 'Finanças pessoais',
-        subheadline: 'sem complicação',
-        description: 'Organize suas finanças, acompanhe gastos automaticamente e alcance seus objetivos financeiros com relatórios inteligentes.',
-        ctaText: 'Obtenha grátis',
-        exploreText: 'Conheça o Sincla Bolso',
-        color: '#10b981',
-        bgColor: 'rgba(16, 185, 129, 0.08)',
-        testimonial: {
-            logo: '💰',
-            company: 'Usuário verificado',
-            text: '"Finalmente consegui organizar minhas finanças. O app sincroniza tudo automaticamente e me mostra onde posso economizar."',
-            link: 'Leia mais avaliações.',
-        },
-    },
-    {
-        id: 'leads',
-        logo: '/logos/sincla-leads.svg',
-        name: 'Sincla Leads',
-        headline: 'Capture clientes',
-        subheadline: 'com IA integrada',
-        description: 'Capture, qualifique e converta leads automaticamente com funis inteligentes, automação de follow-up e qualificação por IA.',
-        ctaText: 'Obtenha grátis',
-        exploreText: 'Conheça o Sincla Leads',
-        color: '#DC2626',
-        bgColor: 'rgba(220, 38, 38, 0.08)',
-        testimonial: {
-            logo: '🚀',
-            company: 'StartupXYZ',
-            text: 'Aumentamos nossa conversão em 150% usando os funis automatizados do Sincla Leads.',
-            link: 'Veja a história.',
         },
     },
 ];
@@ -127,6 +92,7 @@ function ProductSection({ product, index, signupUrl }: { product: typeof showcas
     return (
         <section
             ref={sectionRef}
+            id={product.id}
             className={`${classes.productSection} ${isVisible ? classes.visible : ''}`}
             style={{ '--product-color': product.color, '--product-bg': product.bgColor } as React.CSSProperties}
         >
@@ -194,6 +160,8 @@ function ProductSection({ product, index, signupUrl }: { product: typeof showcas
                                 {product.ctaText}
                             </Button>
                             <Button
+                                component={Link}
+                                to={`/${product.id}`}
                                 size="md"
                                 variant="subtle"
                                 color="dark"

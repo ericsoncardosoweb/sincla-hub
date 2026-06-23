@@ -1,0 +1,173 @@
+.playerWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(18, 18, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 
+                0 0 30px var(--glow-color, rgba(0, 135, 255, 0.15));
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.playerWrapper:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 
+                0 0 45px var(--glow-color, rgba(0, 135, 255, 0.25));
+}
+
+.thumbnailContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.thumbnailImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.thumbnailContainer:hover .thumbnailImage {
+    transform: scale(1.03);
+}
+
+.thumbnailFallback {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0d0d16 0%, #171725 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fallbackOverlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 30%, rgba(10, 10, 15, 0.9) 100%);
+    z-index: 1;
+}
+
+.fallbackPattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: radial-gradient(#ffffff 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.brandRing {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    animation: rotateRing 30s linear infinite;
+}
+
+@keyframes rotateRing {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.brandIndicator {
+    position: absolute;
+    top: -6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 15px currentColor;
+}
+
+.playButtonWrapper {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+    background: rgba(10, 10, 15, 0.2);
+    transition: background 0.3s ease;
+}
+
+.thumbnailContainer:hover .playButtonWrapper {
+    background: rgba(10, 10, 15, 0.4);
+}
+
+.playButton {
+    backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.thumbnailContainer:hover .playButton {
+    transform: scale(1.15);
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 0 40px var(--glow-color) !important;
+}
+
+.videoBadge {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(10, 10, 15, 0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pulseDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: dotPulse 2s infinite;
+}
+
+@keyframes dotPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 var(--glow-color, rgba(0, 135, 255, 0.7));
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(0, 135, 255, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 135, 255, 0);
+    }
+}
+
+.videoContainer {
+    width: 100%;
+    height: 100%;
+}
+
+.iframe,
+.videoElement {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}

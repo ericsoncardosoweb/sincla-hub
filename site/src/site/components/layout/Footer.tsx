@@ -1,54 +1,22 @@
 import { Link } from 'react-router-dom';
 import { Container, Group, Text, Stack, Anchor, SimpleGrid, Select } from '@mantine/core';
-import { IconWorld, IconArrowRight, IconBrandFacebook, IconBrandX, IconBrandLinkedin, IconBrandYoutube, IconBrandInstagram } from '@tabler/icons-react';
+import { IconWorld, IconBrandFacebook, IconBrandX, IconBrandLinkedin, IconBrandYoutube, IconBrandInstagram } from '@tabler/icons-react';
 import classes from './Footer.module.css';
 
-// Links da coluna Empresa (sobre a Sincla)
-const empresaLinks = [
-    { label: 'Empresa', href: '/empresa' },
-    { label: 'Carreiras', href: '/carreiras' },
-    { label: 'Eventos', href: '/eventos' },
-    { label: 'Blogs', href: '/blog' },
-    { label: 'Relações com Investidores', href: '/investidores' },
-    { label: 'Fundação Sincla', href: '/fundacao' },
-    { label: 'Kit de Imprensa', href: '/imprensa' },
-    { label: 'Fale com a gente', href: '/contato' },
-];
+// Descrição institucional
+const institutionalDesc = 'Ecossistema completo de gestão de pessoas, recrutamento inteligente e treinamento integrado para equipes de alto desempenho.';
 
-// Links da coluna Produtos (não tem páginas, ficam como #)
+// Links de produtos
 const produtosLinks = [
-    { label: 'Sincla RH', href: '#' },
-    { label: 'Sincla EAD', href: '#' },
-    { label: 'Sincla Bolso', href: '#' },
-    { label: 'Sincla Leads', href: '#' },
-    { label: 'Sincla Agenda', href: '#' },
-    { label: 'Sincla Intranet', href: '#' },
-];
-
-// Links da coluna Recursos
-const recursosLinks = [
-    { label: 'Suporte técnico', href: '/suporte' },
-    { label: 'Compras e licenciamento', href: '/compras' },
-    { label: 'Comunidade Sincla', href: '/comunidade' },
-    { label: 'Base de conhecimento', href: '/base-conhecimento' },
-    { label: 'Marketplace', href: '/marketplace' },
-    { label: 'Minha conta', href: 'https://app.sincla.com.br/painel' },
-];
-
-// Links da coluna Saiba Mais
-const saibaMaisLinks = [
-    { label: 'Parceiros', href: '/parceiros' },
-    { label: 'Treinamento e certificação', href: '/treinamento' },
-    { label: 'Documentação', href: '/documentacao' },
-    { label: 'Recursos de desenvolvedores', href: '/desenvolvedores' },
-    { label: 'Serviços corporativos', href: '/servicos-corporativos' },
+    { label: 'Sincla RH', href: '/#rh' },
+    { label: 'Sincla Recrutamento', href: '/#recrutamento' },
+    { label: 'Sincla EAD', href: '/#ead' },
 ];
 
 // Links do rodapé inferior (legal)
 const legalLinks = [
     { label: 'Política de privacidade', href: '/politicas-de-privacidade' },
     { label: 'Termos de uso', href: '/termos-de-uso' },
-    { label: 'Políticas de compra', href: '/politicas-de-compra' },
     { label: 'Suporte LGPD', href: '/suporte-lgpd' },
 ];
 
@@ -66,9 +34,9 @@ export function Footer() {
         <footer className={classes.footer}>
             <Container size="xl">
                 {/* Main Footer Content */}
-                <SimpleGrid cols={{ base: 2, sm: 2, md: 4 }} spacing={{ base: 'xl', md: 60 }} mb={48}>
-                    {/* Coluna 1: Logo + Empresa */}
-                    <Stack gap="md">
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing={{ base: 'xl', md: 120 }} mb={48}>
+                    {/* Coluna 1: Logo + Descrição */}
+                    <Stack gap="md" style={{ maxWidth: '450px' }}>
                         <Link to="/" className={classes.logoLink}>
                             <img
                                 src="/logos/sincla.svg"
@@ -77,13 +45,9 @@ export function Footer() {
                                 style={{ display: 'block' }}
                             />
                         </Link>
-                        <Stack gap="xs" mt="md">
-                            {empresaLinks.map((link) => (
-                                <Anchor key={link.label} component={Link} to={link.href} className={classes.link}>
-                                    {link.label}
-                                </Anchor>
-                            ))}
-                        </Stack>
+                        <Text size="sm" c="dimmed" style={{ lineHeight: 1.6 }} mt="xs">
+                            {institutionalDesc}
+                        </Text>
                     </Stack>
 
                     {/* Coluna 2: Produtos */}
@@ -96,39 +60,6 @@ export function Footer() {
                                 </Anchor>
                             ))}
                         </Stack>
-                        <Anchor href="#produtos" className={classes.viewAllLink}>
-                            Ver todos os produtos <IconArrowRight size={14} />
-                        </Anchor>
-                    </Stack>
-
-                    {/* Coluna 3: Recursos */}
-                    <Stack gap="md">
-                        <Text className={classes.columnTitle}>RECURSOS</Text>
-                        <Stack gap="xs">
-                            {recursosLinks.map((link) => (
-                                <Anchor key={link.label} component={Link} to={link.href} className={classes.link}>
-                                    {link.label}
-                                </Anchor>
-                            ))}
-                        </Stack>
-                        <Anchor component={Link} to="/ticket-suporte" className={classes.viewAllLink}>
-                            Criar ticket de suporte <IconArrowRight size={14} />
-                        </Anchor>
-                    </Stack>
-
-                    {/* Coluna 4: Saiba Mais */}
-                    <Stack gap="md">
-                        <Text className={classes.columnTitle}>SAIBA MAIS</Text>
-                        <Stack gap="xs">
-                            {saibaMaisLinks.map((link) => (
-                                <Anchor key={link.label} component={Link} to={link.href} className={classes.link}>
-                                    {link.label}
-                                </Anchor>
-                            ))}
-                        </Stack>
-                        <Anchor component={Link} to="/recursos" className={classes.viewAllLink}>
-                            Ver todos os recursos <IconArrowRight size={14} />
-                        </Anchor>
                     </Stack>
                 </SimpleGrid>
 

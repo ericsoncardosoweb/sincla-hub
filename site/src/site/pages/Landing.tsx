@@ -8,7 +8,6 @@ import { Testimonials } from '../components/sections/Testimonials';
 import { HowItWorks } from '../components/sections/HowItWorks';
 import { Platforms } from '../components/sections/Platforms';
 import { Enterprise } from '../components/sections/Enterprise';
-import { Partners } from '../components/sections/Partners';
 import { Support } from '../components/sections/Support';
 import { CtaBanner } from '../components/sections/CtaBanner';
 import { ScrollProgress } from '../components/common/ScrollProgress';
@@ -33,7 +32,6 @@ export function Landing() {
                 <HowItWorks signupUrl={SIGNUP_URL} />
                 <Platforms />
                 <Enterprise />
-                <Partners />
                 <Support />
                 <CtaBanner signupUrl={SIGNUP_URL} />
             </main>

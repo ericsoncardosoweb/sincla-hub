@@ -1,5 +1,5 @@
 import { SimpleGrid, Stack, Title, Text, Box, Badge } from '@mantine/core';
-import { IconUsers, IconBook, IconWallet, IconChartBar, IconCalendar, IconBuilding } from '@tabler/icons-react';
+import { IconUsers, IconBook, IconBriefcase } from '@tabler/icons-react';
 import classes from './Steps.module.css';
 
 interface StepModuleProps {
@@ -17,44 +17,20 @@ const modules = [
         available: true,
     },
     {
+        id: 'recrutamento',
+        name: 'Sincla Recrutamento',
+        icon: IconBriefcase,
+        tagline: 'Atração e seleção de talentos',
+        features: ['Triagem por IA', 'Funil Kanban de candidatos', 'Match comportamental (DISC)'],
+        available: true,
+    },
+    {
         id: 'ead',
         name: 'Sincla EAD',
         icon: IconBook,
         tagline: 'Cursos e treinamentos',
-        features: ['1 curso', '10 alunos', 'Certificado'],
+        features: ['1 curso', '10 alunos', 'Certificados automáticos'],
         available: true,
-    },
-    {
-        id: 'bolso',
-        name: 'Sincla Bolso',
-        icon: IconWallet,
-        tagline: 'Finanças pessoais',
-        features: ['Dashboards', 'Categorias', 'Metas'],
-        available: true,
-    },
-    {
-        id: 'leads',
-        name: 'Sincla Leads',
-        icon: IconChartBar,
-        tagline: 'Páginas de conversão',
-        features: ['1 página', '100 leads/mês', 'Analytics'],
-        available: true,
-    },
-    {
-        id: 'agenda',
-        name: 'Sincla Agenda',
-        icon: IconCalendar,
-        tagline: 'Produtividade pessoal',
-        features: ['Calendário', 'Tarefas', 'Lembretes'],
-        available: true,
-    },
-    {
-        id: 'intranet',
-        name: 'Sincla Intranet',
-        icon: IconBuilding,
-        tagline: 'Comunicação interna',
-        features: ['Mural', 'Documentos', 'Chat'],
-        available: false,
     },
 ];
 

@@ -16,18 +16,16 @@ export const SECTIONS = {
 
 // Módulos Sincla com suas cores
 export const MODULES = [
-    { id: 'rh', color: '#0087ff', angle: 0 },
-    { id: 'ead', color: '#00c6ff', angle: 72 },
-    { id: 'bolso', color: '#00d4aa', angle: 144 },
-    { id: 'leads', color: '#ff8c00', angle: 216 },
-    { id: 'agenda', color: '#a855f7', angle: 288 },
+    { id: 'rh', color: '#0066cc', angle: 0 },
+    { id: 'recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'ead', color: '#ff6600', angle: 240 },
 ] as const;
 
 // Módulos para mobile (reduzido)
 export const MODULES_MOBILE = [
-    { id: 'rh', color: '#0087ff', angle: 0 },
-    { id: 'ead', color: '#00c6ff', angle: 120 },
-    { id: 'bolso', color: '#00d4aa', angle: 240 },
+    { id: 'rh', color: '#0066cc', angle: 0 },
+    { id: 'recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'ead', color: '#ff6600', angle: 240 },
 ] as const;
 
 // Estado visual por seção
@@ -49,7 +47,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 1.0,
         orbitOpacity: 0.06,
         visibleSatellites: 1,
-        activeModules: ['rh', 'ead', 'bolso', 'leads', 'agenda'],
+        activeModules: ['rh', 'recrutamento', 'ead'],
         connectionIntensity: 0.5,
         moduleOrbitRadius: 1.0,
     },
@@ -59,7 +57,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 1.1,
         orbitOpacity: 0.08,
         visibleSatellites: 1,
-        activeModules: ['rh', 'ead', 'bolso'],
+        activeModules: ['rh', 'recrutamento', 'ead'],
         connectionIntensity: 0.8,
         moduleOrbitRadius: 1.1,
     },
@@ -69,7 +67,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 0.95,
         orbitOpacity: 0.05,
         visibleSatellites: 1,
-        activeModules: ['rh'],
+        activeModules: ['rh', 'recrutamento', 'ead'],
         connectionIntensity: 0.4,
         moduleOrbitRadius: 1.3,
     },
@@ -79,7 +77,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 1.15,
         orbitOpacity: 0.07,
         visibleSatellites: 3,
-        activeModules: ['rh', 'ead'],
+        activeModules: ['rh', 'recrutamento', 'ead'],
         connectionIntensity: 0.6,
         moduleOrbitRadius: 0.9,
     },

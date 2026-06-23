@@ -77,18 +77,16 @@ export const SECTION_STATES: Record<string, SectionVisualState> = {
 
 // Configuração dos nós (módulos Sincla)
 export const NODES = [
-    { id: 'rh', name: 'RH', color: '#0087ff', angle: 0 },
-    { id: 'ead', name: 'EAD', color: '#00c6ff', angle: 72 },
-    { id: 'bolso', name: 'Bolso', color: '#00d4aa', angle: 144 },
-    { id: 'leads', name: 'Leads', color: '#ff8c00', angle: 216 },
-    { id: 'agenda', name: 'Agenda', color: '#a855f7', angle: 288 },
+    { id: 'rh', name: 'RH', color: '#0066cc', angle: 0 },
+    { id: 'recrutamento', name: 'Recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'ead', name: 'EAD', color: '#ff6600', angle: 240 },
 ] as const;
 
 // Configuração mobile (3 nós)
 export const NODES_MOBILE = [
-    { id: 'rh', name: 'RH', color: '#0087ff', angle: 0 },
-    { id: 'ead', name: 'EAD', color: '#00c6ff', angle: 120 },
-    { id: 'bolso', name: 'Bolso', color: '#00d4aa', angle: 240 },
+    { id: 'rh', name: 'RH', color: '#0066cc', angle: 0 },
+    { id: 'recrutamento', name: 'Recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'ead', name: 'EAD', color: '#ff6600', angle: 240 },
 ] as const;
 
 // Parâmetros de performance

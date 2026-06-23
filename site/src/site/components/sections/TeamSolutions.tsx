@@ -4,7 +4,6 @@ import {
     IconArrowRight,
     IconCheckbox,
     IconChartBar,
-    IconClock,
     IconFileText,
     IconSchool,
     IconBriefcase,
@@ -77,43 +76,48 @@ const solutions: Solution[] = [
         ],
     },
     {
-        id: 'agenda',
-        tab: 'Agendamentos',
-        logo: '/logos/sincla-agenda.svg',
-        color: '#f59e0b',
-        bgColor: '#f59e0b',
-        headline: 'Organize sua agenda com inteligência',
+        id: 'recrutamento',
+        tab: 'Recrutamento',
+        logo: '/logos/sincla-recrutamento.svg',
+        color: '#8B5CF6',
+        bgColor: '#8B5CF6',
+        headline: 'Atraia e selecione os melhores talentos',
         description:
-            'Gerencie agendamentos, evite conflitos de horários e ofereça uma experiência de marcação simples para seus clientes.',
-        linkText: 'Saiba mais sobre Agenda',
-        mockupTitle: 'Calendário Semanal',
+            'Divulgue suas vagas nos principais portais de emprego, gerencie candidatos em um funil Kanban interativo e trie talentos de forma automatizada com inteligência artificial.',
+        linkText: 'Saiba mais sobre Recrutamento',
+        mockupTitle: 'Vagas & Candidatos em Destaque',
         mockupContent: (
-            <Box className={classes.mockupCalendar}>
-                <Group gap={4} className={classes.calendarHeader}>
-                    {['Seg', 'Ter', 'Qua', 'Qui', 'Sex'].map((day) => (
-                        <Box key={day} className={classes.calendarDay}>{day}</Box>
-                    ))}
-                </Group>
-                <Box className={classes.calendarGrid}>
-                    <Box className={classes.calendarEvent} style={{ background: 'rgba(16, 185, 129, 0.2)', borderLeft: '3px solid #10b981', gridColumn: '1', gridRow: '1' }}>
-                        <Text size="xs" fw={500}>09:00 - Reunião</Text>
+            <Box className={classes.mockupTable}>
+                <Box className={classes.mockupRow}>
+                    <Box className={classes.mockupAvatar} style={{ background: '#0087ff' }} />
+                    <Box>
+                        <Text size="sm" fw={500}>Bruno Souza</Text>
+                        <Text size="xs" c="dimmed">Desenvolvedor React</Text>
                     </Box>
-                    <Box className={classes.calendarEvent} style={{ background: 'rgba(139, 92, 246, 0.2)', borderLeft: '3px solid #8b5cf6', gridColumn: '2', gridRow: '2' }}>
-                        <Text size="xs" fw={500}>14:00 - Cliente</Text>
+                    <Box className={classes.mockupBadge} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>95% Match</Box>
+                </Box>
+                <Box className={classes.mockupRow}>
+                    <Box className={classes.mockupAvatar} style={{ background: '#f59e0b' }} />
+                    <Box>
+                        <Text size="sm" fw={500}>Carla Dias</Text>
+                        <Text size="xs" c="dimmed">Designer UX</Text>
                     </Box>
-                    <Box className={classes.calendarEvent} style={{ background: 'rgba(0, 135, 255, 0.2)', borderLeft: '3px solid #0087ff', gridColumn: '4', gridRow: '1' }}>
-                        <Text size="xs" fw={500}>10:00 - Consulta</Text>
+                    <Box className={classes.mockupBadge} style={{ background: 'rgba(0, 135, 255, 0.1)', color: '#0087ff' }}>88% Match</Box>
+                </Box>
+                <Box className={classes.mockupRow}>
+                    <Box className={classes.mockupAvatar} style={{ background: '#ec4899' }} />
+                    <Box>
+                        <Text size="sm" fw={500}>Diego Ramos</Text>
+                        <Text size="xs" c="dimmed">Product Manager</Text>
                     </Box>
-                    <Box className={classes.calendarEvent} style={{ background: 'rgba(245, 158, 11, 0.2)', borderLeft: '3px solid #f59e0b', gridColumn: '5', gridRow: '3' }}>
-                        <Text size="xs" fw={500}>16:00 - Entrega</Text>
-                    </Box>
+                    <Box className={classes.mockupBadge} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>72% Match</Box>
                 </Box>
             </Box>
         ),
         templates: [
-            { icon: <IconClock size={20} />, title: 'Agenda de consultas' },
-            { icon: <IconCheckbox size={20} />, title: 'Reserva de salas' },
-            { icon: <IconFileText size={20} />, title: 'Agendamento online' },
+            { icon: <IconBriefcase size={20} />, title: 'Triagem inteligente com IA' },
+            { icon: <IconChartBar size={20} />, title: 'Match comportamental (DISC)' },
+            { icon: <IconCheckbox size={20} />, title: 'Funil Kanban de candidatos' },
         ],
     },
     {
@@ -156,89 +160,6 @@ const solutions: Solution[] = [
             { icon: <IconSchool size={20} />, title: 'Trilha de aprendizado' },
             { icon: <IconCheckbox size={20} />, title: 'Certificação interna' },
             { icon: <IconChartBar size={20} />, title: 'Relatório de progresso' },
-        ],
-    },
-    {
-        id: 'bolso',
-        tab: 'Finanças',
-        logo: '/logos/sincla-bolso.svg',
-        color: '#10b981',
-        bgColor: '#10b981',
-        headline: 'Controle financeiro descomplicado',
-        description:
-            'Gerencie receitas, despesas e fluxo de caixa com relatórios visuais que facilitam o entendimento da saúde financeira do negócio.',
-        linkText: 'Saiba mais sobre Bolso',
-        mockupTitle: 'Visão Financeira',
-        mockupContent: (
-            <Box className={classes.mockupFinance}>
-                <Group gap="md" mb="md">
-                    <Box className={classes.financeCard} style={{ borderTop: '3px solid #10b981' }}>
-                        <Text size="xs" c="dimmed">Receitas</Text>
-                        <Text size="lg" fw={700} style={{ color: '#10b981' }}>R$ 45.200</Text>
-                    </Box>
-                    <Box className={classes.financeCard} style={{ borderTop: '3px solid #ef4444' }}>
-                        <Text size="xs" c="dimmed">Despesas</Text>
-                        <Text size="lg" fw={700} style={{ color: '#ef4444' }}>R$ 28.100</Text>
-                    </Box>
-                </Group>
-                <Box className={classes.financeChart}>
-                    <Box className={classes.chartBar} style={{ height: '60%', background: '#10b981' }} />
-                    <Box className={classes.chartBar} style={{ height: '80%', background: '#10b981' }} />
-                    <Box className={classes.chartBar} style={{ height: '45%', background: '#10b981' }} />
-                    <Box className={classes.chartBar} style={{ height: '90%', background: '#10b981' }} />
-                    <Box className={classes.chartBar} style={{ height: '70%', background: '#10b981' }} />
-                </Box>
-            </Box>
-        ),
-        templates: [
-            { icon: <IconChartBar size={20} />, title: 'Fluxo de caixa' },
-            { icon: <IconFileText size={20} />, title: 'Contas a pagar/receber' },
-            { icon: <IconCheckbox size={20} />, title: 'Conciliação bancária' },
-        ],
-    },
-    {
-        id: 'leads',
-        tab: 'Vendas & CRM',
-        logo: '/logos/sincla-leads.svg',
-        color: '#DC2626',
-        bgColor: '#DC2626',
-        headline: 'Converta mais leads em clientes',
-        description:
-            'Acompanhe seu funil de vendas, gerencie relacionamentos com clientes e nunca perca uma oportunidade de negócio.',
-        linkText: 'Saiba mais sobre Leads',
-        mockupTitle: 'Funil de Vendas',
-        mockupContent: (
-            <Box className={classes.mockupFunnel}>
-                <Box className={classes.funnelStage}>
-                    <Box className={classes.funnelBar} style={{ width: '100%', background: 'rgba(0, 135, 255, 0.2)' }}>
-                        <Text size="xs" fw={500}>Prospecção</Text>
-                        <Text size="xs" fw={700}>45</Text>
-                    </Box>
-                </Box>
-                <Box className={classes.funnelStage}>
-                    <Box className={classes.funnelBar} style={{ width: '75%', background: 'rgba(139, 92, 246, 0.2)' }}>
-                        <Text size="xs" fw={500}>Qualificação</Text>
-                        <Text size="xs" fw={700}>32</Text>
-                    </Box>
-                </Box>
-                <Box className={classes.funnelStage}>
-                    <Box className={classes.funnelBar} style={{ width: '50%', background: 'rgba(245, 158, 11, 0.2)' }}>
-                        <Text size="xs" fw={500}>Proposta</Text>
-                        <Text size="xs" fw={700}>18</Text>
-                    </Box>
-                </Box>
-                <Box className={classes.funnelStage}>
-                    <Box className={classes.funnelBar} style={{ width: '30%', background: 'rgba(16, 185, 129, 0.2)' }}>
-                        <Text size="xs" fw={500}>Fechamento</Text>
-                        <Text size="xs" fw={700}>8</Text>
-                    </Box>
-                </Box>
-            </Box>
-        ),
-        templates: [
-            { icon: <IconBriefcase size={20} />, title: 'Pipeline de vendas' },
-            { icon: <IconFileText size={20} />, title: 'Gestão de contatos' },
-            { icon: <IconChartBar size={20} />, title: 'Relatório de conversão' },
         ],
     },
 ];

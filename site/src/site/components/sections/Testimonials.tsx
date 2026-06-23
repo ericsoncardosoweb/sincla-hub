@@ -30,13 +30,13 @@ const testimonials: Testimonial[] = [
     {
         id: 'innovatech',
         category: 'EMPRESA',
-        quote: 'O Sincla Bolso transformou nossa gestão financeira. Agora temos visibilidade completa do fluxo de caixa e economizamos R$ 50 mil por ano em consultoria.',
+        quote: 'O Sincla Recrutamento otimizou nossa atração de talentos. A triagem automática com IA e os testes comportamentais integrados reduziram o custo por contratação em 50%.',
         author: 'MARINA COSTA,',
-        role: 'CFO, InnovaTech Ltda',
+        role: 'Head de R&S, InnovaTech Ltda',
         company: 'InnovaTech',
         companyLogo: 'IT',
-        avatarBg: '#f59e0b',
-        decorColors: ['#f59e0b', '#8b5cf6', '#0087ff'],
+        avatarBg: '#8b5cf6',
+        decorColors: ['#8b5cf6', '#0087ff', '#10b981'],
     },
     {
         id: 'digitalcore',
@@ -46,19 +46,8 @@ const testimonials: Testimonial[] = [
         role: 'Head de People & Culture, DigitalCore',
         company: 'DigitalCore',
         companyLogo: 'DC',
-        avatarBg: '#8b5cf6',
-        decorColors: ['#0087ff', '#10b981', '#f59e0b'],
-    },
-    {
-        id: 'globalserv',
-        category: 'GRANDE EMPRESA',
-        quote: 'O Sincla Leads nos ajudou a organizar o funil de vendas e aumentar a conversão em 60%. A integração com os outros módulos é perfeita.',
-        author: 'AMANDA OLIVEIRA,',
-        role: 'Gerente Comercial, GlobalServ',
-        company: 'GlobalServ',
-        companyLogo: 'GS',
-        avatarBg: '#ef4444',
-        decorColors: ['#ef4444', '#f59e0b', '#10b981'],
+        avatarBg: '#FF6600',
+        decorColors: ['#FF6600', '#10b981', '#0087ff'],
     },
 ];
 
@@ -66,7 +55,6 @@ const companyLogos = [
     { name: 'TechSolutions', logo: 'TS' },
     { name: 'InnovaTech', logo: 'IT' },
     { name: 'DigitalCore', logo: 'DC' },
-    { name: 'GlobalServ', logo: 'GS' },
 ];
 
 export function Testimonials() {

@@ -15,21 +15,22 @@ export function Hero({ signupUrl }: HeroProps) {
                     {/* Badge */}
                     <Box className={classes.badge}>
                         <Text size="sm" fw={600}>
-                            Plataforma unificada de gestão
+                            Ecossistema sem atrito para PMEs
                         </Text>
                     </Box>
 
                     {/* Main Headline */}
                     <Title order={1} ta="center" className={classes.mainTitle}>
-                        Tudo que sua empresa precisa
+                        A dor secreta de gerenciar pessoas...
                         <br />
-                        <span className={classes.gradientText}>em um só lugar</span>
+                        <span className={classes.gradientText}>resolvida em um único clique.</span>
                     </Title>
 
                     {/* Subtitle */}
                     <Text className={classes.subtitle}>
-                        RH, Treinamentos, Finanças, CRM e Agendamentos integrados em uma única
-                        plataforma. Simplifique processos, economize tempo e impulsione resultados.
+                        Você realmente precisa de cinco sistemas diferentes e logins duplicados para cuidar da sua equipe? 
+                        O Sincla conecta recrutamento comportamental por IA, treinamentos práticos e a gestão completa de RH em um único cadastro rápido. 
+                        Menos burocracia, mais eficiência.
                     </Text>
 
                     {/* CTAs */}
