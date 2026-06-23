@@ -4,8 +4,6 @@ import {
     IconArrowRight, 
     IconUsers, 
     IconBriefcase, 
-    IconClock,
-    IconCalendar,
     IconBrain,
     IconChartBar,
     IconRocket,
@@ -25,56 +23,56 @@ const PRODUCTS_DATA = {
         title: 'Sincla RH',
         color: '#0066CC',
         bgColor: 'rgba(0, 102, 204, 0.08)',
-        badge: 'Gestão de Pessoas & Operação',
-        headline: 'A paz de espírito de um RH',
-        subheadline: 'que roda no piloto automático',
-        description: 'Esqueça as cobranças manuais de ponto, o caos na planilha de férias e o estresse do fechamento da folha. O Sincla RH automatiza toda a jornada do colaborador em um painel inteligente e centralizado.',
+        badge: 'Gestão de Pessoas Focada em Poucos Cliques',
+        headline: 'Chega de sistemas complexos',
+        subheadline: 'e processos cheios de cliques',
+        description: 'Idealizado por um especialista que viveu na pele a frustração de dezenas de implantações engessadas e parametrizadas, o Sincla RH foi projetado do zero para funcionar com cliques mínimos. Um sistema simples, fluido e prático que se integra de forma invisível no dia a dia da equipe.',
         videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Placeholder de vídeo
         ctaText: 'Começar com Sincla RH',
         signupUrl: 'https://app.sincla.com.br/cadastro?module=rh',
         benefits: [
             {
-                icon: IconClock,
-                title: 'Controle de Ponto Eletrônico',
-                description: 'Marcação fácil por aplicativo com reconhecimento facial, geolocalização e relatórios prontos para a folha.'
-            },
-            {
-                icon: IconCalendar,
-                title: 'Gestão de Férias e Ausências',
-                description: 'Colaboradores solicitam folgas de forma digital e você aprova em segundos, sem trocas de e-mails confusas.'
-            },
-            {
                 icon: IconUsers,
-                title: 'Onboarding 100% Digital',
-                description: 'Colete documentos, envie termos contratuais e integre o novo funcionário sem imprimir um único papel.'
+                title: 'Gestão, Feedbacks e Advertências',
+                description: 'Gerencie colaboradores de forma descomplicada, registre feedbacks contínuos e emita advertências rápidas sem sair da mesma tela.'
+            },
+            {
+                icon: IconAward,
+                title: 'Avaliações e PDIs Simplificados',
+                description: 'Rode Ciclos de Avaliação de Desempenho 360°, Onboarding e Offboarding em minutos, desaguando em PDIs dinâmicos e focados no crescimento.'
+            },
+            {
+                icon: IconRocket,
+                title: 'Metas e Plano de Carreira',
+                description: 'Organize as metas de cada equipe e construa planos de carreira flexíveis e transparentes que mantêm todo mundo engajado.'
             }
         ],
         integrationTitle: 'Integração Nativa com o Ecossistema',
-        integrationDesc: 'O Sincla RH não vive isolado. Ele conversa em tempo real com as outras pontas da sua operação:',
+        integrationDesc: 'O Sincla RH conversa em tempo real com as outras pontas da sua operação:',
         integrationPoints: [
             {
                 icon: IconBriefcase,
-                title: 'Admissão em 1 clique com Recrutamento',
+                title: 'Admissão Automática com Recrutamento',
                 description: 'Assim que o candidato ideal é aprovado no Sincla Recrutamento, a ficha dele é migrada ao RH automaticamente. Zero digitação.'
             },
             {
                 icon: IconSchool,
                 title: 'Trilhas de Onboarding com EAD',
-                description: 'A ativação do novo funcionário dispara a inscrição automática dele nas trilhas de treinamento obrigatórias no Sincla EAD.'
+                description: 'A admissão do novo funcionário realiza a matrícula automática dele nas trilhas de treinamento do Sincla EAD.'
             }
         ],
         faqs: [
             {
-                question: 'O ponto do Sincla RH está adequado à legislação?',
-                answer: 'Sim, nossa plataforma atende integralmente à portaria 671 do Ministério do Trabalho e Emprego, com relatórios exportáveis e assinaturas digitais seguras.'
+                question: 'Quem idealizou o Sincla RH?',
+                answer: 'O sistema foi criado por um especialista em gestão de pessoas que, após implantar dezenas de sistemas pesados e parametrizados no mercado, percebeu que o RH precisava de simplicidade. Ele desenhou um sistema focado em cliques mínimos, onde cada ação é concluída rapidamente e sem burocracia.'
             },
             {
-                question: 'Posso usar o sistema para empresas de qualquer tamanho?',
-                answer: 'Perfeitamente. O Sincla RH atende desde PMEs com 5 funcionários até grandes equipes em crescimento acelerado.'
+                question: 'Quais módulos estão inclusos no Sincla RH?',
+                answer: 'A plataforma conta com exatamente 9 módulos integrados: Gestão de Colaboradores, Avaliação de Desempenho, Avaliação de Onboarding e Offboarding, Feedback, Advertência, Pesquisa, PDI (Plano de Desenvolvimento Individual), Meta e Plano de Carreira.'
             },
             {
-                question: 'Os colaboradores precisam baixar aplicativos pesados?',
-                answer: 'Não. Nosso aplicativo web é extremamente leve, responsivo para qualquer smartphone e pode ser utilizado direto pelo navegador.'
+                question: 'Como é o suporte ao usuário e evolução do sistema?',
+                answer: 'A evolução e melhoria do sistema é constante, contando com suporte humanizado e próximo para atender desde um departamento de RH que está iniciando seus processos até estruturas corporativas robustas.'
             }
         ]
     },
@@ -83,28 +81,28 @@ const PRODUCTS_DATA = {
         title: 'Sincla Recrutamento',
         color: '#8B5CF6',
         bgColor: 'rgba(139, 92, 246, 0.08)',
-        badge: 'Atração de Talentos & ATS',
-        headline: 'Contrate a pessoa certa,',
-        subheadline: 'sem palpites ou arrependimentos',
-        description: 'Pare de desperdiçar horas analisando currículos frios que não se alinham à sua cultura. Publique suas vagas nos maiores portais e use IA combinada ao Profiler DISC para identificar talentos perfeitos.',
+        badge: 'Recrutamento & Seleção Inteligente com IA',
+        headline: 'Tudo é customizável.',
+        subheadline: 'Nada é engessado.',
+        description: 'Um sistema de recrutamento e seleção turbinado com inteligência artificial para agilizar seus processos seletivos e automatizar ações de ponta a ponta. Moldado para se adaptar perfeitamente ao fluxo exclusivo do seu negócio.',
         videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         ctaText: 'Começar com Recrutamento',
         signupUrl: 'https://app.sincla.com.br/cadastro?module=recrutamento',
         benefits: [
             {
+                icon: IconRocket,
+                title: 'Processos Turbinados com IA',
+                description: 'Nossa Inteligência Artificial agiliza a triagem inicial e automatiza ações cruciais, como o envio de feedbacks personalizados aos candidatos.'
+            },
+            {
                 icon: IconBrain,
-                title: 'Profiler Comportamental DISC',
-                description: 'Mapeie o perfil de comportamento de cada candidato antes da entrevista para garantir sinergia absoluta com o time.'
+                title: 'Mapeamento Profiler DISC',
+                description: 'Mapeie o comportamento e as competências dos candidatos nativamente no fluxo de inscrição, garantindo precisão técnica e cultural.'
             },
             {
                 icon: IconChartBar,
-                title: 'Funil Kanban Interativo',
-                description: 'Gerencie o andamento de todos os candidatos de forma visual e intuitiva, mudando etapas em um clique.'
-            },
-            {
-                icon: IconRocket,
-                title: 'Triagem Automática por IA',
-                description: 'Nossa inteligência artificial analisa e classifica os currículos de acordo com os requisitos exigidos pela sua vaga.'
+                title: 'Funil 100% Customizável',
+                description: 'Defina suas próprias etapas, avaliações e filtros. O Sincla se molda ao seu método de contratação, sem impor regras rígidas.'
             }
         ],
         integrationTitle: 'Como o Recrutamento fecha o ciclo',
@@ -123,16 +121,16 @@ const PRODUCTS_DATA = {
         ],
         faqs: [
             {
-                question: 'O que é o Profiler DISC?',
-                answer: 'É uma metodologia cientificamente validada que mapeia quatro fatores de perfil comportamental: Dominância, Influência, Estabilidade e Conformidade. Isso reduz em até 80% o turnover (rotatividade de equipe).'
+                question: 'O processo seletivo é engessado?',
+                answer: 'Não! No Sincla Recrutamento tudo é customizável e nada é engessado. Você tem liberdade total para desenhar as etapas do funil Kanban, os questionários e os pesos das avaliações de acordo com a sua cultura.'
             },
             {
-                question: 'Consigo divulgar minhas vagas em outros portais?',
-                answer: 'Sim, o Sincla Recrutamento permite integração com os principais agregadores de vagas e redes de talentos do mercado nacional.'
+                question: 'Como a Inteligência Artificial agiliza a seleção?',
+                answer: 'A IA otimiza a triagem inicial mapeando a compatibilidade dos candidatos e automatiza a comunicação do processo (como e-mails de feedback e agendamentos), economizando centenas de horas de trabalho manual.'
             },
             {
-                question: 'Como funciona a triagem por Inteligência Artificial?',
-                answer: 'Nossa inteligência artificial analisa a coerência das experiências do candidato com os pré-requisitos definidos para a vaga, atribuindo uma nota de compatibilidade instantânea.'
+                question: 'O mapeamento comportamental Profiler DISC está integrado?',
+                answer: 'Sim! O Profiler DISC é um recurso nativo do sistema. O candidato preenche o mapeamento de forma fluida e você recebe o relatório de perfil comportamental instantâneo na ficha do candidato.'
             }
         ]
     },
@@ -144,25 +142,25 @@ const PRODUCTS_DATA = {
         badge: 'Treinamento & Universidade Corporativa',
         headline: 'Capacite toda a sua equipe,',
         subheadline: 'sem repetir o mesmo treinamento',
-        description: 'Chega de gastar horas de gestores integrando novos colaboradores de forma manual. Crie trilhas de aprendizado interativas, avalie o progresso e emita certificados automáticos.',
+        description: 'Livre-se do retrabalho e da lentidão de treinar novos colaboradores de forma manual. Crie universidade corporativa ágil, monte trilhas de desenvolvimento e emita certificados automatizados.',
         videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         ctaText: 'Começar com Sincla EAD',
         signupUrl: 'https://app.sincla.com.br/cadastro?module=ead',
         benefits: [
             {
                 icon: IconSchool,
-                title: 'Universidade Corporativa ágil',
-                description: 'Hospede vídeos, envie materiais complementares em PDF e estruture provas de fixação de forma extremamente fácil.'
+                title: 'Treinamento Descomplicado',
+                description: 'Suba vídeos, insira materiais de apoio em PDF e crie avaliações de fixação de forma simples e direta.'
             },
             {
                 icon: IconAward,
-                title: 'Certificados Automatizados',
-                description: 'Ao finalizar a trilha de aulas e obter a nota necessária, o colaborador recebe o certificado digital instantâneo.'
+                title: 'Certificações que Rodam Sozinhas',
+                description: 'Assim que o colaborador atinge a pontuação necessária, o certificado de conclusão digital é emitido automaticamente.'
             },
             {
                 icon: IconShieldLock,
                 title: 'Trilhas por Cargo ou Equipe',
-                description: 'Configure jornadas de treinamento específicas para o time de Vendas, Suporte ou Técnico, organizando o conhecimento.'
+                description: 'Organize jornadas de aprendizado específicas para cada área do seu negócio, controlando acessos de forma automática.'
             }
         ],
         integrationTitle: 'A força da unificação com EAD',
@@ -181,16 +179,16 @@ const PRODUCTS_DATA = {
         ],
         faqs: [
             {
-                question: 'Quantos alunos posso ter na plataforma?',
-                answer: 'Os pacotes se adaptam ao tamanho da sua equipe. Oferecemos opções desde pequenas equipes até universidades corporativas de larga escala.'
+                question: 'Como funciona a integração com o RH?',
+                answer: 'A integração é total. Quando você admite um colaborador no Sincla RH, o sistema sincroniza os dados e realiza a matrícula dele na trilha correspondente de integração automaticamente, sem intervenção humana.'
             },
             {
-                question: 'Posso usar a plataforma para vender cursos online?',
-                answer: 'Sim, o Sincla EAD também está preparado para infoprodutores que desejam monetizar seu conhecimento com área de membros e controle de acessos.'
+                question: 'Posso usar a plataforma para comercializar cursos?',
+                answer: 'Sim! O Sincla EAD possui suporte tanto para universidade corporativa interna (treinamento de equipes) quanto para venda de infoprodutos com controle de acesso e segurança de conteúdo.'
             },
             {
-                question: 'A plataforma aceita quais formatos de mídia?',
-                answer: 'Você pode subir vídeos diretos, links do Vimeo/YouTube, documentos em PDF, arquivos de slides e montar provas com questionários de múltipla escolha.'
+                question: 'Quais formatos de arquivos posso subir na plataforma?',
+                answer: 'A plataforma suporta vídeos diretos ou via links do Vimeo/YouTube, documentos em PDF, arquivos de apresentação de slides, links externos e questionários dinâmicos de múltipla escolha.'
             }
         ]
     }

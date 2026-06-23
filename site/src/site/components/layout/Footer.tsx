@@ -8,9 +8,9 @@ const institutionalDesc = 'Ecossistema completo de gestão de pessoas, recrutame
 
 // Links de produtos
 const produtosLinks = [
-    { label: 'Sincla RH', href: '/#rh' },
-    { label: 'Sincla Recrutamento', href: '/#recrutamento' },
-    { label: 'Sincla EAD', href: '/#ead' },
+    { label: 'Sincla RH', to: '/rh' },
+    { label: 'Sincla Recrutamento', to: '/recrutamento' },
+    { label: 'Sincla EAD', to: '/ead' },
 ];
 
 // Links do rodapé inferior (legal)
@@ -55,7 +55,7 @@ export function Footer() {
                         <Text className={classes.columnTitle}>PRODUTOS</Text>
                         <Stack gap="xs">
                             {produtosLinks.map((link) => (
-                                <Anchor key={link.label} href={link.href} className={classes.link}>
+                                <Anchor key={link.label} component={Link} to={link.to} className={classes.link}>
                                     {link.label}
                                 </Anchor>
                             ))}

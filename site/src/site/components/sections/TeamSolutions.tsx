@@ -36,9 +36,9 @@ const solutions: Solution[] = [
         logo: '/logos/sincla-rh.svg',
         color: '#0066CC',
         bgColor: '#0066CC',
-        headline: 'Simplifique a gestão da sua equipe',
+        headline: 'Gestão de pessoas simples, intuitiva e sem complicação',
         description:
-            'Centralize informações de colaboradores, automatize processos de RH e acompanhe métricas importantes para tomada de decisão estratégica.',
+            'Idealizado por um especialista que viveu na pele as dificuldades de implantações tradicionais engessadas, o Sincla RH foi criado para funcionar com poucos cliques, tornando as rotinas do RH parte natural do dia a dia da equipe.',
         linkText: 'Saiba mais sobre RH',
         mockupTitle: 'Painel de Colaboradores',
         mockupContent: (
@@ -70,9 +70,9 @@ const solutions: Solution[] = [
             </Box>
         ),
         templates: [
-            { icon: <IconFileText size={20} />, title: 'Onboarding de funcionários' },
-            { icon: <IconChartBar size={20} />, title: 'Avaliação de desempenho' },
-            { icon: <IconCheckbox size={20} />, title: 'Controle de ponto' },
+            { icon: <IconFileText size={20} />, title: 'Avaliações de Desempenho & Clima' },
+            { icon: <IconChartBar size={20} />, title: 'Planos de Desenvolvimento (PDI)' },
+            { icon: <IconCheckbox size={20} />, title: 'Feedbacks & Plano de Carreira' },
         ],
     },
     {
@@ -81,9 +81,9 @@ const solutions: Solution[] = [
         logo: '/logos/sincla-recrutamento.svg',
         color: '#8B5CF6',
         bgColor: '#8B5CF6',
-        headline: 'Atraia e selecione os melhores talentos',
+        headline: 'Tudo é customizável. Nada é engessado.',
         description:
-            'Divulgue suas vagas nos principais portais de emprego, gerencie candidatos em um funil Kanban interativo e trie talentos de forma automatizada com inteligência artificial.',
+            'Uma tecnologia de Recrutamento & Seleção turbinada com inteligência artificial para agilizar os seus processos e automatizar a triagem e comunicação de feedbacks de ponta a ponta.',
         linkText: 'Saiba mais sobre Recrutamento',
         mockupTitle: 'Vagas & Candidatos em Destaque',
         mockupContent: (
@@ -116,8 +116,8 @@ const solutions: Solution[] = [
         ),
         templates: [
             { icon: <IconBriefcase size={20} />, title: 'Triagem inteligente com IA' },
-            { icon: <IconChartBar size={20} />, title: 'Match comportamental (DISC)' },
-            { icon: <IconCheckbox size={20} />, title: 'Funil Kanban de candidatos' },
+            { icon: <IconChartBar size={20} />, title: 'Match comportamental (Profiler DISC)' },
+            { icon: <IconCheckbox size={20} />, title: 'Funil Kanban 100% customizável' },
         ],
     },
     {
@@ -126,9 +126,9 @@ const solutions: Solution[] = [
         logo: '/logos/sincla-ead.svg',
         color: '#FF6600',
         bgColor: '#FF6600',
-        headline: 'Capacite sua equipe de forma escalável',
+        headline: 'Capacite sua equipe de forma escalável e automática',
         description:
-            'Crie cursos, acompanhe o progresso dos alunos e certifique colaboradores com uma plataforma completa de ensino a distância.',
+            'Crie cursos, monte trilhas de desenvolvimento e emita certificados integrados de forma direta ao prontuário do colaborador no RH, sem retrabalho.',
         linkText: 'Saiba mais sobre EAD',
         mockupTitle: 'Progresso dos Cursos',
         mockupContent: (
