@@ -130,7 +130,7 @@ function ProductSection({ product, index, signupUrl }: { product: typeof showcas
                                     }}
                                 />
                             </Box>
-                            <Text fw={600} size="lg" c="dark">
+                            <Text fw={600} size="lg" c="white">
                                 {product.name}
                             </Text>
                         </Group>
@@ -164,9 +164,10 @@ function ProductSection({ product, index, signupUrl }: { product: typeof showcas
                                 to={`/${product.id}`}
                                 size="md"
                                 variant="subtle"
-                                color="dark"
+                                color="gray"
                                 rightSection={<IconArrowRight size={16} />}
                                 className={classes.ctaSecondary}
+                                style={{ color: 'rgba(255, 255, 255, 0.85)' }}
                             >
                                 {product.exploreText}
                             </Button>
@@ -179,8 +180,8 @@ function ProductSection({ product, index, signupUrl }: { product: typeof showcas
                                     {product.testimonial.logo}
                                 </Box>
                                 <Box flex={1}>
-                                    <Text size="sm" className={classes.testimonialText}>
-                                        <strong>{product.testimonial.company}</strong> {product.testimonial.text}{' '}
+                                    <Text size="sm" className={classes.testimonialText} c="rgba(255, 255, 255, 0.7)">
+                                        <strong style={{ color: '#ffffff' }}>{product.testimonial.company}</strong> {product.testimonial.text}{' '}
                                         <a href="#" className={classes.testimonialLink} style={{ color: product.color }}>
                                             {product.testimonial.link}
                                         </a>
@@ -225,7 +226,7 @@ function ProductSection({ product, index, signupUrl }: { product: typeof showcas
                                         <span className={classes.windowDot} style={{ background: '#ffbd2e' }} />
                                         <span className={classes.windowDot} style={{ background: '#28c840' }} />
                                     </Group>
-                                    <Text size="xs" c="dimmed" ml="md">{product.name}</Text>
+                                    <Text size="xs" c="rgba(255, 255, 255, 0.55)" ml="md">{product.name}</Text>
                                 </Box>
 
                                 {/* Mockup Content Placeholder */}
@@ -253,10 +254,10 @@ function ProductSection({ product, index, signupUrl }: { product: typeof showcas
                                             }}
                                         />
                                     </Box>
-                                    <Text size="lg" fw={600} mt="md" c="dark.7">
+                                    <Text size="lg" fw={600} mt="md" c="white">
                                         {product.name}
                                     </Text>
-                                    <Text size="sm" c="dimmed" ta="center" maw={200}>
+                                    <Text size="sm" c="rgba(255, 255, 255, 0.5)" ta="center" maw={200}>
                                         Interface de demonstração
                                     </Text>
                                 </Box>
