@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
     Container, Title, Text, Card, Group, Stack,
-    TextInput, Textarea, Button, Table, Badge, Switch,
+    TextInput, Button, Table, Badge, Switch,
     Modal, ActionIcon, Tooltip, CopyButton,
-    SimpleGrid, Paper,
+    SimpleGrid, Paper, Input,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
@@ -11,6 +11,13 @@ import {
     IconFileText, IconPlus, IconEdit, IconTrash,
     IconEye, IconVariable, IconCopy, IconCheck,
 } from '@tabler/icons-react';
+import { RichTextEditor } from '@mantine/tiptap';
+import { useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import TLink from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import TextAlign from '@tiptap/extension-text-align';
 import { supabase } from '../../shared/lib/supabase';
 
 // ============================
@@ -69,6 +76,17 @@ export function AdminLegalPages() {
         },
     });
 
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            Underline,
+            TLink.configure({ openOnClick: false }),
+            Placeholder.configure({ placeholder: 'Escreva o conteúdo do documento... Use as variáveis {{...}} para dados da empresa.' }),
+            TextAlign.configure({ types: ['heading', 'paragraph'] }),
+        ],
+        content: '',
+    });
+
     // ============================
     // Load data
     // ============================
@@ -124,6 +142,7 @@ export function AdminLegalPages() {
     const handleOpenCreate = () => {
         setEditingPage(null);
         form.reset();
+        editor?.commands.setContent('');
         setModalOpened(true);
     };
 
@@ -135,10 +154,20 @@ export function AdminLegalPages() {
             content: page.content,
             is_published: page.is_published,
         });
+        editor?.commands.setContent(page.content || '');
         setModalOpened(true);
     };
 
     const handleSave = async (values: typeof form.values) => {
+        const content = editor?.getHTML() || '';
+        if (!content || content === '<p></p>') {
+            notifications.show({
+                title: 'Conteúdo obrigatório',
+                message: 'Escreva o conteúdo do documento antes de salvar.',
+                color: 'red',
+            });
+            return;
+        }
         setSaving(true);
         try {
             if (editingPage) {
@@ -148,7 +177,7 @@ export function AdminLegalPages() {
                     .update({
                         title: values.title,
                         slug: values.slug,
-                        content: values.content,
+                        content,
                         is_published: values.is_published,
                         version: editingPage.version + 1,
                         updated_at: new Date().toISOString(),
@@ -170,7 +199,7 @@ export function AdminLegalPages() {
                     .insert({
                         title: values.title,
                         slug: values.slug,
-                        content: values.content,
+                        content,
                         is_published: values.is_published,
                     });
 
@@ -247,8 +276,7 @@ export function AdminLegalPages() {
     };
 
     const insertVariable = (variable: string) => {
-        const currentContent = form.values.content;
-        form.setFieldValue('content', currentContent + variable);
+        editor?.chain().focus().insertContent(variable).run();
     };
 
     const handlePreview = async (page: LegalPage) => {
@@ -488,14 +516,35 @@ export function AdminLegalPages() {
                             </Group>
                         </div>
 
-                        <Textarea
-                            label="Conteúdo (HTML)"
-                            placeholder="<h1>Título</h1><p>Conteúdo...</p>"
-                            description="Use HTML para formatar o documento. As variáveis {{...}} serão substituídas automaticamente."
-                            minRows={15}
-                            autosize
-                            {...form.getInputProps('content')}
-                        />
+                        <Input.Wrapper
+                            label="Conteúdo do documento"
+                            description="Formate com a barra de ferramentas. As variáveis {{...}} serão substituídas automaticamente pelos dados da empresa."
+                        >
+                            <RichTextEditor editor={editor} mt={6}>
+                                <RichTextEditor.Toolbar sticky stickyOffset={60}>
+                                    <RichTextEditor.ControlsGroup>
+                                        <RichTextEditor.Bold />
+                                        <RichTextEditor.Italic />
+                                        <RichTextEditor.Underline />
+                                        <RichTextEditor.Strikethrough />
+                                    </RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.ControlsGroup>
+                                        <RichTextEditor.H1 />
+                                        <RichTextEditor.H2 />
+                                        <RichTextEditor.H3 />
+                                    </RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.ControlsGroup>
+                                        <RichTextEditor.BulletList />
+                                        <RichTextEditor.OrderedList />
+                                    </RichTextEditor.ControlsGroup>
+                                    <RichTextEditor.ControlsGroup>
+                                        <RichTextEditor.Link />
+                                        <RichTextEditor.Unlink />
+                                    </RichTextEditor.ControlsGroup>
+                                </RichTextEditor.Toolbar>
+                                <RichTextEditor.Content style={{ minHeight: 320 }} />
+                            </RichTextEditor>
+                        </Input.Wrapper>
 
                         <Switch
                             label="Publicado"

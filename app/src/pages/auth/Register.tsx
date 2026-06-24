@@ -27,6 +27,7 @@ import {
     IconArrowLeft,
 } from '@tabler/icons-react';
 import { SignatureVisual } from '../../components/signature-visual';
+import { LegalDocModal } from '../../components/legal/LegalDocModal';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import classes from './Auth.module.css';
@@ -108,6 +109,7 @@ export function Register() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [legalSlug, setLegalSlug] = useState<string | null>(null);
 
     // Captura código de afiliado e email de convite da URL
     useEffect(() => {
@@ -318,11 +320,27 @@ export function Register() {
                                 label={
                                     <Text size="sm">
                                         Eu aceito os{' '}
-                                        <Anchor href="#" className={classes.link}>
+                                        <Anchor
+                                            component="button"
+                                            type="button"
+                                            className={classes.link}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setLegalSlug('termos-de-uso');
+                                            }}
+                                        >
                                             Termos de Uso
                                         </Anchor>{' '}
                                         e a{' '}
-                                        <Anchor href="#" className={classes.link}>
+                                        <Anchor
+                                            component="button"
+                                            type="button"
+                                            className={classes.link}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setLegalSlug('politica-privacidade');
+                                            }}
+                                        >
                                             Política de Privacidade
                                         </Anchor>
                                     </Text>
@@ -375,6 +393,13 @@ export function Register() {
                     </Text>
                 </Paper>
             </Container>
+
+            <LegalDocModal
+                opened={legalSlug !== null}
+                onClose={() => setLegalSlug(null)}
+                slug={legalSlug || ''}
+                onAccept={() => setAcceptTerms(true)}
+            />
         </div>
     );
 }

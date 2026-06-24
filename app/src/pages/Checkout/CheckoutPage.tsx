@@ -29,6 +29,7 @@ import {
     type CardBrand,
 } from '../../shared/services/asaasService';
 import { getAddressByCep, formatCep } from '../../shared/services/viaCepService';
+import { LegalDocModal } from '../../components/legal/LegalDocModal';
 import styles from './CheckoutPage.module.css';
 
 interface PlanInfo {
@@ -144,6 +145,7 @@ export function CheckoutPage() {
     const [selectedCycle, setSelectedCycle] = useState(initialCycle);
     const [paymentMethod, setPaymentMethod] = useState<'CREDIT_CARD' | 'PIX'>('CREDIT_CARD');
     const [loading, setLoading] = useState(false);
+    const [showTerms, setShowTerms] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
@@ -855,12 +857,27 @@ export function CheckoutPage() {
                             </button>
 
                             <p className={styles.termsText}>
-                                Ao continuar, você concorda com os <a href="/termos" target="_blank">Termos de Serviço</a>
+                                Ao continuar, você concorda com os{' '}
+                                <a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setShowTerms(true);
+                                    }}
+                                >
+                                    Termos de Uso
+                                </a>
                             </p>
                         </>
                     )}
                 </div>
             </div>
+
+            <LegalDocModal
+                opened={showTerms}
+                onClose={() => setShowTerms(false)}
+                slug="termos-de-uso"
+            />
         </div>
     );
 }

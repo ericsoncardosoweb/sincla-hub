@@ -1,0 +1,85 @@
+.modalContent {
+    background: #ffffff;
+}
+
+.modalHeader {
+    background: #ffffff;
+    border-bottom: 1px solid #ececf1;
+    padding-bottom: 14px;
+}
+
+.modalBody {
+    padding-top: 8px;
+}
+
+.titleIcon {
+    color: #0087ff;
+}
+
+.scroll {
+    padding-right: 4px;
+}
+
+.footer {
+    border-top: 1px solid #ececf1;
+    padding-top: 16px;
+}
+
+/* ===== Legal document typography ===== */
+.legalContent {
+    color: #475067;
+    line-height: 1.75;
+    font-size: 0.95rem;
+}
+
+.legalContent h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 0.75rem;
+    color: #11151f;
+}
+
+.legalContent h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 1.75rem 0 0.5rem;
+    color: #11151f;
+}
+
+.legalContent h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.4rem;
+    color: #11151f;
+}
+
+.legalContent p {
+    margin: 0 0 0.85rem;
+}
+
+.legalContent ul,
+.legalContent ol {
+    padding-left: 1.4rem;
+    margin: 0 0 0.85rem;
+}
+
+.legalContent li {
+    margin-bottom: 0.4rem;
+}
+
+.legalContent a {
+    color: #0087ff;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.legalContent a:hover {
+    opacity: 0.8;
+}
+
+.legalContent strong {
+    color: #11151f;
+    font-weight: 700;
+}
