@@ -12,8 +12,9 @@ import {
     Card, Text, Group, Stack, SimpleGrid, Progress, Badge,
     ThemeIcon, Skeleton, Button, Modal, Slider, Divider,
     Table, SegmentedControl, Alert, Box, Paper,
-    Tabs,
+    Tabs, Switch, Select, Loader,
 } from '@mantine/core';
+import { notifications as mantineNotifications } from '@mantine/notifications';
 import {
     IconBrain, IconCloud, IconMail, IconBrandWhatsapp,
     IconBell, IconShoppingCart, IconSparkles, IconRefresh,
@@ -44,6 +45,8 @@ interface StorageQuota {
     stream_files_count: number;
     storage_by_tool: Record<string, number>;
     stream_by_tool: Record<string, number>;
+    auto_expand: boolean;
+    auto_expand_cap_bytes: number;
 }
 
 interface UsageLog {
@@ -126,8 +129,36 @@ export function ConsumptionDashboard({ companyId }: Props) {
     const [buyQuantity, setBuyQuantity] = useState(1); // Para não-IA
 
     const [storageModalOpen, setStorageModalOpen] = useState(false);
-    const [storageGb, setStorageGb] = useState(5);
+    const [storagePackGb, setStoragePackGb] = useState(10);
     const [storageType, setStorageType] = useState<'storage' | 'stream'>('storage');
+
+    // Auto-expansão
+    const [autoExpandSaving, setAutoExpandSaving] = useState(false);
+
+    const saveAutoExpand = async (enabled: boolean, capGb: number) => {
+        if (!storage) return;
+        setAutoExpandSaving(true);
+        const prev = { auto_expand: storage.auto_expand, auto_expand_cap_bytes: storage.auto_expand_cap_bytes };
+        setStorage({ ...storage, auto_expand: enabled, auto_expand_cap_bytes: capGb * 1073741824 });
+        try {
+            const { error } = await supabase.rpc('set_storage_auto_expand', {
+                p_company_id: companyId, p_enabled: enabled, p_cap_gb: capGb,
+            });
+            if (error) throw error;
+            mantineNotifications.show({
+                color: 'teal',
+                title: enabled ? 'Auto-expansão ativada' : 'Auto-expansão desativada',
+                message: enabled
+                    ? `Ao esgotar, ampliamos automaticamente até +${capGb} GB/mês e cobramos no cartão da assinatura.`
+                    : 'Os uploads que excederem a cota voltarão a ser bloqueados.',
+            });
+        } catch (err: any) {
+            setStorage({ ...storage, ...prev });
+            mantineNotifications.show({ color: 'red', title: 'Não foi possível salvar', message: err?.message || 'Tente novamente.' });
+        } finally {
+            setAutoExpandSaving(false);
+        }
+    };
 
     // Histórico
     const [historyFilter, setHistoryFilter] = useState('all');
@@ -427,6 +458,49 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                 )}
                             </Paper>
                         </SimpleGrid>
+
+                        {/* Auto-expansão */}
+                        <Paper withBorder radius="md" p="md" mt="md" bg="var(--mantine-color-gray-0)">
+                            <Group justify="space-between" align="flex-start" wrap="nowrap">
+                                <Group gap="sm" align="flex-start" wrap="nowrap">
+                                    <ThemeIcon size="sm" variant="light" color="indigo" mt={2}><IconRefresh size={14} /></ThemeIcon>
+                                    <div>
+                                        <Group gap={6}>
+                                            <Text size="sm" fw={600}>Expandir automaticamente</Text>
+                                            {autoExpandSaving && <Loader size={12} />}
+                                        </Group>
+                                        <Text size="xs" c="dimmed" maw={460}>
+                                            Ao esgotar o espaço de vídeo, ampliamos sozinhos (menor pacote que cobrir) e cobramos no
+                                            cartão da assinatura. Sem cartão salvo ou se a cobrança falhar, o upload é bloqueado.
+                                        </Text>
+                                    </div>
+                                </Group>
+                                <Switch
+                                    checked={!!storage.auto_expand}
+                                    disabled={autoExpandSaving}
+                                    onChange={(e) => saveAutoExpand(e.currentTarget.checked, Math.round((storage.auto_expand_cap_bytes || 214748364800) / 1073741824) || 200)}
+                                />
+                            </Group>
+                            {storage.auto_expand && (
+                                <Group gap="sm" mt="sm" align="center">
+                                    <Text size="xs" c="dimmed">Teto automático por mês:</Text>
+                                    <Select
+                                        size="xs"
+                                        w={130}
+                                        allowDeselect={false}
+                                        disabled={autoExpandSaving}
+                                        value={String(Math.round((storage.auto_expand_cap_bytes || 214748364800) / 1073741824) || 200)}
+                                        onChange={(v) => v && saveAutoExpand(true, Number(v))}
+                                        data={[
+                                            { value: '50', label: 'até +50 GB' },
+                                            { value: '100', label: 'até +100 GB' },
+                                            { value: '200', label: 'até +200 GB' },
+                                        ]}
+                                    />
+                                    <Text size="xs" c="dimmed">Acima do teto, pedimos confirmação.</Text>
+                                </Group>
+                            )}
+                        </Paper>
                     </Box>
                 </Card>
             )}
@@ -659,38 +733,66 @@ export function ConsumptionDashboard({ companyId }: Props) {
                         </Card>
                     )}
 
-                    <div>
-                        <Text size="sm" fw={500} mb={4}>Adicionar: <strong>{storageGb} GB</strong></Text>
-                        <Slider value={storageGb} onChange={setStorageGb} min={1} max={100} step={1} color="teal"
-                            marks={[{ value: 1, label: '1 GB' }, { value: 10, label: '10' }, { value: 25, label: '25' }, { value: 50, label: '50' }, { value: 100, label: '100' }]}
-                        />
-                    </div>
+                    {(() => {
+                        const packs = pricing
+                            .filter(p => p.service_type === 'storage' && p.unit_amount >= 10 * 1073741824)
+                            .sort((a, b) => a.unit_amount - b.unit_amount);
+                        if (packs.length === 0) {
+                            return <Alert variant="light" color="gray" p="xs"><Text size="xs">Pacotes indisponíveis no momento.</Text></Alert>;
+                        }
+                        const selected = packs.find(p => Math.round(p.unit_amount / 1073741824) === storagePackGb) || packs[0];
+                        const selectedGb = Math.round(selected.unit_amount / 1073741824);
+                        const perGb = selected.price_brl / selectedGb;
+                        return (
+                            <>
+                                <SimpleGrid cols={packs.length >= 3 ? 3 : packs.length} spacing="sm">
+                                    {packs.map(p => {
+                                        const gb = Math.round(p.unit_amount / 1073741824);
+                                        const active = gb === selectedGb;
+                                        return (
+                                            <Card key={p.unit_amount} withBorder radius="md" p="sm"
+                                                onClick={() => setStoragePackGb(gb)}
+                                                style={{
+                                                    cursor: 'pointer', textAlign: 'center',
+                                                    borderColor: active ? 'var(--mantine-color-teal-6)' : undefined,
+                                                    borderWidth: active ? 2 : 1,
+                                                    background: active ? 'var(--mantine-color-teal-0)' : undefined,
+                                                }}>
+                                                <Text fw={800} size="lg" c={active ? 'teal' : undefined}>+{gb} GB</Text>
+                                                <Text size="sm" fw={600}>{fmt(p.price_brl)}/mês</Text>
+                                                <Text size="xs" c="dimmed">{fmt(p.price_brl / gb)}/GB</Text>
+                                            </Card>
+                                        );
+                                    })}
+                                </SimpleGrid>
 
-                    <Card withBorder radius="md" p="sm">
-                        <Group justify="space-between">
-                            <div>
-                                <Text size="xs" c="dimmed">Preço por GB/{storageType === 'stream' ? 'Stream' : 'CDN'}</Text>
-                                <Text size="sm" fw={500}>{fmt(storageType === 'stream' ? 2.50 : 0.50)}/mês</Text>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <Text size="xs" c="dimmed">Acréscimo mensal</Text>
-                                <Text size="lg" fw={800} c="teal">
-                                    +{fmt(storageGb * (storageType === 'stream' ? 2.50 : 0.50))}/mês
+                                <Card withBorder radius="md" p="sm" bg="var(--mantine-color-teal-0)">
+                                    <Group justify="space-between">
+                                        <div>
+                                            <Text size="xs" c="dimmed">Pacote selecionado ({storageType === 'stream' ? 'Vídeos' : 'Arquivos'})</Text>
+                                            <Text size="sm" fw={500}>+{selectedGb} GB · {fmt(perGb)}/GB</Text>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <Text size="xs" c="dimmed">Acréscimo mensal</Text>
+                                            <Text size="lg" fw={800} c="teal">+{fmt(selected.price_brl)}/mês</Text>
+                                        </div>
+                                    </Group>
+                                </Card>
+
+                                <Button fullWidth size="md" color="teal" leftSection={<IconDatabase size={18} />}
+                                    onClick={() => {
+                                        setStorageModalOpen(false);
+                                        navigate(`/checkout?tipo=storage&subtipo=${storageType}&gb=${selectedGb}&ciclo=recorrente&valor=${selected.price_brl.toFixed(2)}`);
+                                    }}>
+                                    Adicionar +{selectedGb} GB por +{fmt(selected.price_brl)}/mês
+                                </Button>
+
+                                <Text size="xs" c="dimmed" ta="center">
+                                    Cobrança recorrente somada à sua assinatura. Ou ative a expansão automática para nunca travar um upload.
                                 </Text>
-                            </div>
-                        </Group>
-                    </Card>
-
-                    <Button fullWidth size="md" color="teal" leftSection={<IconDatabase size={18} />}
-                        onClick={() => {
-                            setStorageModalOpen(false);
-                            const pricePerGb = storageType === 'stream' ? 2.50 : 0.50;
-                            navigate(`/checkout?tipo=storage&subtipo=${storageType}&gb=${storageGb}&ciclo=recorrente&valor=${(storageGb * pricePerGb).toFixed(2)}`);
-                        }}>
-                        Adicionar {storageGb} GB por +{fmt(storageGb * (storageType === 'stream' ? 2.50 : 0.50))}/mês
-                    </Button>
-
-                    <Text size="xs" c="dimmed" ta="center">O valor será adicionado à sua assinatura mensal.</Text>
+                            </>
+                        );
+                    })()}
                 </Stack>
             </Modal>
         </Stack>
