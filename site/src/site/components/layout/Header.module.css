@@ -19,11 +19,16 @@
 
 .scrolled,
 .menuOpen {
-    background: rgba(10, 10, 15, 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    background: var(--ink);
+    border-bottom: 1px solid var(--ink-border);
+    box-shadow: 0 8px 30px rgba(11, 18, 32, 0.22);
+}
+
+/* Faz o Container preencher a largura dentro do header flex
+   (sem isto o Container encolhe para o tamanho do conteúdo) */
+.headerContainer {
+    flex: 1;
+    width: 100%;
 }
 
 .logo {
@@ -102,11 +107,9 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.25s ease;
-    background: rgba(10, 10, 15, 0.95);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    background: var(--ink-2);
+    border-bottom: 1px solid var(--ink-border);
+    box-shadow: 0 20px 60px rgba(11, 18, 32, 0.4);
 }
 
 .megaMenuWrapper.visible {

@@ -1,0 +1,31 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.stacked {
+  flex-direction: column;
+}
+
+.stacked a,
+.stacked button {
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .actions:not(.stacked) {
+    flex-direction: column;
+  }
+
+  .actions:not(.stacked) a,
+  .actions:not(.stacked) button {
+    width: 100%;
+  }
+}

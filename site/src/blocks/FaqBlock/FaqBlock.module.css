@@ -1,0 +1,32 @@
+.item {
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--surface-elevated) !important;
+  overflow: hidden;
+}
+
+.control {
+  padding: 1rem 1.125rem !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+}
+
+.control:hover {
+  background: var(--surface-muted) !important;
+}
+
+.panel {
+  padding: 0 1.125rem 1rem !important;
+}
+
+.label {
+  font-size: 0.9375rem !important;
+}
+
+.content {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}

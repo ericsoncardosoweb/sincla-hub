@@ -6,6 +6,7 @@ import {
     IconRocket,
     IconHeadset,
     IconArrowRight,
+    IconArrowUpRight,
     IconSearch,
     IconGridDots,
     IconBell,
@@ -33,7 +34,7 @@ interface User {
     initials: string;
 }
 
-export function Header() {
+export function Header({ solid = false }: { solid?: boolean }) {
     const [opened, { toggle, close }] = useDisclosure(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeMenu, setActiveMenu] = useState<MenuKey>(null);
@@ -77,10 +78,10 @@ export function Header() {
 
     return (
         <header
-            className={`${classes.header} ${scrolled ? classes.scrolled : ''} ${activeMenu ? classes.menuOpen : ''}`}
+            className={`${classes.header} ${scrolled || solid ? classes.scrolled : ''} ${activeMenu ? classes.menuOpen : ''}`}
             onMouseLeave={handleMenuLeave}
         >
-            <Container size="xl">
+            <Container size={1360} className={classes.headerContainer}>
                 <Group justify="space-between" h="100%">
                     {/* Logo */}
                     <a href="/" className={classes.logo}>
@@ -296,6 +297,7 @@ export function Header() {
                                     variant="gradient"
                                     gradient={{ from: '#0087ff', to: '#00c6ff', deg: 135 }}
                                     className={classes.ctaBtn}
+                                    leftSection={<IconArrowUpRight size={16} stroke={2} />}
                                 >
                                     Inscrever-se
                                 </Button>
@@ -310,7 +312,7 @@ export function Header() {
 
             {/* Mega Menus */}
             <Box className={`${classes.megaMenuWrapper} ${activeMenu ? classes.visible : ''}`}>
-                <Container size="xl">
+                <Container size={1360}>
                     {/* Menu Produtos */}
                     {activeMenu === 'produtos' && (
                         <Box className={classes.megaMenu}>

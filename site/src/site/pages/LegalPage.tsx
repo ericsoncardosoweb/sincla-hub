@@ -324,10 +324,10 @@ export function LegalPage() {
     }, [slug, canonicalSlug]);
 
     return (
-        <div style={{ background: 'var(--bg-dark, #0a0a1a)', color: 'var(--text-primary, #e1e1e6)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <Header />
-            <main style={{ flex: 1, paddingTop: '100px', paddingBottom: '60px' }}>
-                <Container size="md">
+        <div style={{ background: 'var(--paper)', color: 'var(--on-paper)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <Header solid />
+            <main style={{ flex: 1, paddingTop: '128px', paddingBottom: '80px' }}>
+                <Container size={760}>
                     {loading ? (
                         <Center py={100}>
                             <Loader size="lg" />
@@ -336,14 +336,9 @@ export function LegalPage() {
                         <Stack gap="md">
                             <div
                                 dangerouslySetInnerHTML={{ __html: resolvedContent }}
-                                style={{
-                                    lineHeight: 1.8,
-                                    fontSize: '16px',
-                                    color: 'rgba(255,255,255,0.85)',
-                                }}
                                 className="legal-content"
                             />
-                            <Text size="xs" c="dimmed" ta="center" mt="xl">
+                            <Text size="xs" ta="center" mt="xl" style={{ color: 'var(--on-paper-muted)' }}>
                                 Versão {page.version} — Última atualização: {new Date(page.updated_at).toLocaleDateString('pt-BR', {
                                     day: '2-digit',
                                     month: 'long',
@@ -357,25 +352,32 @@ export function LegalPage() {
             <Footer />
 
             <style>{`
+                .legal-content {
+                    line-height: 1.75;
+                    font-size: 1rem;
+                    color: var(--on-paper-muted);
+                }
                 .legal-content h1 {
-                    font-size: 2rem;
-                    font-weight: 700;
+                    font-size: clamp(1.9rem, 3.4vw, 2.5rem);
+                    font-weight: 800;
+                    letter-spacing: -0.02em;
+                    line-height: 1.1;
                     margin-bottom: 1rem;
-                    color: white;
+                    color: var(--on-paper);
                 }
                 .legal-content h2 {
-                    font-size: 1.4rem;
-                    font-weight: 600;
-                    margin-top: 2rem;
+                    font-size: 1.35rem;
+                    font-weight: 700;
+                    margin-top: 2.5rem;
                     margin-bottom: 0.75rem;
-                    color: white;
+                    color: var(--on-paper);
                 }
                 .legal-content h3 {
                     font-size: 1.1rem;
                     font-weight: 600;
                     margin-top: 1.5rem;
                     margin-bottom: 0.5rem;
-                    color: white;
+                    color: var(--on-paper);
                 }
                 .legal-content p {
                     margin-bottom: 1rem;
@@ -388,14 +390,20 @@ export function LegalPage() {
                     margin-bottom: 0.5rem;
                 }
                 .legal-content a {
-                    color: #0087ff;
+                    color: var(--mod-rh);
                     text-decoration: underline;
+                    text-underline-offset: 2px;
                 }
                 .legal-content a:hover {
-                    color: #00c6ff;
+                    opacity: 0.8;
                 }
                 .legal-content strong {
-                    color: white;
+                    color: var(--on-paper);
+                    font-weight: 700;
+                }
+                .legal-content > p:first-of-type {
+                    color: var(--on-paper-muted);
+                    font-size: 0.95rem;
                 }
             `}</style>
         </div>

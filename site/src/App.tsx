@@ -13,6 +13,7 @@ import { LegalPage } from './site/pages/LegalPage';
 import { ProductLanding } from './site/pages/ProductLanding';
 import { ScrollToTop } from './site/components/common/ScrollToTop';
 import { WhatsappFloat } from './site/components/common/WhatsappFloat';
+import { ConversionProvider } from './conversion/ConversionProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,21 +32,23 @@ function App() {
         <BrowserRouter>
           <ScrollToTop />
           <WhatsappFloat />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/suporte-lgpd" element={<SuporteLgpd />} />
-            {/* Product Landings */}
-            <Route path="/rh" element={<ProductLanding overrideSlug="rh" />} />
-            <Route path="/recrutamento" element={<ProductLanding overrideSlug="recrutamento" />} />
-            <Route path="/ead" element={<ProductLanding overrideSlug="ead" />} />
-            <Route path="/produtos/:slug" element={<ProductLanding />} />
-            {/* Legal Pages */}
-            <Route path="/politica-privacidade" element={<LegalPage />} />
-            <Route path="/politicas-de-privacidade" element={<LegalPage />} />
-            <Route path="/termos-de-uso" element={<LegalPage />} />
-            <Route path="/politicas-de-compra" element={<LegalPage />} />
-            <Route path="/legal/:slug" element={<LegalPage />} />
-          </Routes>
+          <ConversionProvider>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/suporte-lgpd" element={<SuporteLgpd />} />
+              {/* Product Landings */}
+              <Route path="/rh" element={<ProductLanding overrideSlug="rh" />} />
+              <Route path="/recrutamento" element={<ProductLanding overrideSlug="recrutamento" />} />
+              <Route path="/ead" element={<ProductLanding overrideSlug="ead" />} />
+              <Route path="/produtos/:slug" element={<ProductLanding />} />
+              {/* Legal Pages */}
+              <Route path="/politica-privacidade" element={<LegalPage />} />
+              <Route path="/politicas-de-privacidade" element={<LegalPage />} />
+              <Route path="/termos-de-uso" element={<LegalPage />} />
+              <Route path="/politicas-de-compra" element={<LegalPage />} />
+              <Route path="/legal/:slug" element={<LegalPage />} />
+            </Routes>
+          </ConversionProvider>
         </BrowserRouter>
       </MantineProvider>
     </QueryClientProvider>

@@ -1,0 +1,67 @@
+:root {
+  /* Brand */
+  --brand-blue: #0087ff;
+  --brand-blue-dark: #006fcc;
+  --brand-blue-soft: #e6f3ff;
+  --brand-gradient: linear-gradient(135deg, #0087ff 0%, #0099e6 100%);
+
+  --brand-rh: #0066cc;
+  --brand-rs: #7c3aed;
+  --brand-ead: #e85d04;
+
+  /* Surfaces — light-first */
+  --surface-base: #f7f8fa;
+  --surface-elevated: #ffffff;
+  --surface-muted: #eef1f5;
+  --surface-accent: #e6f3ff;
+  --surface-dark: #1a2332;
+  --surface-dark-muted: #2a3548;
+
+  /* Text */
+  --text-primary: #1a2332;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+  --text-inverse-muted: rgba(255, 255, 255, 0.72);
+
+  /* Borders & shadows */
+  --border-subtle: #e8ecf0;
+  --border-medium: #d4dbe4;
+  --shadow-sm: 0 1px 2px rgba(26, 35, 50, 0.04);
+  --shadow-card: 0 1px 3px rgba(26, 35, 50, 0.06), 0 8px 24px rgba(26, 35, 50, 0.05);
+  --shadow-lg: 0 4px 12px rgba(26, 35, 50, 0.08), 0 24px 48px rgba(26, 35, 50, 0.06);
+  --shadow-focus: 0 0 0 3px rgba(0, 135, 255, 0.25);
+
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --font-display-weight: 600;
+  --font-heading-weight: 600;
+  --font-body-weight: 400;
+  --font-medium-weight: 500;
+  --font-semibold-weight: 600;
+
+  /* Spacing */
+  --section-py: clamp(4rem, 8vw, 7.5rem);
+  --section-py-sm: clamp(3rem, 6vw, 5rem);
+  --container-xl: 1200px;
+  --container-md: 720px;
+  --container-sm: 480px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* Product accents */
+  --product-rh: var(--brand-rh);
+  --product-recrutamento: var(--brand-rs);
+  --product-ead: var(--brand-ead);
+}

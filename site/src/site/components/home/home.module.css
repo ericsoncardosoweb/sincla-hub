@@ -1,0 +1,516 @@
+/* ==========================================
+   HOME — sistema Mescla (claro + âncoras ink)
+   CSS compartilhado entre as seções da home
+   ========================================== */
+
+.section {
+    position: relative;
+    padding: clamp(72px, 9vw, 124px) 0;
+}
+
+.sectionLight {
+    background: var(--paper);
+    color: var(--on-paper);
+}
+
+.sectionLightAlt {
+    background: var(--paper-2);
+    color: var(--on-paper);
+}
+
+.sectionInk {
+    background: var(--ink);
+    color: var(--on-ink);
+}
+
+.sectionAccent {
+    background:
+        radial-gradient(120% 140% at 15% 0%, rgba(10, 132, 255, 0.22), transparent 55%),
+        radial-gradient(120% 140% at 100% 100%, rgba(139, 92, 246, 0.18), transparent 55%),
+        var(--ink);
+    color: var(--on-ink);
+}
+
+/* ---------- Cabeçalho de seção ---------- */
+
+.head {
+    max-width: 680px;
+    margin: 0 0 clamp(40px, 5vw, 64px);
+}
+
+.headCenter {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mod-rh);
+    margin: 0 0 16px;
+}
+
+.eyebrowInk {
+    color: #4aa3ff;
+}
+
+.heading {
+    font-size: clamp(1.85rem, 3.4vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin: 0 0 16px;
+}
+
+.sub {
+    font-size: clamp(1.0625rem, 1.4vw, 1.1875rem);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.sectionLight .sub,
+.sectionLightAlt .sub {
+    color: var(--on-paper-muted);
+}
+
+.sectionInk .sub,
+.sectionAccent .sub {
+    color: var(--on-ink-muted);
+}
+
+/* ---------- Grids ---------- */
+
+.grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.grid4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* ---------- Cards ---------- */
+
+.cardLight {
+    background: var(--paper);
+    border: 1px solid var(--paper-border);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--duration-normal) var(--ease-smooth),
+        box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.cardLight:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card);
+}
+
+.cardInk {
+    background: var(--ink-surface);
+    border: 1px solid var(--ink-border);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    transition: transform var(--duration-normal) var(--ease-smooth),
+        border-color var(--duration-normal) var(--ease-smooth);
+}
+
+.cardInk:hover {
+    transform: translateY(-4px);
+    border-color: var(--ink-border-strong);
+}
+
+/* ---------- Chip de ícone (fino, com cor por contexto) ---------- */
+
+.iconChip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+}
+
+.cardTitle {
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 8px;
+}
+
+.cardText {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.sectionLight .cardText,
+.sectionLightAlt .cardText {
+    color: var(--on-paper-muted);
+}
+
+.sectionInk .cardText,
+.sectionAccent .cardText {
+    color: var(--on-ink-muted);
+}
+
+/* ---------- Botões (pílula) reaproveitáveis ---------- */
+
+.btnPrimary,
+.btnGhostInk,
+.btnGhostLight {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    height: 50px;
+    padding: 0 26px;
+    font-size: 0.9875rem;
+    font-weight: 600;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-smooth),
+        box-shadow var(--duration-normal) var(--ease-smooth),
+        background var(--duration-normal) var(--ease-smooth);
+}
+
+.btnPrimary {
+    color: #fff;
+    background: linear-gradient(120deg, #0a84ff, #0066cc);
+    border: 1px solid transparent;
+    box-shadow: 0 8px 24px rgba(10, 132, 255, 0.32);
+}
+
+.btnPrimary:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(10, 132, 255, 0.42);
+}
+
+.btnGhostInk {
+    color: var(--on-ink);
+    background: var(--ink-surface-strong);
+    border: 1px solid var(--ink-border-strong);
+}
+
+.btnGhostInk:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.btnGhostLight {
+    color: var(--on-paper);
+    background: transparent;
+    border: 1px solid var(--border-medium, #d4dbe4);
+}
+
+.btnGhostLight:hover {
+    background: var(--paper-2);
+    transform: translateY(-2px);
+}
+
+.ctaRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+/* ==========================================
+   ECOSSISTEMA — fluxo de integração
+   ========================================== */
+
+.flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex-wrap: wrap;
+}
+
+.flowNode {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 24px;
+    background: var(--paper);
+    border: 1px solid var(--paper-border);
+    border-radius: var(--r-lg);
+}
+
+.flowConnector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--on-paper-muted);
+    padding: 0 6px;
+    flex-shrink: 0;
+}
+
+.flowHubBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: var(--r-pill);
+    background: var(--ink);
+    color: var(--on-ink);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ==========================================
+   STEPS — como funciona
+   ========================================== */
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    counter-reset: step;
+}
+
+.step {
+    position: relative;
+    padding-top: 16px;
+    border-top: 2px solid var(--ink-border);
+}
+
+.stepNum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ink-surface-strong);
+    border: 1px solid var(--ink-border-strong);
+    color: #4aa3ff;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 18px;
+}
+
+/* ==========================================
+   MÓDULOS — product cards
+   ========================================== */
+
+.moduleCard {
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+    border: 1px solid var(--paper-border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--duration-normal) var(--ease-smooth),
+        box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.moduleCard:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-card);
+}
+
+.moduleTop {
+    height: 6px;
+    width: 100%;
+}
+
+.moduleInner {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.moduleFeatures {
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.moduleFeature {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--on-paper-muted);
+    line-height: 1.45;
+}
+
+.moduleLink {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+/* ==========================================
+   FAQ
+   ========================================== */
+
+.faqList {
+    max-width: 820px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.faqItem {
+    border-bottom: 1px solid var(--paper-border);
+}
+
+.faqQ {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 4px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--on-paper);
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.faqQ:hover {
+    color: var(--mod-rh);
+}
+
+.faqIcon {
+    flex-shrink: 0;
+    color: var(--mod-rh);
+    transition: transform var(--duration-normal) var(--ease-smooth);
+}
+
+.faqIconOpen {
+    transform: rotate(45deg);
+}
+
+.faqA {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height var(--duration-slow) var(--ease-smooth);
+}
+
+.faqAOpen {
+    max-height: 320px;
+}
+
+.faqAInner {
+    padding: 0 4px 24px;
+    font-size: 0.9875rem;
+    line-height: 1.65;
+    color: var(--on-paper-muted);
+    max-width: 680px;
+}
+
+/* ==========================================
+   MEETING CTA
+   ========================================== */
+
+.ctaWrap {
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.ctaTitle {
+    font-size: clamp(1.9rem, 3.6vw, 2.85rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--on-ink);
+    margin: 0 0 16px;
+}
+
+.ctaSub {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: var(--on-ink-muted);
+    margin: 0 0 32px;
+}
+
+.ctaActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+}
+
+/* ==========================================
+   Responsivo
+   ========================================== */
+
+@media (max-width: 960px) {
+
+    .grid3,
+    .grid4,
+    .steps {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .flow {
+        flex-direction: column;
+    }
+
+    .flowConnector {
+        transform: rotate(90deg);
+        padding: 8px 0;
+    }
+}
+
+@media (max-width: 640px) {
+
+    .grid2,
+    .grid3,
+    .grid4,
+    .steps {
+        grid-template-columns: 1fr;
+    }
+
+    .ctaActions .btnPrimary,
+    .ctaActions .btnGhostInk {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .cardLight:hover,
+    .cardInk:hover,
+    .moduleCard:hover,
+    .btnPrimary:hover,
+    .btnGhostInk:hover,
+    .btnGhostLight:hover {
+        transform: none;
+    }
+}

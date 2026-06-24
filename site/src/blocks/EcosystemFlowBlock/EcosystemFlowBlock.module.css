@@ -1,0 +1,66 @@
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  position: relative;
+  display: grid;
+  gap: 0.625rem;
+}
+
+.step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+}
+
+.cardDesc {
+  font-size: 0.9375rem;
+}
+
+.route {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.pill {
+  display: inline-flex;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--pill-color) 12%, white);
+  color: var(--pill-color);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pill:hover {
+  color: var(--pill-color);
+  background: color-mix(in srgb, var(--pill-color) 18%, white);
+}
+
+.arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}

@@ -1,0 +1,15 @@
+.drawerContent {
+  border-top-left-radius: 22px !important;
+  border-top-right-radius: 22px !important;
+  overflow: hidden;
+}
+
+.drawerBody,
+.modalBody {
+  padding: 0 !important;
+  height: 100%;
+}
+
+.modalContent {
+  overflow: hidden;
+}

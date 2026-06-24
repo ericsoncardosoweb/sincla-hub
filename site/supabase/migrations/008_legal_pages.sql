@@ -21,11 +21,9 @@ ALTER TABLE legal_pages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "legal_pages_public_read" ON legal_pages
   FOR SELECT USING (is_published = true);
 
--- Admin full access
+-- Admin full access (is_admin_user() checks admin_users.id = auth.uid() AND is_active)
 CREATE POLICY "legal_pages_admin_full" ON legal_pages
-  FOR ALL USING (
-    EXISTS (SELECT 1 FROM admin_users WHERE user_id = auth.uid())
-  );
+  FOR ALL USING (public.is_admin_user()) WITH CHECK (public.is_admin_user());
 
 -- ========================================
 -- Tabela de configurações da plataforma
@@ -45,11 +43,9 @@ ALTER TABLE platform_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "platform_settings_public_read" ON platform_settings
   FOR SELECT USING (true);
 
--- Admin full access
+-- Admin full access (is_admin_user() checks admin_users.id = auth.uid() AND is_active)
 CREATE POLICY "platform_settings_admin_full" ON platform_settings
-  FOR ALL USING (
-    EXISTS (SELECT 1 FROM admin_users WHERE user_id = auth.uid())
-  );
+  FOR ALL USING (public.is_admin_user()) WITH CHECK (public.is_admin_user());
 
 -- ========================================
 -- Seed: Configurações padrão da plataforma

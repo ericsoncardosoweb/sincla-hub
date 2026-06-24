@@ -1,0 +1,33 @@
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  position: relative;
+  padding-top: 1.75rem !important;
+}
+
+.marker {
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  width: 2.5rem;
+  height: 3px;
+  border-radius: var(--radius-full);
+}
+
+.title {
+  font-size: 1.0625rem;
+  margin-bottom: 0.5rem;
+}
+
+.desc {
+  font-size: 0.9375rem;
+}

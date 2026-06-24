@@ -1,0 +1,400 @@
+/* ==========================================
+   MEETING WIZARD — sistema mescla
+   Superfície clara, acento azul, ink no header
+   ========================================== */
+
+.shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    max-height: 92dvh;
+    background: var(--paper);
+    color: var(--on-paper);
+}
+
+/* ---------- Header (ink) ---------- */
+
+.header {
+    position: relative;
+    padding: 22px 22px 18px;
+    background:
+        radial-gradient(120% 160% at 100% 0%, rgba(10, 132, 255, 0.22), transparent 60%),
+        var(--ink);
+    color: var(--on-ink);
+    flex-shrink: 0;
+}
+
+.headerTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #4aa3ff;
+    margin: 0 0 6px;
+}
+
+.headerTitle {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: #fff;
+}
+
+.headerIcon {
+    color: #4aa3ff;
+}
+
+.closeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--ink-border-strong);
+    border-radius: var(--r-pill);
+    background: var(--ink-surface-strong);
+    color: var(--on-ink);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--duration-fast) var(--ease-smooth);
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.progress {
+    display: flex;
+    gap: 6px;
+    margin-top: 18px;
+}
+
+.dot {
+    flex: 1;
+    height: 4px;
+    border-radius: var(--r-pill);
+    background: var(--ink-border-strong);
+    transition: background var(--duration-normal) var(--ease-smooth);
+}
+
+.dotActive {
+    background: linear-gradient(90deg, #0a84ff, #4aa3ff);
+}
+
+/* ---------- Body ---------- */
+
+.body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 22px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.stepTitle {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0;
+    color: var(--on-paper);
+}
+
+.stepHint {
+    margin: 8px 0 22px;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--on-paper-muted);
+}
+
+/* ---------- Intent cards ---------- */
+
+.intentGrid {
+    display: grid;
+    gap: 10px;
+}
+
+.intentCard {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 2px 14px;
+    padding: 15px 16px;
+    border: 1px solid var(--paper-border);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    text-align: left;
+    cursor: pointer;
+    transition:
+        border-color var(--duration-normal) var(--ease-smooth),
+        background var(--duration-normal) var(--ease-smooth),
+        box-shadow var(--duration-normal) var(--ease-smooth),
+        transform var(--duration-fast) var(--ease-smooth);
+}
+
+.intentCard:hover {
+    border-color: #b9cbe4;
+    transform: translateY(-1px);
+}
+
+.intentCardActive {
+    border-color: var(--mod-rh);
+    background: var(--mod-rh-soft);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.12);
+}
+
+.intentIcon {
+    grid-row: span 2;
+    font-size: 1.5rem;
+    line-height: 1;
+    align-self: center;
+}
+
+.intentLabel {
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--on-paper);
+}
+
+.intentDesc {
+    font-size: 0.8125rem;
+    color: var(--on-paper-muted);
+    line-height: 1.4;
+}
+
+/* ---------- Form ---------- */
+
+.formGrid {
+    display: grid;
+    gap: 16px;
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+}
+
+.field span,
+.fieldset legend {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--on-paper);
+}
+
+.field input {
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid var(--paper-border);
+    border-radius: var(--r-md);
+    font-size: 1rem;
+    color: var(--on-paper);
+    background: var(--paper);
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+        box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.field input::placeholder {
+    color: #9aa6b8;
+}
+
+.field input:focus {
+    outline: none;
+    border-color: var(--mod-rh);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.14);
+}
+
+.fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.chipRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip,
+.scheduleChip {
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1px solid var(--paper-border);
+    border-radius: var(--r-pill);
+    background: var(--paper);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--on-paper-muted);
+    cursor: pointer;
+    transition:
+        border-color var(--duration-normal) var(--ease-smooth),
+        background var(--duration-normal) var(--ease-smooth),
+        color var(--duration-normal) var(--ease-smooth);
+}
+
+.scheduleChip {
+    width: 100%;
+    text-align: left;
+    border-radius: var(--r-md);
+}
+
+.chip:hover,
+.scheduleChip:hover {
+    border-color: var(--mod-rh);
+}
+
+.chipActive {
+    border-color: var(--mod-rh);
+    background: var(--mod-rh-soft);
+    color: var(--mod-rh);
+    font-weight: 600;
+}
+
+.chipColumn {
+    display: grid;
+    gap: 10px;
+}
+
+.error {
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: #dc2626;
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 22px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--paper-border);
+    background: var(--paper);
+    flex-shrink: 0;
+}
+
+/* ---------- Botões locais ---------- */
+
+.actionPrimary,
+.actionGhost,
+.actionWhatsapp,
+.actionSecondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 50px;
+    padding: 0 24px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform var(--duration-fast) var(--ease-smooth),
+        box-shadow var(--duration-normal) var(--ease-smooth),
+        background var(--duration-normal) var(--ease-smooth);
+}
+
+.actionPrimary {
+    color: #fff;
+    background: linear-gradient(120deg, #0a84ff, #0066cc);
+    box-shadow: 0 8px 22px rgba(10, 132, 255, 0.32);
+    flex: 1;
+}
+
+.actionPrimary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(10, 132, 255, 0.42);
+}
+
+.actionPrimary:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.actionGhost {
+    color: var(--on-paper-muted);
+    background: transparent;
+    padding: 0 18px;
+}
+
+.actionGhost:hover {
+    background: var(--paper-2);
+    color: var(--on-paper);
+}
+
+.actionWhatsapp {
+    color: #fff;
+    background: #25d366;
+    box-shadow: 0 8px 22px rgba(37, 211, 102, 0.32);
+    width: 100%;
+}
+
+.actionWhatsapp:hover {
+    transform: translateY(-2px);
+    background: #20bd5a;
+}
+
+.actionSecondary {
+    color: var(--on-paper);
+    background: var(--paper);
+    border-color: var(--paper-border);
+    width: 100%;
+}
+
+.actionSecondary:hover {
+    background: var(--paper-2);
+}
+
+/* ---------- Sucesso ---------- */
+
+.successIcon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-pill);
+    background: #dcfce7;
+    color: #16a34a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 8px 0 18px;
+}
+
+.successTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+    color: var(--on-paper);
+}
+
+.successText {
+    margin: 0 0 24px;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--on-paper-muted);
+}
+
+.successActions {
+    display: grid;
+    gap: 10px;
+}
+
+@media (min-width: 769px) {
+    .shell {
+        max-height: min(660px, 90vh);
+    }
+}

@@ -1,0 +1,101 @@
+.grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: grid;
+  gap: 1.25rem;
+  height: 100%;
+}
+
+.cardTop {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.iconWrap {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconWrap img {
+  width: 1.5rem;
+  height: 1.5rem;
+  filter: brightness(0) invert(1);
+}
+
+.name {
+  font-size: 1.125rem;
+}
+
+.tagline {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.features svg {
+  color: var(--brand-blue);
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.actions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--brand-blue);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--brand-blue-dark);
+}
+
+.note {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.note a {
+  color: var(--brand-blue);
+  font-weight: 600;
+}

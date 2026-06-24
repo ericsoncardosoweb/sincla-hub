@@ -1,0 +1,34 @@
+.section {
+  padding-block: var(--section-py);
+  position: relative;
+}
+
+.compact {
+  padding-block: var(--section-py-sm);
+}
+
+.default {
+  background: var(--surface-base);
+}
+
+.muted {
+  background: var(--surface-muted);
+}
+
+.accent {
+  background: var(--surface-accent);
+}
+
+.dark {
+  background: var(--surface-dark);
+  color: var(--text-inverse);
+}
+
+.dark :global(.ds-heading),
+.dark :global(.ds-display) {
+  color: var(--text-inverse);
+}
+
+.dark :global(.ds-body) {
+  color: var(--text-inverse-muted);
+}

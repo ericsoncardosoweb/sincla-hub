@@ -1,0 +1,174 @@
+.hero {
+  padding-top: calc(5.5rem + var(--section-py-sm));
+  overflow: hidden;
+}
+
+.gridBg {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(26, 35, 50, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.layout {
+  display: grid;
+  gap: 3rem;
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+  }
+}
+
+.content {
+  display: grid;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-size: clamp(2rem, 5.5vw, 3.25rem);
+  max-width: 14ch;
+}
+
+.accent {
+  color: var(--brand-blue);
+}
+
+.subtitle {
+  font-size: clamp(1rem, 2.2vw, 1.125rem);
+  max-width: 36rem;
+}
+
+.visual {
+  position: relative;
+  z-index: 1;
+}
+
+.visualCard {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.visualHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-muted);
+}
+
+.dotRed,
+.dotYellow,
+.dotGreen {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+}
+
+.dotRed {
+  background: #ff5f57;
+}
+
+.dotYellow {
+  background: #febc2e;
+}
+
+.dotGreen {
+  background: #28c840;
+}
+
+.visualTitle {
+  margin-left: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.flow {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.5rem;
+}
+
+@media (min-width: 480px) {
+  .flow {
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.flowNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-base);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition:
+    transform var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out),
+    border-color var(--duration-normal) var(--ease-out);
+}
+
+.flowNode:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+  border-color: var(--node-color, var(--brand-blue));
+  color: var(--text-primary);
+}
+
+.flowNode img {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.flowNode span {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.flowLine {
+  display: none;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--border-subtle), var(--brand-blue-soft), var(--border-subtle));
+}
+
+@media (min-width: 480px) {
+  .flowLine {
+    display: block;
+  }
+}
+
+.visualCaption {
+  padding: 0 1.5rem 1.25rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.exploreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--brand-blue);
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
