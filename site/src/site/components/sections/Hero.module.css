@@ -413,6 +413,8 @@
     .primaryCta,
     .secondaryCta {
         width: 100%;
+        flex: 0 0 auto;
+        height: 54px;
     }
 
     .floatBadge {
