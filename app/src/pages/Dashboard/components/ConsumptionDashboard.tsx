@@ -1,9 +1,6 @@
 /**
- * ConsumptionDashboard v3 — Painel de Consumo
- *
- * Integrado na tab "Consumo & Créditos" da tela de Assinaturas.
- * Cards visuais de IA, Storage (CDN+Stream) e Notificações.
- * Modais de compra de créditos e storage com experiência premium.
+ * ConsumptionDashboard — Painel de recursos (IA, storage, notificações).
+ * Com billing desligado, mostra uso sem CTAs de compra.
  */
 
 import { useEffect, useState } from 'react';
@@ -22,6 +19,7 @@ import {
     IconCoin, IconDatabase, IconVideo, IconFile,
 } from '@tabler/icons-react';
 import { supabase } from '../../../shared/lib/supabase';
+import { getCompanyEmailSettings, type CompanyEmailSettings } from '../../../shared/services/emailSettingsService';
 
 // ==============================
 // Types
@@ -112,15 +110,19 @@ const progressColor = (pct: number) =>
 // Component
 // ==============================
 
-interface Props { companyId: string; }
+interface Props {
+    companyId: string;
+    billingEnabled?: boolean;
+}
 
-export function ConsumptionDashboard({ companyId }: Props) {
+export function ConsumptionDashboard({ companyId, billingEnabled = false }: Props) {
     const navigate = useNavigate();
     const [credits, setCredits] = useState<CompanyCredits[]>([]);
     const [storage, setStorage] = useState<StorageQuota | null>(null);
     const [recentUsage, setRecentUsage] = useState<UsageLog[]>([]);
     const [pricing, setPricing] = useState<ServicePricing[]>([]);
     const [loading, setLoading] = useState(true);
+    const [emailSettings, setEmailSettings] = useState<CompanyEmailSettings | null>(null);
 
     // Modais
     const [buyModalOpen, setBuyModalOpen] = useState(false);
@@ -170,7 +172,7 @@ export function ConsumptionDashboard({ companyId }: Props) {
     const loadAll = async () => {
         setLoading(true);
         try {
-            const [creditsRes, storageRes, usageRes, pricingRes] = await Promise.all([
+            const [creditsRes, storageRes, usageRes, pricingRes, emailRes] = await Promise.all([
                 supabase.from('company_credits').select('*').eq('company_id', companyId),
                 supabase.from('storage_quotas').select('*').eq('company_id', companyId).single(),
                 supabase.from('service_usage_log')
@@ -178,11 +180,13 @@ export function ConsumptionDashboard({ companyId }: Props) {
                     .eq('company_id', companyId)
                     .order('created_at', { ascending: false }).limit(20),
                 supabase.from('service_pricing').select('*').eq('is_active', true).order('sort_order'),
+                getCompanyEmailSettings(companyId),
             ]);
             setCredits(creditsRes.data || []);
             setStorage(storageRes.data);
             setRecentUsage(usageRes.data || []);
             setPricing(pricingRes.data || []);
+            setEmailSettings(emailRes);
         } catch (err) {
             console.error('[Consumption] Error:', err);
         } finally { setLoading(false); }
@@ -236,8 +240,10 @@ export function ConsumptionDashboard({ companyId }: Props) {
         return (
             <Card withBorder radius="md" p="xl" style={{ textAlign: 'center' }}>
                 <ThemeIcon size={60} radius="xl" variant="light" color="violet" mx="auto"><IconSparkles size={30} /></ThemeIcon>
-                <Text fw={600} size="lg" mt="md">Serviços de consumo não configurados</Text>
-                <Text c="dimmed" size="sm" mt="xs">Os créditos serão habilitados quando sua assinatura incluir serviços de IA, Storage ou Notificações.</Text>
+                <Text fw={600} size="lg" mt="md">Recursos ainda não configurados</Text>
+                <Text c="dimmed" size="sm" mt="xs">
+                    Quando IA ou armazenamento forem habilitados para sua empresa, o uso aparecerá aqui.
+                </Text>
             </Card>
         );
     }
@@ -245,7 +251,15 @@ export function ConsumptionDashboard({ companyId }: Props) {
     const aiCredits = getCredit('ai');
     const emailCredits = getCredit('notification_email');
     const whatsappCredits = getCredit('notification_whatsapp');
-    const filteredUsage = historyFilter === 'all' ? recentUsage : recentUsage.filter(u => u.service_type === historyFilter);
+    const emailStatusLabel = emailSettings?.smtp_verified
+        ? 'SMTP da empresa verificado'
+        : emailSettings?.custom_smtp_host
+            ? 'SMTP configurado — aguardando teste'
+            : 'Envio pelo sistema Sincla (MailGrid)';
+    const emailStatusColor = emailSettings?.smtp_verified ? 'green' : emailSettings?.custom_smtp_host ? 'orange' : 'blue';
+    const filteredUsage = historyFilter === 'all'
+        ? recentUsage
+        : recentUsage.filter(u => u.service_type === historyFilter);
 
     const usagePercent = (used: number, total: number) => total > 0 ? Math.min((used / total) * 100, 100) : 0;
     const bytesPercent = (used: number, quota: number) => quota > 0 ? Math.min((used / quota) * 100, 100) : 0;
@@ -261,7 +275,7 @@ export function ConsumptionDashboard({ companyId }: Props) {
                 <ThemeIcon size="md" radius="md" variant="light" color="violet">
                     <IconBrain size={16} />
                 </ThemeIcon>
-                <Text fw={700} size="md">Créditos de Inteligência Artificial</Text>
+                <Text fw={700} size="md">{billingEnabled ? 'Créditos de Inteligência Artificial' : 'Uso de Inteligência Artificial'}</Text>
             </Group>
 
             <Card withBorder radius="lg" padding={0} style={{ overflow: 'hidden' }}>
@@ -279,11 +293,13 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                 </Text>
                             </div>
                         </Group>
-                        <Button variant="white" size="sm" leftSection={<IconShoppingCart size={16} />}
-                            onClick={handleOpenBuyAI}
-                            style={{ fontWeight: 600 }}>
-                            Comprar Créditos
-                        </Button>
+                        {billingEnabled && (
+                            <Button variant="white" size="sm" leftSection={<IconShoppingCart size={16} />}
+                                onClick={handleOpenBuyAI}
+                                style={{ fontWeight: 600 }}>
+                                Comprar Créditos
+                            </Button>
+                        )}
                     </Group>
                 </Box>
                 <Box p="md">
@@ -317,16 +333,46 @@ export function ConsumptionDashboard({ companyId }: Props) {
                     <Alert variant="light" color="violet" icon={<IconSparkles size={16} />} p="sm" radius="md"
                         style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
                         <Text size="xs" c="dark">
-                            <strong>🟣 Potencialize sua lavanderia com IA</strong> — Os créditos de IA alimentam recursos como classificação inteligente de pedidos, atendimento automatizado via chatbot, análise de sentimento e geração de campanhas. Quanto mais tokens, mais automação e inteligência o seu negócio ganha.
+                            {billingEnabled ? (
+                                <>
+                                    <strong>Potencialize seu negócio com IA</strong> — Os créditos alimentam classificação de dados,
+                                    atendimento automatizado, análise de conteúdo e geração de textos nas ferramentas Sincla.
+                                </>
+                            ) : (
+                                <>
+                                    <strong>IA integrada ao ecossistema Sincla</strong> — Resumos, classificação e geração de texto
+                                    nas ferramentas usam o motor central de IA. O uso do período aparece acima.
+                                </>
+                            )}
                         </Text>
                     </Alert>
                 </Box>
             </Card>
 
-            {/* ═══ Cards de Notificações ═══ */}
-            {(emailCredits || whatsappCredits) && (
+            {!billingEnabled && (
+                <Alert variant="light" color={emailStatusColor} icon={<IconMail size={18} />} radius="md">
+                    <Group justify="space-between" align="center" wrap="wrap" gap="sm">
+                        <div>
+                            <Text size="sm" fw={600}>E-mails da empresa</Text>
+                            <Text size="xs" c="dimmed" mt={4}>
+                                {emailStatusLabel}. Notificações das ferramentas usam este canal — não há compra de créditos de e-mail.
+                            </Text>
+                            {emailSettings?.custom_smtp_from && (
+                                <Badge variant="dot" size="sm" color={emailStatusColor} mt={8}>
+                                    Remetente: {emailSettings.custom_smtp_from_name || emailSettings.custom_smtp_from}
+                                </Badge>
+                            )}
+                        </div>
+                        <Button variant="light" size="xs" leftSection={<IconMail size={14} />}
+                            onClick={() => navigate('/painel/configuracoes?aba=notificacoes')}>
+                            Configurar notificações
+                        </Button>
+                    </Group>
+                </Alert>
+            )}
+
+            {billingEnabled && (emailCredits || whatsappCredits) && (
                 <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                    {/* Email */}
                     {emailCredits && (
                         <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
                             <Box style={{ background: serviceConfig.notification_email.gradient, padding: '14px 16px' }}>
@@ -356,7 +402,6 @@ export function ConsumptionDashboard({ companyId }: Props) {
                         </Card>
                     )}
 
-                    {/* WhatsApp */}
                     {whatsappCredits && (
                         <Card withBorder radius="md" padding={0} style={{ overflow: 'hidden' }}>
                             <Box style={{ background: serviceConfig.notification_whatsapp.gradient, padding: '14px 16px' }}>
@@ -400,10 +445,12 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                     <Text size="xs" style={{ color: 'rgba(255,255,255,0.6)' }}>CDN (arquivos) + Stream (vídeos)</Text>
                                 </div>
                             </Group>
-                            <Button variant="white" size="xs" leftSection={<IconPlus size={14} />}
-                                onClick={() => setStorageModalOpen(true)}>
-                                Expandir Storage
-                            </Button>
+                            {billingEnabled && (
+                                <Button variant="white" size="xs" leftSection={<IconPlus size={14} />}
+                                    onClick={() => setStorageModalOpen(true)}>
+                                    Expandir Storage
+                                </Button>
+                            )}
                         </Group>
                     </Box>
                     <Box p="md">
@@ -459,7 +506,7 @@ export function ConsumptionDashboard({ companyId }: Props) {
                             </Paper>
                         </SimpleGrid>
 
-                        {/* Auto-expansão */}
+                        {billingEnabled && (
                         <Paper withBorder radius="md" p="md" mt="md" bg="var(--mantine-color-gray-0)">
                             <Group justify="space-between" align="flex-start" wrap="nowrap">
                                 <Group gap="sm" align="flex-start" wrap="nowrap">
@@ -501,6 +548,7 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                 </Group>
                             )}
                         </Paper>
+                        )}
                     </Box>
                 </Card>
             )}
@@ -518,8 +566,10 @@ export function ConsumptionDashboard({ companyId }: Props) {
                                 { label: 'Todos', value: 'all' },
                                 { label: '🧠 IA', value: 'ai' },
                                 { label: '📁 Storage', value: 'storage' },
-                                { label: '📧 Email', value: 'notification_email' },
-                                { label: '💬 WhatsApp', value: 'notification_whatsapp' },
+                                ...(billingEnabled ? [
+                                    { label: '📧 Email', value: 'notification_email' },
+                                    { label: '💬 WhatsApp', value: 'notification_whatsapp' },
+                                ] : []),
                             ]}
                         />
                     </Group>
@@ -562,7 +612,7 @@ export function ConsumptionDashboard({ companyId }: Props) {
                 </Card>
             )}
 
-            {/* ═══ Modal: Comprar Créditos de IA ═══ */}
+            {billingEnabled && (
             <Modal opened={buyModalOpen && isAIBuy} onClose={() => setBuyModalOpen(false)} centered size="md"
                 title={<Group gap="xs"><Text size="lg">🧠</Text><Text fw={700} c="violet">Comprar Créditos de IA</Text></Group>}
             >
@@ -627,8 +677,9 @@ export function ConsumptionDashboard({ companyId }: Props) {
                     </Text>
                 </Stack>
             </Modal>
+            )}
 
-            {/* ═══ Modal: Comprar Outros Créditos (Email/WhatsApp) ═══ */}
+            {billingEnabled && (
             <Modal opened={buyModalOpen && !isAIBuy} onClose={() => setBuyModalOpen(false)} centered size="md"
                 title={<Group gap="xs"><IconCoin size={20} /><Text fw={600}>Comprar {buyService?.name}</Text></Group>}
             >
@@ -698,8 +749,9 @@ export function ConsumptionDashboard({ companyId }: Props) {
                     </Stack>
                 )}
             </Modal>
+            )}
 
-            {/* ═══ Modal: Comprar Storage ═══ */}
+            {billingEnabled && (
             <Modal opened={storageModalOpen} onClose={() => setStorageModalOpen(false)} centered size="md"
                 title={<Group gap="xs"><IconDatabase size={20} /><Text fw={600}>Expandir Armazenamento</Text></Group>}
             >
@@ -795,6 +847,7 @@ export function ConsumptionDashboard({ companyId }: Props) {
                     })()}
                 </Stack>
             </Modal>
+            )}
         </Stack>
     );
 }

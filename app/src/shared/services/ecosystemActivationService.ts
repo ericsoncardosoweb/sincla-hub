@@ -1,0 +1,55 @@
+import { supabase } from '../lib/supabase';
+
+export interface ActivateProductResult {
+    success: boolean;
+    instant?: boolean;
+    requires_checkout?: boolean;
+    plan_slug?: string;
+    plan_id?: string;
+    subscription_id?: string;
+    status?: string;
+    trial_days?: number;
+    error?: string;
+    reason?: string;
+}
+
+export interface ProductPlanOption {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    features: string[];
+    price_monthly: number;
+    price_yearly: number;
+    discount_yearly_percent: number;
+    trial_days: number;
+    is_popular: boolean;
+}
+
+export async function activateCompanyProduct(
+    companyId: string,
+    productId: string,
+    planSlug?: string,
+): Promise<ActivateProductResult> {
+    const { data, error } = await supabase.rpc('activate_company_product', {
+        p_company_id: companyId,
+        p_product_id: productId,
+        p_plan_slug: planSlug ?? null,
+    });
+
+    if (error) throw new Error(error.message);
+    return (data ?? { success: false, error: 'Resposta vazia' }) as ActivateProductResult;
+}
+
+export async function loadProductPlans(productId: string): Promise<ProductPlanOption[]> {
+    const { data, error } = await supabase
+        .from('product_plans')
+        .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, trial_days, is_popular, sort_order')
+        .eq('product_id', productId)
+        .eq('is_active', true)
+        .eq('plan_kind', 'base')
+        .order('sort_order');
+
+    if (error) throw new Error(error.message);
+    return (data || []) as ProductPlanOption[];
+}

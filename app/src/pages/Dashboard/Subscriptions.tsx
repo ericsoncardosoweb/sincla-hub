@@ -4,16 +4,15 @@ import {
     Container, Text, Card, Group, Badge, Stack, Skeleton,
     ThemeIcon, SimpleGrid, Button, Divider, Loader,
     ActionIcon, Title, Modal, Tooltip, SegmentedControl,
-    Box, Paper, Progress, Tabs, Menu,
+    Box, Paper, Progress, Tabs, Menu, Alert,
 } from '@mantine/core';
 import {
     IconCreditCard, IconCalendar, IconReceipt, IconUsers,
     IconStar, IconCheck, IconArrowLeft, IconRocket,
-    IconSchool, IconTarget, IconBuildingCommunity, IconShoppingCart,
     IconMessage, IconChartBar, IconArrowsExchange, IconArrowUp,
     IconArrowDown, IconBrandWhatsapp, IconSparkles, IconExternalLink, 
     IconCrown, IconTrendingUp, IconDotsVertical, IconFileInvoice, 
-    IconTrash 
+    IconTrash, IconSettings, IconPlus,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 
@@ -23,7 +22,15 @@ import { redirectToProduct } from '../../shared/services/cross-auth';
 import { listPaymentsBySubscription, cancelSubscription } from '../../shared/services/asaasService';
 import { notifications } from '@mantine/notifications';
 import { ConsumptionDashboard } from './components/ConsumptionDashboard';
+import { EcosystemShortcutsPanel } from './components/EcosystemShortcutsPanel';
+import { ToolActivationDrawer } from './components/ToolActivationDrawer';
 import { sendEmail } from '../../shared/services/notificationService';
+import {
+    resolveCompanyAccountMode,
+    shouldShowBillingUI,
+    isFullAccessMode,
+    type CompanyAccountMode,
+} from '../../shared/lib/companyAccountMode';
 
 
 // ============================
@@ -70,6 +77,16 @@ interface ProductInfo {
     base_url?: string;
 }
 
+interface CatalogProduct {
+    id: string;
+    name: string;
+    description: string | null;
+    brand_color: string | null;
+    icon: string;
+    base_url: string | null;
+    hasPlans: boolean;
+}
+
 // ============================
 // Icon Map
 // ============================
@@ -108,7 +125,13 @@ const statusColors: Record<string, string> = {
 const planLabels: Record<string, string> = {
     starter: 'Starter', pro: 'Pro', business: 'Business',
     enterprise: 'Enterprise', free: 'Gratuito', team: 'Team',
+    lifetime: 'Acesso completo',
 };
+
+const UNLIMITED_SEATS_THRESHOLD = 999999;
+const isUnlimitedSeats = (limit: number) => limit >= UNLIMITED_SEATS_THRESHOLD;
+const formatSeatsDisplay = (used: number, limit: number) =>
+    isUnlimitedSeats(limit) ? `${used} em uso · Ilimitado` : `${used}/${limit}`;
 
 // ============================
 // Component
@@ -119,8 +142,11 @@ export function Subscriptions() {
     const [searchParams, setSearchParams] = useSearchParams();
     const { currentCompany, subscriber } = useAuth();
     const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
+    const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<string | null>('assinaturas');
+    const [platformBillingEnabled, setPlatformBillingEnabled] = useState(false);
+    const [accountMode, setAccountMode] = useState<CompanyAccountMode>('free_access');
 
     // Plan selection state
     const productId = searchParams.get('produto');
@@ -173,34 +199,91 @@ export function Subscriptions() {
     }, [currentCompany]);
 
     useEffect(() => {
-        if (productId) loadPlans(productId);
-    }, [productId]);
+        if (productId && isSuccess) loadPlans(productId);
+    }, [productId, isSuccess]);
 
     useEffect(() => {
-        supabase.from('platform_settings').select('value').eq('key', 'empresa_whatsapp').single()
-            .then(({ data }) => { if (data?.value) setPlatformWhatsapp(data.value); });
+        supabase.from('platform_settings').select('key, value').in('key', ['empresa_whatsapp', 'billing_enabled'])
+            .then(({ data }) => {
+                (data || []).forEach((row: { key: string; value: unknown }) => {
+                    if (row.key === 'empresa_whatsapp' && typeof row.value === 'string') {
+                        setPlatformWhatsapp(row.value);
+                    }
+                    if (row.key === 'billing_enabled') {
+                        setPlatformBillingEnabled(row.value === true || row.value === 'true');
+                    }
+                });
+            });
     }, []);
+
+    useEffect(() => {
+        const aba = searchParams.get('aba');
+        if (aba === 'recursos') setActiveTab('consumo');
+        else if (aba === 'atalhos') setActiveTab('atalhos');
+        else if (aba === 'ferramentas') setActiveTab('assinaturas');
+    }, [searchParams]);
+
+    const handleTabChange = (value: string | null) => {
+        setActiveTab(value);
+        if (!value || productId) return;
+        const next = new URLSearchParams(searchParams);
+        if (value === 'consumo') next.set('aba', 'recursos');
+        else if (value === 'atalhos') next.set('aba', 'atalhos');
+        else next.set('aba', 'ferramentas');
+        setSearchParams(next, { replace: true });
+    };
 
     const loadData = async () => {
         if (!currentCompany) return;
         setLoading(true);
         try {
-            const { data } = await supabase
-                .from('subscriptions')
-                .select(`
-                    id, product_id, plan, status, seats_limit, seats_used,
-                    billing_cycle, monthly_amount, current_period_start, current_period_end,
-                    trial_ends_at, canceled_at, created_at,
-                    product:products!product_id (name, brand_color, icon, base_url)
-                `)
-                .eq('company_id', currentCompany.id)
-                .order('created_at', { ascending: false });
+            const [subsRes, productsRes, plansRes, modeRes] = await Promise.all([
+                supabase
+                    .from('subscriptions')
+                    .select(`
+                        id, product_id, plan, status, seats_limit, seats_used,
+                        billing_cycle, monthly_amount, current_period_start, current_period_end,
+                        trial_ends_at, canceled_at, created_at,
+                        product:products!product_id (name, brand_color, icon, base_url, description)
+                    `)
+                    .eq('company_id', currentCompany.id)
+                    .order('created_at', { ascending: false }),
+                supabase
+                    .from('products')
+                    .select('id, name, description, icon, brand_color, base_url, sort_order')
+                    .eq('is_active', true)
+                    .order('sort_order'),
+                supabase
+                    .from('product_plans')
+                    .select('product_id')
+                    .eq('is_active', true)
+                    .eq('plan_kind', 'base'),
+                supabase.rpc('get_company_account_mode', { p_company_id: currentCompany.id }),
+            ]);
 
-            const mapped = (data || []).map((s: any) => ({
+            const mapped = (subsRes.data || []).map((s: any) => ({
                 ...s,
                 product: Array.isArray(s.product) ? s.product[0] : s.product,
             }));
             setSubscriptions(mapped);
+
+            const productsWithPlans = new Set((plansRes.data || []).map((p: { product_id: string }) => p.product_id));
+            setCatalogProducts((productsRes.data || []).map((p: CatalogProduct) => ({
+                ...p,
+                hasPlans: productsWithPlans.has(p.id),
+            })));
+
+            const rpcMode = !modeRes.error && typeof modeRes.data === 'string'
+                ? modeRes.data as CompanyAccountMode
+                : null;
+            const monthlyTotal = mapped
+                .filter((s: SubscriptionRow) => ['active', 'trial'].includes(s.status))
+                .reduce((sum: number, s: SubscriptionRow) => sum + (s.monthly_amount || 0), 0);
+            setAccountMode(
+                rpcMode && ['lifetime', 'partner', 'billing_active', 'free_access'].includes(rpcMode)
+                    ? rpcMode
+                    : resolveCompanyAccountMode(currentCompany, monthlyTotal),
+            );
         } catch (error) {
             console.error('Error loading subscriptions:', error);
         } finally {
@@ -323,7 +406,7 @@ export function Subscriptions() {
     if (!currentCompany) {
         return (
             <Container size="xl" py="md">
-                <PageHeader title="Minhas Assinaturas" subtitle="Gerencie as assinaturas de produtos" helpContent="Aqui você visualiza todas as assinaturas de produtos da sua empresa." />
+                <PageHeader title="Meu Ecossistema" subtitle="Selecione ou crie uma empresa para ver suas ferramentas." helpContent="Aqui você visualiza as ferramentas Sincla ativas para a empresa selecionada." />
                 <EmptyState icon={<IconCreditCard size={28} />} title="Nenhuma empresa selecionada" description="Selecione ou crie uma empresa." actionLabel="Ir para Empresas" onAction={() => navigate('/painel/empresas')} />
             </Container>
         );
@@ -332,98 +415,191 @@ export function Subscriptions() {
     const color = productInfo?.brand_color || '#0047CC';
     const activeCount = subscriptions.filter(s => s.status === 'active').length;
     const totalAmount = subscriptions.filter(s => ['active', 'trial'].includes(s.status)).reduce((sum, s) => sum + (s.monthly_amount || 0), 0);
+    const isLifetime = accountMode === 'lifetime';
+    const isFullAccess = isFullAccessMode(accountMode);
+    const showBilling = shouldShowBillingUI(accountMode, platformBillingEnabled);
+    const totalSeatsUsed = subscriptions.reduce((acc, s) => acc + (s.seats_used || 0), 0);
+    const totalSeatsLimit = subscriptions.reduce((acc, s) => acc + (s.seats_limit || 0), 0);
+    const seatsSummaryUnlimited = subscriptions.length > 0 && subscriptions.every(s => isUnlimitedSeats(s.seats_limit));
+    const activeSubscriptions = subscriptions.filter(s => ['active', 'trial'].includes(s.status));
+    const inactiveSubscriptions = subscriptions.filter(s => !['active', 'trial'].includes(s.status));
+    const activeProductIds = new Set(activeSubscriptions.map(s => s.product_id));
+    const availableProducts = catalogProducts.filter(p => !activeProductIds.has(p.id) && p.hasPlans);
 
-    // ---- Plan Selection View ----
-    if (productId && !isSuccess) {
+    const handleActivateProduct = (productIdToActivate: string) => {
+        const next = new URLSearchParams(searchParams);
+        next.set('produto', productIdToActivate);
+        next.delete('sucesso');
+        setSearchParams(next);
+    };
+
+    const handleCloseActivationDrawer = () => {
+        const next = new URLSearchParams(searchParams);
+        next.delete('produto');
+        setSearchParams(next, { replace: true });
+    };
+
+    const renderSubscriptionCard = (sub: SubscriptionRow) => {
+        const subColor = sub.product?.brand_color || '#0047CC';
+        const IconComp = iconMap[sub.product?.icon || ''] || IconRocket;
+        const daysLeft = sub.current_period_end
+            ? Math.max(0, Math.ceil((new Date(sub.current_period_end).getTime() - Date.now()) / 86400000))
+            : null;
+        const seatPercent = sub.seats_limit > 0 && !isUnlimitedSeats(sub.seats_limit)
+            ? (sub.seats_used / sub.seats_limit) * 100
+            : 0;
+        const isSuspendedData = sub.status === 'suspended' || sub.status === 'canceled';
+        let isAccessBlockedDate = false;
+        let daysLate = 0;
+        if (sub.status === 'past_due' && sub.current_period_end) {
+            const pass = Math.ceil((Date.now() - new Date(sub.current_period_end).getTime()) / 86400000);
+            if (pass > 5) isAccessBlockedDate = true;
+            daysLate = pass;
+        }
+        const isAccessBlocked = isSuspendedData || isAccessBlockedDate;
+        const showPlanBadge = showBilling && !isFullAccess && sub.plan && sub.plan !== 'lifetime';
+
         return (
-            <Container size="xl" py="md">
-                <Stack gap="lg">
+            <Card key={sub.id} withBorder radius="md" padding={0} style={{ overflow: 'hidden', transition: 'all 0.2s ease', opacity: isAccessBlocked ? 0.8 : 1 }}
+                onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = `0 8px 24px ${subColor}20`; }}
+                onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = 'none'; }}
+            >
+                <Box style={{ background: `linear-gradient(135deg, ${subColor}, ${subColor}cc)`, padding: '16px 20px' }}>
                     <Group justify="space-between">
-                        <Group>
-                            <ActionIcon variant="subtle" onClick={() => setSearchParams({})}>
-                                <IconArrowLeft size={20} />
-                            </ActionIcon>
+                        <Group gap="sm">
+                            <ThemeIcon size="lg" radius="md" variant="white" color="dark" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                                <IconComp size={20} color="#fff" />
+                            </ThemeIcon>
                             <div>
-                                <Title order={3}>Escolha um plano</Title>
-                                {productInfo && (
-                                    <Badge variant="light" mt={4} style={{ backgroundColor: `${color}18`, color }}>
-                                        {productInfo.name}
-                                    </Badge>
+                                <Text fw={700} c="white" size="md">{sub.product?.name || sub.product_id}</Text>
+                                {showPlanBadge && (
+                                    <Group gap={6} mt={4}>
+                                        <Badge size="xs" variant="white" style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}>
+                                            <IconCrown size={10} style={{ marginRight: 4 }} />{planLabels[sub.plan] || sub.plan}
+                                        </Badge>
+                                    </Group>
                                 )}
                             </div>
                         </Group>
-                        {productInfo && (() => {
-                            const IconComp = iconMap[productInfo.icon] || IconRocket;
-                            return (
-                                <ThemeIcon size={56} radius="md" variant="light" style={{ backgroundColor: `${color}18`, color }}>
-                                    <IconComp size={28} />
-                                </ThemeIcon>
-                            );
-                        })()}
+                        <Group gap="xs">
+                            <Badge color={statusColors[sub.status] || 'gray'} variant="filled" size="sm" style={{ textTransform: 'capitalize' }}>
+                                {statusLabels[sub.status] || sub.status}
+                            </Badge>
+                            {showBilling && (
+                                <Menu shadow="md" width={220} position="bottom-end" withinPortal>
+                                    <Menu.Target>
+                                        <ActionIcon variant="transparent" color="white" size="sm">
+                                            <IconDotsVertical size={16} />
+                                        </ActionIcon>
+                                    </Menu.Target>
+                                    <Menu.Dropdown>
+                                        <Menu.Item leftSection={<IconFileInvoice size={14} />} onClick={() => handleOpenInvoices(sub)}>
+                                            Histórico de Faturas
+                                        </Menu.Item>
+                                        {sub.status !== 'canceled' && (
+                                            <>
+                                                <Menu.Divider />
+                                                <Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => { setSelectedSub(sub); setCancelModalOpen(true); }}>
+                                                    Cancelar Assinatura
+                                                </Menu.Item>
+                                            </>
+                                        )}
+                                    </Menu.Dropdown>
+                                </Menu>
+                            )}
+                        </Group>
                     </Group>
+                </Box>
 
-                    {loadingPlans ? (
-                        <Stack align="center" py="xl"><Loader /><Text c="dimmed">Carregando planos...</Text></Stack>
-                    ) : plans.length === 0 ? (
-                        <EmptyState icon={<IconRocket size={28} />} title="Nenhum plano disponível" description="Este produto ainda não possui planos configurados." actionLabel="Voltar" onAction={() => setSearchParams({})} />
-                    ) : (
-                        <SimpleGrid cols={{ base: 1, sm: 2, lg: plans.length >= 4 ? 4 : plans.length >= 3 ? 3 : 2 }} spacing="md">
-                            {plans.map((plan) => (
-                                <Card key={plan.id} withBorder radius="md" padding="lg" style={{
-                                    borderColor: plan.is_popular ? color : undefined,
-                                    borderWidth: plan.is_popular ? 2 : 1,
-                                    position: 'relative', overflow: 'visible',
-                                    marginTop: plan.is_popular ? 12 : 0,
-                                    transition: 'all 0.25s ease', cursor: 'pointer',
-                                }}
-                                    onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = `0 12px 24px ${color}20`; e.currentTarget.style.borderColor = color; }}
-                                    onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = plan.is_popular ? color : ''; }}
-                                >
-                                    {plan.is_popular && (
-                                        <Badge variant="filled" leftSection={<IconStar size={12} />} style={{ position: 'absolute', top: -10, right: 12, backgroundColor: color }}>Recomendado</Badge>
-                                    )}
-                                    <Text fw={700} size="lg" mb={4}>{plan.name}</Text>
-                                    {plan.description && <Text size="xs" c="dimmed" mb="sm">{plan.description}</Text>}
-                                    <Group gap={4} align="baseline" mb={4}>
-                                        <Text size="xl" fw={800} style={{ color }}>{plan.price_monthly === 0 && plan.price_yearly === 0 ? 'Sob Consulta' : formatCurrency(plan.price_monthly)}</Text>
-                                        {plan.price_monthly > 0 && <Text size="xs" c="dimmed">/mês</Text>}
-                                    </Group>
-                                    {plan.price_yearly > 0 && <Text size="xs" c="dimmed" mb="xs">ou {formatCurrency(plan.price_yearly)}/ano ({plan.discount_yearly_percent}% off)</Text>}
-                                    {plan.trial_days > 0 && <Badge variant="light" color="green" size="sm" mb="sm">{plan.trial_days} dias grátis</Badge>}
-                                    {plan.price_setup > 0 && <Badge variant="light" color="orange" size="sm" mb="sm" ml={4}>+ {formatCurrency(plan.price_setup)} setup</Badge>}
-                                    <Divider my="sm" />
-                                    <Stack gap={6} mb="md">
-                                        {plan.features.slice(0, 5).map((f: string, i: number) => (
-                                            <Group key={i} gap={6} wrap="nowrap">
-                                                <IconCheck size={14} style={{ color }} />
-                                                <Text size="xs">{f}</Text>
-                                            </Group>
-                                        ))}
-                                        {plan.features.length > 5 && <Text size="xs" c="dimmed">+{plan.features.length - 5} mais...</Text>}
-                                    </Stack>
-                                    <Button fullWidth variant={plan.is_popular ? 'filled' : 'light'}
-                                        onClick={() => {
-                                            if (plan.slug === 'enterprise') {
-                                                const num = platformWhatsapp.replace(/\D/g, '');
-                                                window.open(`https://wa.me/55${num}?text=${encodeURIComponent(`Olá! Gostaria de saber mais sobre o plano Enterprise do ${productInfo?.name || 'Sincla'}.`)}`, '_blank');
-                                            } else {
-                                                window.location.href = `/checkout?produto=${productId}&plano=${plan.slug}&ciclo=monthly`;
-                                            }
-                                        }}
-                                        leftSection={plan.slug === 'enterprise' ? <IconBrandWhatsapp size={16} /> : undefined}
-                                        color={plan.slug === 'enterprise' ? 'green' : undefined}
-                                        style={{ ...(plan.slug !== 'enterprise' && plan.is_popular ? { backgroundColor: color } : plan.slug !== 'enterprise' ? { color } : {}), transition: 'all 0.2s ease' }}
-                                    >
-                                        {plan.slug === 'enterprise' ? 'Falar com Consultor' : 'Quero Ativar'}
-                                    </Button>
-                                </Card>
-                            ))}
+                <Box p="md">
+                    {showBilling ? (
+                        <SimpleGrid cols={3} spacing="xs" mb="sm">
+                            <div style={{ textAlign: 'center' }}>
+                                <Text size="xs" c="dimmed">Valor</Text>
+                                <Text size="sm" fw={700}>{sub.monthly_amount > 0 ? formatCurrency(sub.monthly_amount) : 'Grátis'}</Text>
+                                <Text size="xs" c="dimmed">/{sub.billing_cycle === 'yearly' ? 'ano' : 'mês'}</Text>
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <Text size="xs" c="dimmed">Seats</Text>
+                                <Text size="sm" fw={700}>{formatSeatsDisplay(sub.seats_used, sub.seats_limit)}</Text>
+                                {!isUnlimitedSeats(sub.seats_limit) && (
+                                    <Progress value={seatPercent} size={4} color={seatPercent > 90 ? 'red' : subColor} mt={4} />
+                                )}
+                            </div>
+                            <div style={{ textAlign: 'center' }}>
+                                <Text size="xs" c="dimmed">Renova em</Text>
+                                <Text size="sm" fw={700}>{daysLeft !== null ? `${daysLeft}d` : '—'}</Text>
+                                {sub.status === 'trial' && sub.trial_ends_at && (
+                                    <Text size="xs" c="blue">Trial até {formatDate(sub.trial_ends_at)}</Text>
+                                )}
+                            </div>
                         </SimpleGrid>
+                    ) : (
+                        <Stack gap={4} align="center" mb="sm">
+                            <Text size="xs" c="dimmed">Usuários ativos</Text>
+                            <Text size="sm" fw={700}>{formatSeatsDisplay(sub.seats_used, sub.seats_limit)}</Text>
+                        </Stack>
                     )}
-                </Stack>
-            </Container>
+
+                    <Divider my="xs" />
+
+                    <Group justify={showBilling ? 'space-between' : 'center'} mt="md">
+                        {showBilling && (
+                            <Tooltip label={isAccessBlocked ? 'O plano desta assinatura não permite alterações' : 'Mudar plano'} withArrow>
+                                <Button variant="subtle" size="xs" leftSection={<IconArrowsExchange size={14} />}
+                                    onClick={() => handleOpenChangePlan(sub)} disabled={sub.status === 'canceled' || isAccessBlocked}
+                                >
+                                    Alterar Plano
+                                </Button>
+                            </Tooltip>
+                        )}
+                        <Tooltip label={isAccessBlocked ? (daysLate > 0 ? `Seu acesso está bloqueado por inatividade ou atraso de ${daysLate} dias.` : 'O plano desta assinatura foi cancelado ou desativado.') : 'Acessar ferramenta'} withArrow>
+                            <Button variant={isAccessBlocked ? 'filled' : 'light'} size={showBilling ? 'xs' : 'sm'} rightSection={<IconExternalLink size={14} />}
+                                color={isAccessBlocked ? 'red' : undefined}
+                                style={!isAccessBlocked ? { color: subColor } : undefined}
+                                disabled={isAccessBlocked}
+                                onClick={async () => {
+                                    if (isAccessBlocked) return;
+                                    try {
+                                        await redirectToProduct(
+                                            { id: sub.product_id, base_url: sub.product?.base_url } as any,
+                                            currentCompany as any
+                                        );
+                                    } catch { /* silent */ }
+                                }}
+                            >
+                                {isAccessBlocked ? 'Bloqueada' : 'Acessar'}
+                            </Button>
+                        </Tooltip>
+                    </Group>
+                </Box>
+            </Card>
         );
-    }
+    };
+
+    const renderAvailableProductCard = (product: CatalogProduct) => {
+        const color = product.brand_color || '#0047CC';
+        const IconComp = iconMap[product.icon] || IconRocket;
+        return (
+            <Card key={product.id} withBorder radius="md" padding="md">
+                <Group gap="sm" align="flex-start" wrap="nowrap" mb="sm">
+                    <ThemeIcon size="lg" radius="md" variant="light" style={{ backgroundColor: `${color}18`, color }}>
+                        <IconComp size={20} />
+                    </ThemeIcon>
+                    <div style={{ flex: 1 }}>
+                        <Text fw={700} size="sm">{product.name}</Text>
+                        {product.description && (
+                            <Text size="xs" c="dimmed" lineClamp={2} mt={4}>{product.description}</Text>
+                        )}
+                    </div>
+                </Group>
+                <Button fullWidth variant="light" leftSection={<IconPlus size={16} />} style={{ color }}
+                    onClick={() => handleActivateProduct(product.id)}>
+                    Ativar ferramenta
+                </Button>
+            </Card>
+        );
+    };
 
     // ============================
     // Main View (Tabs)
@@ -433,24 +609,37 @@ export function Subscriptions() {
         <Container size="xl" py="md">
             <Stack gap="lg">
                 <PageHeader
-                    title="Gestão da Assinatura"
-                    subtitle={`Assinaturas e consumo de ${currentCompany.name}`}
+                    title="Meu Ecossistema"
+                    subtitle={`Ferramentas e recursos de ${currentCompany.name}`}
                     helpContent={
-                        <Text size="sm">Gerencie suas assinaturas, monitore o consumo de serviços (IA, Storage, Notificações) e adquira créditos adicionais.</Text>
+                        <Text size="sm">Veja quais ferramentas Sincla estão ativas, acesse cada produto e monitore uso de IA e armazenamento.</Text>
                     }
                 />
 
+                {isFullAccess && (
+                    <Alert variant="light" color={isLifetime ? 'violet' : 'blue'} icon={<IconCrown size={18} />} radius="md">
+                        <Text size="sm" fw={600}>
+                            {isLifetime ? 'Acesso completo ao ecossistema Sincla' : 'Conta parceira com acesso ampliado'}
+                        </Text>
+                        <Text size="xs" c="dimmed" mt={4}>
+                            {isLifetime
+                                ? 'Sua empresa tem acesso vitalício a todas as ferramentas — sem cobrança mensal nesta área.'
+                                : 'Ferramentas liberadas pela parceria Sincla — gestão financeira fica oculta enquanto o billing estiver desligado.'}
+                        </Text>
+                    </Alert>
+                )}
+
                 {/* ── Hero KPIs ── */}
                 {loading ? (
-                    <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
-                        {Array(4).fill(0).map((_, i) => <Skeleton key={i} height={100} radius="md" />)}
+                    <SimpleGrid cols={{ base: 2, sm: showBilling ? 4 : 2 }} spacing="md">
+                        {Array(showBilling ? 4 : 2).fill(0).map((_, i) => <Skeleton key={i} height={100} radius="md" />)}
                     </SimpleGrid>
-                ) : (
+                ) : showBilling ? (
                     <SimpleGrid cols={{ base: 2, sm: 4 }} spacing="md">
                         <Paper radius="md" p="md" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff' }}>
                             <Group gap="xs">
                                 <IconCreditCard size={18} style={{ opacity: 0.8 }} />
-                                <Text size="xs" style={{ opacity: 0.85 }}>Assinaturas</Text>
+                                <Text size="xs" style={{ opacity: 0.85 }}>Ferramentas</Text>
                             </Group>
                             <Text size="xl" fw={800} mt={4}>{subscriptions.length}</Text>
                             <Text size="xs" style={{ opacity: 0.7 }}>{activeCount} ativa{activeCount !== 1 ? 's' : ''}</Text>
@@ -470,11 +659,9 @@ export function Subscriptions() {
                                 <IconUsers size={18} style={{ opacity: 0.8 }} />
                                 <Text size="xs" style={{ opacity: 0.85 }}>Seats em Uso</Text>
                             </Group>
-                            <Text size="xl" fw={800} mt={4}>
-                                {subscriptions.reduce((acc, s) => acc + (s.seats_used || 0), 0)}
-                            </Text>
+                            <Text size="xl" fw={800} mt={4}>{totalSeatsUsed}</Text>
                             <Text size="xs" style={{ opacity: 0.7 }}>
-                                de {subscriptions.reduce((acc, s) => acc + (s.seats_limit || 0), 0)} disponíveis
+                                {seatsSummaryUnlimited ? 'ilimitados' : `de ${totalSeatsLimit} disponíveis`}
                             </Text>
                         </Paper>
 
@@ -489,165 +676,108 @@ export function Subscriptions() {
                             <Text size="xs" style={{ opacity: 0.7 }}>com planos anuais</Text>
                         </Paper>
                     </SimpleGrid>
+                ) : (
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                        <Paper radius="md" p="md" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff' }}>
+                            <Group gap="xs">
+                                <IconRocket size={18} style={{ opacity: 0.8 }} />
+                                <Text size="xs" style={{ opacity: 0.85 }}>Ferramentas ativas</Text>
+                            </Group>
+                            <Text size="xl" fw={800} mt={4}>{activeCount}</Text>
+                            <Text size="xs" style={{ opacity: 0.7 }}>
+                                de {subscriptions.length} no ecossistema
+                            </Text>
+                        </Paper>
+
+                        <Paper radius="md" p="md" style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: '#fff' }}>
+                            <Group gap="xs">
+                                <IconUsers size={18} style={{ opacity: 0.8 }} />
+                                <Text size="xs" style={{ opacity: 0.85 }}>Usuários nas ferramentas</Text>
+                            </Group>
+                            <Text size="xl" fw={800} mt={4}>{totalSeatsUsed}</Text>
+                            <Text size="xs" style={{ opacity: 0.7 }}>
+                                {seatsSummaryUnlimited ? 'sem limite de seats' : `de ${totalSeatsLimit} seats`}
+                            </Text>
+                        </Paper>
+                    </SimpleGrid>
                 )}
 
                 {/* ── Tabs ── */}
-                <Tabs value={activeTab} onChange={setActiveTab}>
+                <Tabs value={activeTab} onChange={handleTabChange}>
                     <Tabs.List>
-                        <Tabs.Tab value="assinaturas" leftSection={<IconCreditCard size={16} />} style={{ fontWeight: 600 }}>
-                            Minhas Ferramentas
+                        <Tabs.Tab value="assinaturas" leftSection={<IconRocket size={16} />} style={{ fontWeight: 600 }}>
+                            Ferramentas
                         </Tabs.Tab>
                         <Tabs.Tab value="consumo" leftSection={<IconSparkles size={16} />} style={{ fontWeight: 600 }}>
-                            Consumo & Créditos
+                            Recursos
+                        </Tabs.Tab>
+                        <Tabs.Tab value="atalhos" leftSection={<IconSettings size={16} />} style={{ fontWeight: 600 }}>
+                            Atalhos
                         </Tabs.Tab>
                     </Tabs.List>
 
-                    {/* ═══ Tab: Assinaturas ═══ */}
                     <Tabs.Panel value="assinaturas" pt="lg">
                         {loading ? (
                             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                                 {[1, 2].map(i => <Skeleton key={i} height={200} radius="md" />)}
                             </SimpleGrid>
-                        ) : subscriptions.length === 0 ? (
+                        ) : activeSubscriptions.length === 0 && availableProducts.length === 0 && inactiveSubscriptions.length === 0 ? (
                             <EmptyState
                                 icon={<IconRocket size={28} />}
-                                title="Nenhuma assinatura ativa"
-                                description="Quando você contratar um produto, ele aparecerá aqui com todos os detalhes. Explore nosso catálogo de ferramentas."
-                                actionLabel="Ver Ferramentas"
+                                title="Nenhuma ferramenta ativa"
+                                description="Quando uma ferramenta Sincla for habilitada para sua empresa, ela aparecerá aqui com acesso direto."
+                                actionLabel="Explorar catálogo"
                                 onAction={() => navigate('/painel')}
                             />
                         ) : (
-                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-                                {subscriptions.map(sub => {
-                                    const subColor = sub.product?.brand_color || '#0047CC';
-                                    const IconComp = iconMap[sub.product?.icon || ''] || IconRocket;
-                                    const daysLeft = sub.current_period_end
-                                        ? Math.max(0, Math.ceil((new Date(sub.current_period_end).getTime() - Date.now()) / 86400000))
-                                        : null;
-                                    const seatPercent = sub.seats_limit > 0 ? (sub.seats_used / sub.seats_limit) * 100 : 0;
-                                    const isSuspendedData = sub.status === 'suspended' || sub.status === 'canceled';
-                                    let isAccessBlockedDate = false;
-                                    let daysLate = 0;
-                                    if (sub.status === 'past_due' && sub.current_period_end) {
-                                        const pass = Math.ceil((Date.now() - new Date(sub.current_period_end).getTime()) / 86400000);
-                                        if (pass > 5) {
-                                            isAccessBlockedDate = true;
-                                        }
-                                        daysLate = pass;
-                                    }
-                                    const isAccessBlocked = isSuspendedData || isAccessBlockedDate;
+                            <Stack gap="xl">
+                                {activeSubscriptions.length > 0 && (
+                                    <Stack gap="md">
+                                        <Group justify="space-between">
+                                            <Title order={4}>Ativas</Title>
+                                            <Badge variant="light" color="green">{activeSubscriptions.length}</Badge>
+                                        </Group>
+                                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                            {activeSubscriptions.map(renderSubscriptionCard)}
+                                        </SimpleGrid>
+                                    </Stack>
+                                )}
 
-                                    return (
-                                        <Card key={sub.id} withBorder radius="md" padding={0} style={{ overflow: 'hidden', transition: 'all 0.2s ease', opacity: isAccessBlocked ? 0.8 : 1 }}
-                                            onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = `0 8px 24px ${subColor}20`; }}
-                                            onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => { e.currentTarget.style.boxShadow = 'none'; }}
-                                        >
-                                            {/* Header gradient */}
-                                            <Box style={{ background: `linear-gradient(135deg, ${subColor}, ${subColor}cc)`, padding: '16px 20px' }}>
-                                                <Group justify="space-between">
-                                                    <Group gap="sm">
-                                                        <ThemeIcon size="lg" radius="md" variant="white" color="dark" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                                                            <IconComp size={20} color="#fff" />
-                                                        </ThemeIcon>
-                                                        <div>
-                                                            <Text fw={700} c="white" size="md">{sub.product?.name || sub.product_id}</Text>
-                                                            <Group gap={6}>
-                                                                <Badge size="xs" variant="white" style={{ background: 'rgba(255,255,255,0.25)', color: '#fff' }}>
-                                                                    <IconCrown size={10} style={{ marginRight: 4 }} />{planLabels[sub.plan] || sub.plan}
-                                                                </Badge>
-                                                            </Group>
-                                                    </div>
-                                                </Group>
-                                                <Group gap="xs">
-                                                    <Badge color={statusColors[sub.status] || 'gray'} variant="filled" size="sm" style={{ textTransform: 'capitalize' }}>
-                                                        {statusLabels[sub.status] || sub.status}
-                                                    </Badge>
-                                                    <Menu shadow="md" width={220} position="bottom-end" withinPortal>
-                                                        <Menu.Target>
-                                                            <ActionIcon variant="transparent" color="white" size="sm">
-                                                                <IconDotsVertical size={16} />
-                                                            </ActionIcon>
-                                                        </Menu.Target>
-                                                        <Menu.Dropdown>
-                                                            <Menu.Item leftSection={<IconFileInvoice size={14} />} onClick={() => handleOpenInvoices(sub)}>
-                                                                Histórico de Faturas
-                                                            </Menu.Item>
-                                                            {sub.status !== 'canceled' && (
-                                                                <>
-                                                                    <Menu.Divider />
-                                                                    <Menu.Item color="red" leftSection={<IconTrash size={14} />} onClick={() => { setSelectedSub(sub); setCancelModalOpen(true); }}>
-                                                                        Cancelar Assinatura
-                                                                    </Menu.Item>
-                                                                </>
-                                                            )}
-                                                        </Menu.Dropdown>
-                                                    </Menu>
-                                                </Group>
-                                            </Group>
-                                        </Box>
+                                {availableProducts.length > 0 && (
+                                    <Stack gap="md">
+                                        <div>
+                                            <Title order={4}>Disponíveis para ativar</Title>
+                                            <Text size="sm" c="dimmed" mt={4}>
+                                                Ferramentas do catálogo Sincla que ainda não estão ligadas a esta empresa.
+                                            </Text>
+                                        </div>
+                                        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+                                            {availableProducts.map(renderAvailableProductCard)}
+                                        </SimpleGrid>
+                                    </Stack>
+                                )}
 
-                                            {/* Body */}
-                                            <Box p="md">
-                                                <SimpleGrid cols={3} spacing="xs" mb="sm">
-                                                    <div style={{ textAlign: 'center' }}>
-                                                        <Text size="xs" c="dimmed">Valor</Text>
-                                                        <Text size="sm" fw={700}>{sub.monthly_amount > 0 ? formatCurrency(sub.monthly_amount) : 'Grátis'}</Text>
-                                                        <Text size="xs" c="dimmed">/{sub.billing_cycle === 'yearly' ? 'ano' : 'mês'}</Text>
-                                                    </div>
-                                                    <div style={{ textAlign: 'center' }}>
-                                                        <Text size="xs" c="dimmed">Seats</Text>
-                                                        <Text size="sm" fw={700}>{sub.seats_used}/{sub.seats_limit}</Text>
-                                                        <Progress value={seatPercent} size={4} color={seatPercent > 90 ? 'red' : subColor} mt={4} />
-                                                    </div>
-                                                    <div style={{ textAlign: 'center' }}>
-                                                        <Text size="xs" c="dimmed">Renova em</Text>
-                                                        <Text size="sm" fw={700}>{daysLeft !== null ? `${daysLeft}d` : '—'}</Text>
-                                                        {sub.status === 'trial' && sub.trial_ends_at && (
-                                                            <Text size="xs" c="blue">Trial até {formatDate(sub.trial_ends_at)}</Text>
-                                                        )}
-                                                    </div>
-                                                </SimpleGrid>
-
-                                                <Divider my="xs" />
-
-                                                <Group justify="space-between" mt="md">
-                                                    <Tooltip label={isAccessBlocked ? 'O plano desta assinatura não permite alterações' : 'Mudar plano'} withArrow>
-                                                        <Button variant="subtle" size="xs" leftSection={<IconArrowsExchange size={14} />}
-                                                            onClick={() => handleOpenChangePlan(sub)} disabled={sub.status === 'canceled' || isAccessBlocked}
-                                                        >
-                                                            Alterar Plano
-                                                        </Button>
-                                                    </Tooltip>
-                                                    <Tooltip label={isAccessBlocked ? (daysLate > 0 ? `Seu acesso está bloqueado por inatividade ou atraso de ${daysLate} dias.` : 'O plano desta assinatura foi cancelado ou desativado.') : 'Acessar ferramenta'} withArrow>
-                                                        <Button variant={isAccessBlocked ? 'filled' : 'light'} size="xs" rightSection={<IconExternalLink size={14} />}
-                                                            color={isAccessBlocked ? 'red' : undefined}
-                                                            style={!isAccessBlocked ? { color: subColor } : undefined}
-                                                            disabled={isAccessBlocked}
-                                                            onClick={async () => {
-                                                                if (isAccessBlocked) return;
-                                                                try {
-                                                                    await redirectToProduct(
-                                                                        { id: sub.product_id, base_url: sub.product?.base_url } as any,
-                                                                        currentCompany as any
-                                                                    );
-                                                                } catch { /* silent */ }
-                                                            }}
-                                                        >
-                                                            {isAccessBlocked ? 'Bloqueada' : 'Acessar'}
-                                                        </Button>
-                                                    </Tooltip>
-                                                </Group>
-                                            </Box>
-                                        </Card>
-                                    );
-                                })}
-                            </SimpleGrid>
+                                {inactiveSubscriptions.length > 0 && (
+                                    <Stack gap="md">
+                                        <Group justify="space-between">
+                                            <Title order={4}>Inativas</Title>
+                                            <Badge variant="light" color="gray">{inactiveSubscriptions.length}</Badge>
+                                        </Group>
+                                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                                            {inactiveSubscriptions.map(renderSubscriptionCard)}
+                                        </SimpleGrid>
+                                    </Stack>
+                                )}
+                            </Stack>
                         )}
                     </Tabs.Panel>
 
-                    {/* ═══ Tab: Consumo ═══ */}
                     <Tabs.Panel value="consumo" pt="lg">
-                        <ConsumptionDashboard companyId={currentCompany.id} />
+                        <ConsumptionDashboard companyId={currentCompany.id} billingEnabled={showBilling} />
+                    </Tabs.Panel>
+
+                    <Tabs.Panel value="atalhos" pt="lg">
+                        <EcosystemShortcutsPanel />
                     </Tabs.Panel>
                 </Tabs>
             </Stack>
@@ -663,7 +793,7 @@ export function Subscriptions() {
                     <Button size="md" mt="lg" fullWidth rightSection={<IconRocket size={18} />} onClick={handleAccessTool} style={{ backgroundColor: color }}>
                         Acessar a Ferramenta Agora
                     </Button>
-                    <Button variant="subtle" fullWidth onClick={handleCloseSuccessModal}>Voltar para minhas Assinaturas</Button>
+                    <Button variant="subtle" fullWidth onClick={handleCloseSuccessModal}>Voltar ao Meu Ecossistema</Button>
                 </Stack>
             </Modal>
 
@@ -811,6 +941,18 @@ export function Subscriptions() {
                     </Group>
                 </Stack>
             </Modal>
+
+            <ToolActivationDrawer
+                opened={!!productId && !isSuccess}
+                onClose={handleCloseActivationDrawer}
+                productId={productId}
+                company={currentCompany}
+                billingEnabled={showBilling}
+                isFullAccess={isFullAccess}
+                platformWhatsapp={platformWhatsapp}
+                iconMap={iconMap}
+                onActivated={loadData}
+            />
         </Container>
     );
 }

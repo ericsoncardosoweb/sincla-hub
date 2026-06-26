@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Container,
     Text,
@@ -46,6 +46,7 @@ import { buildEmailLayoutPreview, DEFAULT_EMAIL_PRIMARY } from '../../shared/lib
 
 export function CompanySettings() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { currentCompany, refreshCompanies } = useAuth();
     const { isOwner, isAdmin } = useCompany();
     const [loading, setLoading] = useState(false);
@@ -629,6 +630,25 @@ export function CompanySettings() {
 
     const canEdit = isOwner || isAdmin;
 
+    const initialSettingsTab = (() => {
+        const aba = searchParams.get('aba');
+        if (aba === 'notificacoes' || aba === 'notifications') return 'notifications';
+        if (aba === 'branding') return 'branding';
+        if (aba === 'dominio' || aba === 'domain') return 'domain';
+        if (aba === 'integracoes' || aba === 'integrations') return 'integrations';
+        return 'general';
+    })();
+    const [settingsTab, setSettingsTab] = useState(initialSettingsTab);
+
+    useEffect(() => {
+        const aba = searchParams.get('aba');
+        if (aba === 'notificacoes' || aba === 'notifications') setSettingsTab('notifications');
+        else if (aba === 'branding') setSettingsTab('branding');
+        else if (aba === 'dominio' || aba === 'domain') setSettingsTab('domain');
+        else if (aba === 'integracoes' || aba === 'integrations') setSettingsTab('integrations');
+        else if (aba === 'general' || aba === 'geral') setSettingsTab('general');
+    }, [searchParams]);
+
     if (!currentCompany) {
         return (
             <Container size="md" py="md">
@@ -667,7 +687,7 @@ export function CompanySettings() {
             />
 
             <form onSubmit={form.onSubmit(handleSubmit)}>
-                <Tabs defaultValue="general">
+                <Tabs value={settingsTab} onChange={(v) => v && setSettingsTab(v)}>
                     <Tabs.List mb="lg">
                         <Tabs.Tab value="general" leftSection={<IconSettings size={16} />}>
                             Geral

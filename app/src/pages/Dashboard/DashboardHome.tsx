@@ -225,7 +225,7 @@ export function DashboardHome() {
     const quickLinks = [
         { icon: IconRocket, label: 'Meu Onboarding', path: '/painel/onboarding', color: '#f50057' },
         { icon: IconUsers, label: 'Gestão de Usuários', path: '/painel/equipe', color: '#6200ea' },
-        { icon: IconCreditCard, label: 'Minhas Assinaturas', path: '/painel/assinaturas', color: '#00c853' },
+        { icon: IconCreditCard, label: 'Meu Ecossistema', path: '/painel/assinaturas', color: '#00c853' },
         { icon: IconUserCircle, label: 'Perfil e Senha', path: '/painel/perfil', color: '#0087ff' },
         { icon: IconHeadset, label: 'Suporte', path: '/painel/contatos', color: '#ff8c00' },
     ];

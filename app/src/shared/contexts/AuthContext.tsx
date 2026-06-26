@@ -54,6 +54,8 @@ export interface Company {
   status: 'active' | 'suspended' | 'canceled';
   settings: Record<string, unknown>;
   branding: CompanyBranding | null;
+  lifetime_access?: boolean;
+  partner_id?: string | null;
   created_at: string;
 }
 

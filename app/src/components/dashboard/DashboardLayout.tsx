@@ -90,7 +90,7 @@ const mainNavItems: NavItem[] = [
     { icon: IconAddressBook, label: 'Contatos', path: '/painel/contatos' },
     { icon: IconUsers, label: 'Equipe', path: '/painel/equipe' },
     { icon: IconPlugConnected, label: 'Integrações', path: '/painel/integracoes' },
-    { icon: IconCreditCard, label: 'Assinaturas', path: '/painel/assinaturas' },
+    { icon: IconCreditCard, label: 'Meu Ecossistema', path: '/painel/assinaturas' },
 ];
 
 const iconMap: Record<string, typeof IconUsers> = {
