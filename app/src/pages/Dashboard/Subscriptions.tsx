@@ -8,7 +8,8 @@ import {
 } from '@mantine/core';
 import {
     IconCreditCard, IconCalendar, IconReceipt, IconUsers,
-    IconStar, IconCheck, IconArrowLeft, IconRocket,
+    IconCheck, IconRocket, IconSchool, IconTarget,
+    IconBuildingCommunity, IconShoppingCart,
     IconMessage, IconChartBar, IconArrowsExchange, IconArrowUp,
     IconArrowDown, IconBrandWhatsapp, IconSparkles, IconExternalLink, 
     IconCrown, IconTrendingUp, IconDotsVertical, IconFileInvoice, 
@@ -152,8 +153,6 @@ export function Subscriptions() {
     const productId = searchParams.get('produto');
     const isSuccess = searchParams.get('sucesso') === 'true';
     const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
-    const [plans, setPlans] = useState<PlanOption[]>([]);
-    const [loadingPlans, setLoadingPlans] = useState(false);
 
     // Change plan modal state
     const [changePlanModalOpen, setChangePlanModalOpen] = useState(false);
@@ -268,8 +267,13 @@ export function Subscriptions() {
             setSubscriptions(mapped);
 
             const productsWithPlans = new Set((plansRes.data || []).map((p: { product_id: string }) => p.product_id));
-            setCatalogProducts((productsRes.data || []).map((p: CatalogProduct) => ({
-                ...p,
+            setCatalogProducts((productsRes.data || []).map((p) => ({
+                id: p.id,
+                name: p.name,
+                description: p.description,
+                brand_color: p.brand_color,
+                icon: p.icon,
+                base_url: p.base_url,
                 hasPlans: productsWithPlans.has(p.id),
             })));
 
@@ -292,20 +296,15 @@ export function Subscriptions() {
     };
 
     const loadPlans = async (pid: string) => {
-        setLoadingPlans(true);
         try {
-            const [productRes, plansRes] = await Promise.all([
-                supabase.from('products').select('id, name, brand_color, icon, base_url').eq('id', pid).single(),
-                supabase.from('product_plans')
-                    .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days, plan_kind, account_type')
-                    .eq('product_id', pid).eq('is_active', true).eq('plan_kind', 'base').order('sort_order'),
-            ]);
-            setProductInfo(productRes.data);
-            setPlans(plansRes.data || []);
+            const { data } = await supabase
+                .from('products')
+                .select('id, name, brand_color, icon, base_url')
+                .eq('id', pid)
+                .single();
+            setProductInfo(data);
         } catch (err) {
-            console.error('Error loading plans:', err);
-        } finally {
-            setLoadingPlans(false);
+            console.error('Error loading product for success modal:', err);
         }
     };
 
@@ -351,7 +350,7 @@ export function Subscriptions() {
     };
 
     const handleConfirmCancel = async () => {
-        if (!selectedSub) return;
+        if (!selectedSub || !currentCompany) return;
         setCancelLoading(true);
 
         try {

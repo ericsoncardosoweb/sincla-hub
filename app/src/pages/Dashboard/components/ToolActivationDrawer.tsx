@@ -7,7 +7,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import {
     IconRocket, IconCheck, IconSparkles, IconBrandWhatsapp,
-    IconChevronDown, IconChevronUp, IconExternalLink, IconStar,
+    IconChevronDown, IconChevronUp, IconStar,
 } from '@tabler/icons-react';
 import { supabase } from '../../../shared/lib/supabase';
 import {
