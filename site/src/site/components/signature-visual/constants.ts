@@ -17,14 +17,14 @@ export const SECTIONS = {
 // Módulos Sincla com suas cores
 export const MODULES = [
     { id: 'rh', color: '#0066cc', angle: 0 },
-    { id: 'recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'talento', color: '#8B5CF6', angle: 120 },
     { id: 'ead', color: '#ff6600', angle: 240 },
 ] as const;
 
 // Módulos para mobile (reduzido)
 export const MODULES_MOBILE = [
     { id: 'rh', color: '#0066cc', angle: 0 },
-    { id: 'recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'talento', color: '#8B5CF6', angle: 120 },
     { id: 'ead', color: '#ff6600', angle: 240 },
 ] as const;
 
@@ -47,7 +47,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 1.0,
         orbitOpacity: 0.06,
         visibleSatellites: 1,
-        activeModules: ['rh', 'recrutamento', 'ead'],
+        activeModules: ['rh', 'talento', 'ead'],
         connectionIntensity: 0.5,
         moduleOrbitRadius: 1.0,
     },
@@ -57,7 +57,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 1.1,
         orbitOpacity: 0.08,
         visibleSatellites: 1,
-        activeModules: ['rh', 'recrutamento', 'ead'],
+        activeModules: ['rh', 'talento', 'ead'],
         connectionIntensity: 0.8,
         moduleOrbitRadius: 1.1,
     },
@@ -67,7 +67,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 0.95,
         orbitOpacity: 0.05,
         visibleSatellites: 1,
-        activeModules: ['rh', 'recrutamento', 'ead'],
+        activeModules: ['rh', 'talento', 'ead'],
         connectionIntensity: 0.4,
         moduleOrbitRadius: 1.3,
     },
@@ -77,7 +77,7 @@ export const SECTION_STATES: Record<string, SignatureState> = {
         orbitScale: 1.15,
         orbitOpacity: 0.07,
         visibleSatellites: 3,
-        activeModules: ['rh', 'recrutamento', 'ead'],
+        activeModules: ['rh', 'talento', 'ead'],
         connectionIntensity: 0.6,
         moduleOrbitRadius: 0.9,
     },

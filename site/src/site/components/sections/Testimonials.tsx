@@ -30,7 +30,7 @@ const testimonials: Testimonial[] = [
     {
         id: 'innovatech',
         category: 'EMPRESA',
-        quote: 'O Sincla Recrutamento otimizou nossa atração de talentos. A triagem automática com IA e os testes comportamentais integrados reduziram o custo por contratação em 50%.',
+        quote: 'O Sincla Talento otimizou nossa atração de talentos. A triagem automática com IA e os testes comportamentais integrados reduziram o custo por contratação em 50%.',
         author: 'MARINA COSTA,',
         role: 'Head de R&S, InnovaTech Ltda',
         company: 'InnovaTech',

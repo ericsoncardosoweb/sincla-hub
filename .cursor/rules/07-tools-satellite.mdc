@@ -1,0 +1,46 @@
+---
+description: Ferramentas satélite (RH, Agenda, EAD…) — SSO, Hub e deploy independente
+globs: tools/**
+alwaysApply: false
+---
+
+# Tools satélite (`tools/`)
+
+Cada pasta em `tools/` é repo Git e deploy Easypanel **independentes** do monorepo raiz.
+
+## Projetos
+
+| Pasta | Produto | Supabase ref | URL |
+|-------|---------|--------------|-----|
+| `tools/agenda/` | Agenda | xupyvnyukhxdmfyrrozs | app.sincla.com.br/agenda/ |
+| `tools/rh/` | RH | fclqxinrkibiwhlhqfih | app.sincla.com.br/rh/ |
+| `tools/bolso/` | Bolso | yjyiryqaokmqjeblsqgl | app.sincla.com.br/bolso/ |
+| `tools/ead/` | EAD | gfgrifbpsfjugdmlyvjl | app.sincla.com.br/ead/ |
+| `tools/vagas/` | Talento | zsnjddocencekcupzxeh | app.sincla.com.br/talento/ |
+| `tools/lead/` | Leads | fnncbpfhuejjebfwyqoq | — |
+| `tools/crm/` | CRM | szpvltsqkmklesdorgly | — |
+
+## Integração com Hub
+
+- Hub é source of truth de identidade — não criar user/company duplicado
+- SSO: redirect com `?token=` → validar via Edge Function `validate-cross-token` do Hub
+- Token SSO expira em ~5 min — não cachear
+- Verificar assinatura: `check-subscription`; permissão: `check-permission`
+- Branding: `get-company-branding`
+- Rota callback típica: `/auth/sincla/callback` (ver template SDK)
+
+Docs: `docs/SATELLITE_INTEGRATION_GUIDE.md`, `docs/SATELLITE_SDK_TEMPLATE.md`, `docs/sdk-servicos-centralizados.md`
+
+## Stack típica
+
+React + TypeScript + Vite + Mantine 8.3.x, Supabase próprio por tool, TanStack Query.
+
+Secrets no Supabase do satélite (não no código):
+- `HUB_SUPABASE_URL`
+- `HUB_SERVICE_ROLE_KEY`
+
+## Deploy
+
+Commit e push **dentro da pasta da tool** (`git push origin main`). Ver rule `03-deploy-process`.
+
+Credenciais CLI: variáveis locais ou MCP Supabase — nunca em rules/docs versionados.

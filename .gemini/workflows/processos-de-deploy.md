@@ -23,6 +23,7 @@ description: Processos de Deploy - Mapeamento de Repositórios e Serviços Easyp
 | `c:\www\sincla\tools\rh` | `ericsoncardosoweb/sincla-rh` | `apps/sincla-rh` |
 | `c:\www\sincla\tools\bolso` | `ericsoncardosoweb/sincla-bolso` | `apps/sincla-bolso` |
 | `c:\www\sincla\tools\ead` | `ericsoncardosoweb/sincla-ead` | `apps/sincla-ead` |
+| `c:\www\sincla\tools\vagas` | `ericsoncardosoweb/sincla-talento` | `apps/sincla-talento` |
 
 ## Mapeamento Repos → Serviços Easypanel
 
@@ -34,6 +35,7 @@ description: Processos de Deploy - Mapeamento de Repositórios e Serviços Easyp
 | `sincla-rh` | `apps/sincla-rh` | `/` | — |
 | `sincla-bolso` | `apps/sincla-bolso` | `/` | — |
 | `sincla-ead` | `apps/sincla-ead` | `/` | — |
+| `sincla-talento` | `apps/sincla-talento` | `/` | — |
 
 ## Comandos de Deploy
 
@@ -78,20 +80,22 @@ git push origin main   # → sincla-agenda → Easypanel sincla-agenda
 | Site | `https://sincla.com.br` |
 | Agenda | `https://app.sincla.com.br/agenda/` |
 | RH | `https://app.sincla.com.br/rh/` |
+| Talento (app) | `https://app.sincla.com.br/talento/` |
 
 ---
 
-## 🔐 Credenciais Supabase CLI — Sincla Ecosystem
+## Supabase CLI — Sincla Ecosystem
 
-> Estas credenciais são necessárias para migrations, Edge Functions, cron jobs e operações de banco.
-> O `SUPABASE_ACCESS_TOKEN` é um token pessoal de conta (único para todos os projetos).
-> A `SUPABASE_DB_PASSWORD` é compartilhada por todos os projetos Sincla.
+> **Não versionar credenciais neste arquivo.** Use MCP do Supabase no Cursor ou variáveis locais.
 
-### Token de Acesso (compartilhado — conta pessoal)
-```
-SUPABASE_ACCESS_TOKEN=sbp_6ed5d53b27c57dabd274055b0dce306c9b2bfc59
-SUPABASE_DB_PASSWORD=TC3VuUEsEJiEhnyD
-```
+### Variáveis (ambiente local / CI — nunca commitar)
+
+| Variável | Uso |
+|----------|-----|
+| `SUPABASE_ACCESS_TOKEN` | Token pessoal em [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
+| `SUPABASE_DB_PASSWORD` | Senha do banco do projeto (Dashboard → Settings → Database) |
+
+Preferir **MCP Supabase** (`https://mcp.supabase.com/mcp`) para operações via agente.
 
 ### Project Refs por Projeto
 
@@ -104,6 +108,7 @@ SUPABASE_DB_PASSWORD=TC3VuUEsEJiEhnyD
 | EAD | `tools/ead/` | `gfgrifbpsfjugdmlyvjl` |
 | Lead | `tools/lead/` | `fnncbpfhuejjebfwyqoq` |
 | RH | `tools/rh/` | `fclqxinrkibiwhlhqfih` |
+| Talento | `tools/vagas/` | `zsnjddocencekcupzxeh` |
 
 ### Comandos úteis com CLI
 

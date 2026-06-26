@@ -9,7 +9,7 @@ const FLOW = [
     step: '1',
     title: 'Recrutamento aprova',
     description: 'Candidato selecionado entra no RH sem redigitar dados.',
-    from: 'recrutamento',
+    from: 'talento',
     to: 'rh',
   },
   {

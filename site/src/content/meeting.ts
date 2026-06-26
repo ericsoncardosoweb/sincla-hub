@@ -21,7 +21,7 @@ export const MEETING_INTENTS: MeetingIntentOption[] = [
     description: 'Colaboradores, avaliações, PDIs e rotinas do dia a dia',
   },
   {
-    id: 'recrutamento',
+    id: 'talento',
     icon: '🎯',
     label: 'Contratar melhor',
     description: 'Vagas, triagem de candidatos e funil de seleção',

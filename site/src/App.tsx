@@ -5,7 +5,7 @@ import './shared/styles/global.css';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { theme } from './shared/styles/theme';
 import { Landing } from './site/pages/Landing';
 import { SuporteLgpd } from './site/pages/SuporteLgpd';
@@ -38,7 +38,8 @@ function App() {
               <Route path="/suporte-lgpd" element={<SuporteLgpd />} />
               {/* Product Landings */}
               <Route path="/rh" element={<ProductLanding overrideSlug="rh" />} />
-              <Route path="/recrutamento" element={<ProductLanding overrideSlug="recrutamento" />} />
+              <Route path="/talento" element={<ProductLanding overrideSlug="talento" />} />
+              <Route path="/recrutamento" element={<Navigate to="/talento" replace />} />
               <Route path="/ead" element={<ProductLanding overrideSlug="ead" />} />
               <Route path="/produtos/:slug" element={<ProductLanding />} />
               {/* Legal Pages */}

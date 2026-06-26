@@ -20,7 +20,7 @@ import classes from './Header.module.css';
 // Dados dos Produtos com logos SVG
 const products = [
     { logo: '/logos/sincla-rh.svg', name: 'Sincla RH', description: 'Gestão de pessoas completa', color: '#0066CC', href: '/rh' },
-    { logo: '/logos/sincla-recrutamento.svg', name: 'Sincla Recrutamento', description: 'Atração e seleção de talentos', color: '#8B5CF6', href: '/recrutamento' },
+    { logo: '/logos/sincla-talento.svg', name: 'Sincla Talento', description: 'Atração e seleção de talentos', color: '#8B5CF6', href: '/talento' },
     { logo: '/logos/sincla-ead.svg', name: 'Sincla EAD', description: 'Treinamentos e cursos', color: '#FF6600', href: '/ead' },
 ];
 

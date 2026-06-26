@@ -78,14 +78,14 @@ export const SECTION_STATES: Record<string, SectionVisualState> = {
 // Configuração dos nós (módulos Sincla)
 export const NODES = [
     { id: 'rh', name: 'RH', color: '#0066cc', angle: 0 },
-    { id: 'recrutamento', name: 'Recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'talento', name: 'Talento', color: '#8B5CF6', angle: 120 },
     { id: 'ead', name: 'EAD', color: '#ff6600', angle: 240 },
 ] as const;
 
 // Configuração mobile (3 nós)
 export const NODES_MOBILE = [
     { id: 'rh', name: 'RH', color: '#0066cc', angle: 0 },
-    { id: 'recrutamento', name: 'Recrutamento', color: '#8B5CF6', angle: 120 },
+    { id: 'talento', name: 'Talento', color: '#8B5CF6', angle: 120 },
     { id: 'ead', name: 'EAD', color: '#ff6600', angle: 240 },
 ] as const;
 

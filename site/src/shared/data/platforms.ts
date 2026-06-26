@@ -1,4 +1,4 @@
-type PlatformType = 'rh' | 'ead' | 'recrutamento';
+type PlatformType = 'rh' | 'ead' | 'talento';
 
 interface Platform {
     id: PlatformType;
@@ -35,14 +35,14 @@ export const platforms: Platform[] = [
         ],
     },
     {
-        id: 'recrutamento',
-        name: 'Sincla Recrutamento',
+        id: 'talento',
+        name: 'Sincla Talento',
         tagline: 'Atração e seleção inteligente de talentos',
         description: 'Plataforma completa para atração, seleção e contratação de talentos integrada com inteligência artificial. Divulgue vagas, analise fit cultural (DISC) e gerencie candidatos em um funil Kanban.',
         color: '#8B5CF6',
         icon: 'briefcase',
-        logo: '/logos/sincla-recrutamento.svg',
-        url: 'https://recrutamento.sincla.com.br',
+        logo: '/logos/sincla-talento.svg',
+        url: 'https://app.sincla.com.br/talento/',
         features: [
             'Portal de vagas customizado',
             'Match comportamental (DISC)',

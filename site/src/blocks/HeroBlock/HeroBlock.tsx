@@ -52,8 +52,8 @@ export function HeroBlock() {
                   <span>Sincla RH</span>
                 </Link>
                 <span className={classes.flowLine} />
-                <Link to="/recrutamento" className={classes.flowNode} style={{ '--node-color': '#7C3AED' } as React.CSSProperties}>
-                  <img src="/logos/sincla-recrutamento.svg" alt="" />
+                <Link to="/talento" className={classes.flowNode} style={{ '--node-color': '#7C3AED' } as React.CSSProperties}>
+                  <img src="/logos/sincla-talento.svg" alt="" />
                   <span>Recrutamento</span>
                 </Link>
                 <span className={classes.flowLine} />

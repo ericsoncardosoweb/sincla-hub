@@ -25,9 +25,9 @@ const MODULES = [
         soft: 'var(--mod-rh-soft)',
     },
     {
-        id: 'recrutamento',
-        name: 'Recrutamento',
-        desc: 'Vagas e triagem inteligente',
+        id: 'talento',
+        name: 'Sincla Talento',
+        desc: 'Atração e triagem inteligente',
         Icon: IconTargetArrow,
         color: 'var(--mod-recrut)',
         soft: 'var(--mod-recrut-soft)',
@@ -63,14 +63,14 @@ export function Hero({ signupUrl }: HeroProps) {
                         </span>
 
                         <h1 className={classes.title}>
-                            RH, recrutamento e treinamento
+                            RH, Talento e treinamento
                             <br />
                             <span className={classes.titleAccent}>no mesmo lugar.</span>
                         </h1>
 
                         <p className={classes.subtitle}>
                             Um cadastro monta a estrutura da sua empresa. A partir dele você ativa
-                            RH, recrutamento e treinamento — integrados, turbinados com IA e do seu
+                            RH, Talento e treinamento — integrados, turbinados com IA e do seu
                             jeito. Um login, dados sincronizados e sem refazer nada a cada ferramenta.
                         </p>
 

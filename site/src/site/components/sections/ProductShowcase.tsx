@@ -29,9 +29,9 @@ const showcaseProducts = [
         },
     },
     {
-        id: 'recrutamento',
-        logo: '/logos/sincla-recrutamento.svg',
-        name: 'Sincla Recrutamento',
+        id: 'talento',
+        logo: '/logos/sincla-talento.svg',
+        name: 'Sincla Talento',
         headline: 'Tudo é customizável.',
         subheadline: 'Nada é engessado.',
         description: 'Uma plataforma de R&S turbinada com inteligência artificial para agilizar a triagem técnica e comportamental (Profiler DISC) e automatizar o envio de feedbacks. O fluxo de contratação molda-se ao seu processo.',

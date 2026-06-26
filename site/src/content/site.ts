@@ -2,7 +2,7 @@ export const SITE = {
   name: 'Sincla',
   tagline: 'RH, vagas e treinamento no mesmo lugar.',
   description:
-    'Plataforma integrada de gestão de pessoas, recrutamento com triagem inteligente e treinamento corporativo — um cadastro, três soluções.',
+    'Plataforma integrada de gestão de pessoas, atração de talentos com triagem inteligente e treinamento corporativo — um cadastro, três soluções.',
   signupUrl: 'https://app.sincla.com.br/cadastro',
   loginUrl: 'https://app.sincla.com.br/login',
   hubUrl: 'https://app.sincla.com.br',

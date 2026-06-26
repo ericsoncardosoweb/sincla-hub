@@ -135,7 +135,7 @@ const FALLBACK_CONTENT: Record<string, { title: string; content: string }> = {
 <p>A Sincla oferece um ecossistema de plataformas de gestão empresarial, incluindo:</p>
 <ul>
 <li><strong>Sincla RH:</strong> gestão de pessoas e recursos humanos;</li>
-<li><strong>Sincla Recrutamento:</strong> atração, seleção e contratação inteligente de talentos com inteligência artificial;</li>
+<li><strong>Sincla Talento:</strong> atração, seleção e contratação inteligente de talentos com inteligência artificial;</li>
 <li><strong>Sincla EAD:</strong> treinamentos, capacitação de equipes e cursos online corporativos;</li>
 <li>Outros produtos que venham a ser disponibilizados.</li>
 </ul>

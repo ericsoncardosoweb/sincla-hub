@@ -8,7 +8,7 @@ function generateId() {
 function buildWhatsAppUrl(request: MeetingRequest): string {
   const intentLabels: Record<string, string> = {
     rh: 'Organizar RH',
-    recrutamento: 'Contratar melhor',
+    talento: 'Contratar melhor',
     ead: 'Treinar equipe',
     consultor: 'Programa de consultor',
     unknown: 'Ainda não definiu',

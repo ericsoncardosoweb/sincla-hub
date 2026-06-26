@@ -5,11 +5,11 @@ import { SITE } from '../../../content/site';
 import classes from './Footer.module.css';
 
 const institutionalDesc =
-    'Um cadastro monta a estrutura da sua empresa. A partir dele você ativa RH, recrutamento e treinamento — integrados, seguros e turbinados com IA.';
+    'Um cadastro monta a estrutura da sua empresa. A partir dele você ativa RH, Talento e treinamento — integrados, seguros e turbinados com IA.';
 
 const produtosLinks = [
     { label: 'Sincla RH', to: '/rh' },
-    { label: 'Sincla Recrutamento', to: '/recrutamento' },
+    { label: 'Sincla Talento', to: '/talento' },
     { label: 'Sincla EAD', to: '/ead' },
 ];
 

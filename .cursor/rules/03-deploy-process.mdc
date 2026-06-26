@@ -1,0 +1,27 @@
+---
+description: Mapeamento repos → Easypanel (referência de deploy)
+alwaysApply: false
+---
+
+# Deploy Sincla
+
+Detalhes completos: `.gemini/workflows/processos-de-deploy.md`
+
+## Remotes do monorepo (raiz)
+
+| Comando | Remote | Repo GitHub | Easypanel |
+|---------|--------|-------------|-----------|
+| `git push origin main` | origin | sincla-hub | apps/sincla-app (`/app`) |
+| `git push site main` | site | sincla-site | apps/site-sincla (`/site`) |
+
+## Tools (repo independente em cada pasta)
+
+| Pasta | Repo | Easypanel |
+|-------|------|-----------|
+| `tools/agenda/` | sincla-agenda | apps/sincla-agenda |
+| `tools/rh/` | sincla-rh | apps/sincla-rh |
+| `tools/bolso/` | sincla-bolso | apps/sincla-bolso |
+| `tools/ead/` | sincla-ead | apps/sincla-ead |
+| `tools/vagas/` | sincla-talento | apps/sincla-talento |
+
+Variáveis de produção ficam no Easypanel, não no `.env` local.

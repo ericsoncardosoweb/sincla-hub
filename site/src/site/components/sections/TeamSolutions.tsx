@@ -76,15 +76,15 @@ const solutions: Solution[] = [
         ],
     },
     {
-        id: 'recrutamento',
-        tab: 'Recrutamento',
-        logo: '/logos/sincla-recrutamento.svg',
+        id: 'talento',
+        tab: 'Talento',
+        logo: '/logos/sincla-talento.svg',
         color: '#8B5CF6',
         bgColor: '#8B5CF6',
         headline: 'Tudo é customizável. Nada é engessado.',
         description:
-            'Uma tecnologia de Recrutamento & Seleção turbinada com inteligência artificial para agilizar os seus processos e automatizar a triagem e comunicação de feedbacks de ponta a ponta.',
-        linkText: 'Saiba mais sobre Recrutamento',
+            'Plataforma de atração e seleção turbinada com inteligência artificial para agilizar os seus processos e automatizar a triagem e comunicação de feedbacks de ponta a ponta.',
+        linkText: 'Saiba mais sobre Talento',
         mockupTitle: 'Vagas & Candidatos em Destaque',
         mockupContent: (
             <Box className={classes.mockupTable}>

@@ -1,4 +1,4 @@
-export type ProductId = 'rh' | 'recrutamento' | 'ead';
+export type ProductId = 'rh' | 'talento' | 'ead';
 
 export interface ProductContent {
   id: ProductId;
@@ -72,7 +72,7 @@ export const products: Record<ProductId, ProductContent> = {
     integrationDesc: 'O Sincla RH conversa em tempo real com as outras ferramentas:',
     integrationPoints: [
       {
-        title: 'Admissão automática com Recrutamento',
+        title: 'Admissão automática com Talento',
         description: 'Candidato aprovado vira colaborador no RH automaticamente. Zero redigitação.',
       },
       {
@@ -99,21 +99,21 @@ export const products: Record<ProductId, ProductContent> = {
     ],
     meetingIntent: 'rh',
   },
-  recrutamento: {
-    id: 'recrutamento',
-    slug: 'recrutamento',
-    name: 'Sincla Recrutamento',
-    shortName: 'Recrutamento',
+  talento: {
+    id: 'talento',
+    slug: 'talento',
+    name: 'Sincla Talento',
+    shortName: 'Talento',
     color: '#7C3AED',
-    tagline: 'Vagas e seleção do seu jeito',
+    tagline: 'Atração e seleção do seu jeito',
     navDescription: 'Triagem inteligente e funil customizável',
     headline: 'Tudo é customizável.',
     subheadline: 'Nada é engessado.',
     description:
-      'Plataforma de recrutamento com triagem inteligente, mapeamento comportamental (Profiler DISC) e funil Kanban que se adapta ao processo da sua empresa — não o contrário.',
-    signupUrl: `${signupBase}?module=recrutamento`,
-    path: '/recrutamento',
-    logo: '/logos/sincla-recrutamento.svg',
+      'Plataforma de atração e seleção com triagem inteligente, mapeamento comportamental (Profiler DISC) e funil Kanban que se adapta ao processo da sua empresa — não o contrário.',
+    signupUrl: `${signupBase}?module=talento`,
+    path: '/talento',
+    logo: '/logos/sincla-talento.svg',
     features: [
       'Portal de vagas customizado',
       'Triagem inteligente de currículos',
@@ -138,8 +138,8 @@ export const products: Record<ProductId, ProductContent> = {
         description: 'Defina etapas, avaliações e filtros conforme o método da sua empresa.',
       },
     ],
-    integrationTitle: 'Como o Recrutamento fecha o ciclo',
-    integrationDesc: 'O Sincla Recrutamento alimenta o restante do ecossistema:',
+    integrationTitle: 'Como o Talento fecha o ciclo',
+    integrationDesc: 'O Sincla Talento alimenta o restante do ecossistema:',
     integrationPoints: [
       {
         title: 'Contratados viram colaboradores no RH',
@@ -167,7 +167,7 @@ export const products: Record<ProductId, ProductContent> = {
           'Sim. O candidato preenche o mapeamento no fluxo e você recebe o relativo comportamental na ficha.',
       },
     ],
-    meetingIntent: 'recrutamento',
+    meetingIntent: 'talento',
   },
   ead: {
     id: 'ead',

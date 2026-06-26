@@ -11,7 +11,7 @@ import s from './home.module.css';
 
 const ICONS: Record<ProductId, typeof IconUsers> = {
     rh: IconUsers,
-    recrutamento: IconTargetArrow,
+    talento: IconTargetArrow,
     ead: IconSchool,
 };
 

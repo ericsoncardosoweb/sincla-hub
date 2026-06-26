@@ -17,8 +17,8 @@ const modules = [
         available: true,
     },
     {
-        id: 'recrutamento',
-        name: 'Sincla Recrutamento',
+        id: 'talento',
+        name: 'Sincla Talento',
         icon: IconBriefcase,
         tagline: 'Atração e seleção de talentos',
         features: ['Triagem por IA', 'Funil Kanban de candidatos', 'Match comportamental (DISC)'],

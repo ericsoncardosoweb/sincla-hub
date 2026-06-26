@@ -62,6 +62,6 @@
 
   /* Product accents */
   --product-rh: var(--brand-rh);
-  --product-recrutamento: var(--brand-rs);
+  --product-talento: var(--brand-rs);
   --product-ead: var(--brand-ead);
 }
