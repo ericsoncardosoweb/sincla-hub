@@ -20,15 +20,26 @@ import {
     Tooltip,
     Alert,
     Select,
+    PasswordInput,
+    NumberInput,
+    Badge,
+    Loader,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected, IconShield } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected, IconShield, IconMail, IconSend, IconServer } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
 import { PageHeader, EmptyState } from '../../components/shared';
 import { ConnectedAccountsBlock } from './components/ConnectedAccountsBlock';
+import {
+    getCompanyEmailSettings,
+    saveCompanySmtp,
+    disableCompanySmtp,
+    testCompanySmtp,
+    type CompanyEmailSettings,
+} from '../../shared/services/emailSettingsService';
 
 export function CompanySettings() {
     const navigate = useNavigate();
@@ -70,6 +81,120 @@ export function CompanySettings() {
             privacy_retention_months: '60',
         },
     });
+
+    // ── Configuração de E-mail (SMTP por empresa) ──────────────────
+    const [emailSettings, setEmailSettings] = useState<CompanyEmailSettings | null>(null);
+    const [emailLoading, setEmailLoading] = useState(false);
+    const [savingSmtp, setSavingSmtp] = useState(false);
+    const [testingSmtp, setTestingSmtp] = useState(false);
+    const [testTo, setTestTo] = useState('');
+
+    const smtpForm = useForm({
+        initialValues: {
+            host: '',
+            port: 587,
+            secure: false,
+            user: '',
+            password: '',
+            fromEmail: '',
+            fromName: '',
+            replyTo: '',
+        },
+        validate: {
+            host: (v) => (v.trim() ? null : 'Informe o servidor SMTP'),
+            user: (v) => (v.trim() ? null : 'Informe o usuário/login'),
+            fromEmail: (v) => (/^\S+@\S+\.\S+$/.test(v.trim()) ? null : 'E-mail remetente inválido'),
+        },
+    });
+
+    const loadEmailSettings = async (companyId: string) => {
+        setEmailLoading(true);
+        try {
+            const s = await getCompanyEmailSettings(companyId);
+            setEmailSettings(s);
+            smtpForm.setValues({
+                host: s?.custom_smtp_host || '',
+                port: s?.custom_smtp_port || 587,
+                secure: s?.custom_smtp_secure ?? false,
+                user: s?.custom_smtp_user || '',
+                password: '',
+                fromEmail: s?.custom_smtp_from || '',
+                fromName: s?.custom_smtp_from_name || '',
+                replyTo: s?.custom_smtp_reply_to || '',
+            });
+        } finally {
+            setEmailLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (currentCompany?.id) {
+            loadEmailSettings(currentCompany.id);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCompany?.id]);
+
+    const handleSaveSmtp = async () => {
+        if (!currentCompany?.id) return;
+        const validation = smtpForm.validate();
+        if (validation.hasErrors) return;
+        if (!emailSettings?.smtp_password_set && !smtpForm.values.password) {
+            smtpForm.setFieldError('password', 'Informe a senha do SMTP');
+            return;
+        }
+        setSavingSmtp(true);
+        try {
+            await saveCompanySmtp(currentCompany.id, { ...smtpForm.values });
+            notifications.show({
+                title: 'SMTP salvo',
+                message: 'Configuração salva. Envie um e-mail de teste para ativar.',
+                color: 'green',
+            });
+            await loadEmailSettings(currentCompany.id);
+        } catch (err: any) {
+            notifications.show({ title: 'Erro ao salvar', message: err.message, color: 'red' });
+        } finally {
+            setSavingSmtp(false);
+        }
+    };
+
+    const handleTestSmtp = async () => {
+        if (!currentCompany?.id) return;
+        setTestingSmtp(true);
+        try {
+            const res = await testCompanySmtp(currentCompany.id, testTo.trim() || undefined);
+            if (res.success) {
+                notifications.show({
+                    title: 'SMTP verificado!',
+                    message: `E-mail de teste enviado para ${res.sent_to}. As notificações agora saem pelo seu servidor.`,
+                    color: 'green',
+                });
+            } else {
+                notifications.show({ title: 'Falha no teste', message: res.error || 'Não foi possível enviar.', color: 'red' });
+            }
+            await loadEmailSettings(currentCompany.id);
+        } finally {
+            setTestingSmtp(false);
+        }
+    };
+
+    const handleDisableSmtp = async () => {
+        if (!currentCompany?.id) return;
+        setSavingSmtp(true);
+        try {
+            await disableCompanySmtp(currentCompany.id);
+            notifications.show({
+                title: 'SMTP removido',
+                message: 'Suas notificações voltarão a ser enviadas pelo sistema Sincla.',
+                color: 'blue',
+            });
+            await loadEmailSettings(currentCompany.id);
+        } catch (err: any) {
+            notifications.show({ title: 'Erro', message: err.message, color: 'red' });
+        } finally {
+            setSavingSmtp(false);
+        }
+    };
 
     useEffect(() => {
         if (currentCompany) {
@@ -790,26 +915,149 @@ export function CompanySettings() {
                         </Card>
                     </Tabs.Panel>
 
-                    {/* Notifications Settings */}
+                    {/* Notifications Settings — Servidor de E-mail (SMTP) */}
                     <Tabs.Panel value="notifications">
                         <Card shadow="sm" padding="lg" radius="md">
-                            <Stack gap="md">
-                                <Switch
-                                    label="Assinatura e segurança (Email)"
-                                    description="Receba notificações sobre sua assinatura e segurança no email da empresa"
-                                    defaultChecked
-                                />
-                                <Switch
-                                    label="Assinatura e segurança (WhatsApp)"
-                                    description="Receba notificações sobre sua assinatura e segurança no WhatsApp da empresa"
-                                    defaultChecked
-                                />
-                                <Switch
-                                    label="Produtos e novidades"
-                                    description="Receba notificações sobre nossos produtos e novidades"
-                                    defaultChecked
-                                />
-                            </Stack>
+                            {emailLoading ? (
+                                <Group justify="center" py="xl"><Loader /></Group>
+                            ) : (
+                                <Stack gap="md">
+                                    <Group justify="space-between" align="flex-start">
+                                        <Group gap="xs">
+                                            <IconServer size={22} />
+                                            <div>
+                                                <Text fw={600}>Servidor de E-mail (SMTP)</Text>
+                                                <Text size="xs" c="dimmed">Envie as notificações da sua empresa pelo seu próprio domínio.</Text>
+                                            </div>
+                                        </Group>
+                                        {emailSettings?.smtp_verified ? (
+                                            <Badge color="green" variant="light" leftSection={<IconCheck size={12} />}>SMTP próprio ativo</Badge>
+                                        ) : emailSettings?.smtp_password_set || emailSettings?.custom_smtp_host ? (
+                                            <Badge color="yellow" variant="light">Configurado · não verificado</Badge>
+                                        ) : (
+                                            <Badge color="gray" variant="light">Usando sistema Sincla</Badge>
+                                        )}
+                                    </Group>
+
+                                    <Alert variant="light" color="blue" icon={<IconMail size={18} />}>
+                                        <Text size="sm">
+                                            Por padrão, os e-mails são enviados pelo <strong>sistema Sincla</strong>. Ao configurar e
+                                            verificar seu próprio SMTP, as notificações passam a sair pelo servidor da sua empresa
+                                            (e não consomem seus créditos de e-mail).
+                                        </Text>
+                                    </Alert>
+
+                                    {emailSettings?.smtp_last_error && !emailSettings.smtp_verified && (
+                                        <Alert variant="light" color="red" icon={<IconX size={18} />} title="Último teste falhou">
+                                            <Text size="xs">{emailSettings.smtp_last_error}</Text>
+                                        </Alert>
+                                    )}
+
+                                    <Group grow>
+                                        <TextInput
+                                            label="Servidor SMTP (host)"
+                                            placeholder="smtp.suaempresa.com.br"
+                                            disabled={!canEdit}
+                                            {...smtpForm.getInputProps('host')}
+                                        />
+                                        <NumberInput
+                                            label="Porta"
+                                            placeholder="587"
+                                            min={1}
+                                            max={65535}
+                                            disabled={!canEdit}
+                                            {...smtpForm.getInputProps('port')}
+                                        />
+                                    </Group>
+
+                                    <Switch
+                                        label="Conexão segura direta (SSL/TLS)"
+                                        description="Ligue para porta 465 (TLS implícito). Para 587 (STARTTLS), deixe desligado."
+                                        disabled={!canEdit}
+                                        {...smtpForm.getInputProps('secure', { type: 'checkbox' })}
+                                    />
+
+                                    <Group grow>
+                                        <TextInput
+                                            label="Usuário / Login"
+                                            placeholder="notificacoes@suaempresa.com.br"
+                                            disabled={!canEdit}
+                                            {...smtpForm.getInputProps('user')}
+                                        />
+                                        <PasswordInput
+                                            label="Senha"
+                                            placeholder={emailSettings?.smtp_password_set ? '•••••••• (já configurada)' : 'Senha do SMTP'}
+                                            description={emailSettings?.smtp_password_set ? 'Deixe em branco para manter a senha atual.' : undefined}
+                                            disabled={!canEdit}
+                                            {...smtpForm.getInputProps('password')}
+                                        />
+                                    </Group>
+
+                                    <Group grow>
+                                        <TextInput
+                                            label="E-mail remetente (From)"
+                                            placeholder="notificacoes@suaempresa.com.br"
+                                            disabled={!canEdit}
+                                            {...smtpForm.getInputProps('fromEmail')}
+                                        />
+                                        <TextInput
+                                            label="Nome remetente"
+                                            placeholder="Sua Empresa"
+                                            disabled={!canEdit}
+                                            {...smtpForm.getInputProps('fromName')}
+                                        />
+                                    </Group>
+
+                                    <TextInput
+                                        label="Responder para (Reply-To) — opcional"
+                                        placeholder="contato@suaempresa.com.br"
+                                        disabled={!canEdit}
+                                        {...smtpForm.getInputProps('replyTo')}
+                                    />
+
+                                    {canEdit && (
+                                        <>
+                                            <Divider my="xs" />
+                                            <Group justify="space-between" align="flex-end">
+                                                <TextInput
+                                                    label="Enviar e-mail de teste para"
+                                                    description="Vazio = envia para o e-mail remetente."
+                                                    placeholder="voce@suaempresa.com.br"
+                                                    style={{ flex: 1 }}
+                                                    value={testTo}
+                                                    onChange={(e) => setTestTo(e.currentTarget.value)}
+                                                />
+                                            </Group>
+                                            <Group justify="space-between">
+                                                <Button
+                                                    variant="subtle"
+                                                    color="red"
+                                                    onClick={handleDisableSmtp}
+                                                    disabled={savingSmtp || (!emailSettings?.custom_smtp_host && !emailSettings?.smtp_password_set)}
+                                                >
+                                                    Usar sistema Sincla
+                                                </Button>
+                                                <Group>
+                                                    <Button variant="default" onClick={handleSaveSmtp} loading={savingSmtp}>
+                                                        Salvar
+                                                    </Button>
+                                                    <Button
+                                                        leftSection={<IconSend size={16} />}
+                                                        onClick={handleTestSmtp}
+                                                        loading={testingSmtp}
+                                                        disabled={savingSmtp}
+                                                    >
+                                                        Enviar e-mail de teste
+                                                    </Button>
+                                                </Group>
+                                            </Group>
+                                            <Text size="xs" c="dimmed">
+                                                Salve a configuração e envie um teste — o envio bem-sucedido ativa o seu SMTP.
+                                            </Text>
+                                        </>
+                                    )}
+                                </Stack>
+                            )}
                         </Card>
                     </Tabs.Panel>
 
