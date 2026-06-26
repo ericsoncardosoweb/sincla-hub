@@ -37,22 +37,33 @@ function json(body: unknown, status = 200) {
     })
 }
 
-function testEmailHtml(host: string): string {
-    return `<!DOCTYPE html><html lang="pt-BR"><body style="font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#f0f2f5;padding:24px;">
-        <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
-            <div style="height:4px;background:linear-gradient(90deg,#0047CC,#00C2FF);"></div>
-            <div style="padding:28px 32px;">
-                <h1 style="margin:0 0 12px;font-size:20px;color:#1a1a2e;">✅ SMTP configurado com sucesso</h1>
-                <p style="font-size:15px;line-height:1.7;color:#4a4a68;margin:0 0 8px;">
-                    Este é um e-mail de teste enviado pelo <strong>Sincla</strong> usando o servidor SMTP da sua empresa
-                    (<code>${host}</code>).
-                </p>
-                <p style="font-size:14px;color:#8c8ca1;margin:16px 0 0;">
-                    A partir de agora, as notificações da sua empresa serão enviadas por este servidor.
-                </p>
-            </div>
-        </div>
-    </body></html>`
+function buildTestEmailHtml(opts: {
+    host: string
+    logoUrl: string
+    primaryColor: string
+    footerText: string
+    companyName: string
+}): string {
+    const { host, logoUrl, primaryColor, footerText, companyName } = opts
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:'Segoe UI',Roboto,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;">
+<tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<tr><td align="center" style="padding:0 0 20px;"><img src="${logoUrl}" alt="" width="140" style="display:block;max-width:140px;height:auto;border:0;" /></td></tr>
+<tr><td style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="height:4px;background:${primaryColor};">&nbsp;</td></tr>
+<tr><td style="padding:28px 24px;">
+<h1 style="margin:0 0 12px;font-size:20px;color:#1a1a2e;">✅ SMTP configurado com sucesso</h1>
+<p style="font-size:15px;line-height:1.7;color:#4a4a68;margin:0 0 8px;">Este é um e-mail de teste enviado pela <strong>${companyName}</strong> via Sincla, usando o servidor <code>${host}</code>.</p>
+<p style="font-size:14px;color:#8c8ca1;margin:16px 0 0;">Suas notificações passarão a usar este layout e o seu SMTP.</p>
+</td></tr>
+</table></td></tr>
+<tr><td style="padding:16px 12px;text-align:center;"><p style="margin:0;font-size:12px;color:#8c8ca1;">${footerText}</p></td></tr>
+</table></td></tr></table></body></html>`
 }
 
 Deno.serve(async (req) => {
@@ -90,13 +101,24 @@ Deno.serve(async (req) => {
         // Config salva
         const { data: settings } = await adminClient
             .from('notification_settings')
-            .select('custom_smtp_host, custom_smtp_port, custom_smtp_secure, custom_smtp_user, custom_smtp_password, custom_smtp_from, custom_smtp_from_name, custom_smtp_reply_to')
+            .select('custom_smtp_host, custom_smtp_port, custom_smtp_secure, custom_smtp_user, custom_smtp_password, custom_smtp_from, custom_smtp_from_name, custom_smtp_reply_to, email_layout_logo_url, email_layout_primary_color, email_layout_footer_text')
             .eq('company_id', body.company_id)
             .maybeSingle()
 
         if (!settings || !settings.custom_smtp_host || !settings.custom_smtp_user || !settings.custom_smtp_password) {
             return json({ error: 'SMTP não configurado. Preencha host, usuário e senha antes de testar.' }, 400)
         }
+
+        const { data: company } = await adminClient
+            .from('companies')
+            .select('name, logo_url, primary_color')
+            .eq('id', body.company_id)
+            .maybeSingle()
+
+        const companyName = company?.name || 'Sua empresa'
+        const logoUrl = settings.email_layout_logo_url || company?.logo_url || 'https://app.sincla.com.br/logos/logo-sincla.svg'
+        const primaryColor = settings.email_layout_primary_color || company?.primary_color || '#0047CC'
+        const footerText = settings.email_layout_footer_text || `${companyName} — Notificações automáticas.`
 
         const port = settings.custom_smtp_port || 587
         const secure = settings.custom_smtp_secure ?? (port === 465)
@@ -121,7 +143,7 @@ Deno.serve(async (req) => {
                 replyTo: settings.custom_smtp_reply_to || undefined,
                 subject: '✅ Teste de SMTP — Sincla',
                 content: 'Este é um e-mail de teste do Sincla. Seu SMTP está funcionando.',
-                html: testEmailHtml(settings.custom_smtp_host),
+                html: buildTestEmailHtml({ host: settings.custom_smtp_host, logoUrl, primaryColor, footerText, companyName }),
             })
         } catch (sendErr) {
             const message = (sendErr as Error).message || 'Falha ao enviar e-mail de teste'

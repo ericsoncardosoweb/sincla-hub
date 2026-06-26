@@ -110,30 +110,33 @@ function getEmailTemplate(options: EmailTemplateOptions): string {
 </html>`
 }
 
-function templateWelcome(name: string, actionUrl?: string) {
+function templateWelcome(name: string, actionUrl?: string, brand?: Partial<EmailBranding>) {
     return getEmailTemplate({
         title: `Bem-vindo ao Sincla, ${name}! 🚀`,
         content: `<p>Estamos muito felizes em ter você conosco!</p><p>O Sincla é a plataforma completa para gestão inteligente da sua empresa.</p><p>Comece agora explorando o painel e configurando sua empresa.</p>`,
         actionUrl: actionUrl || 'https://app.sincla.com.br/painel',
         actionLabel: 'Acessar meu Painel',
         preheader: 'Sua conta Sincla foi criada com sucesso!',
+        logoUrl: brand?.logoUrl,
+        primaryColor: brand?.primaryColor,
+        footerText: brand?.footerText,
     })
 }
 
-function templateSystem(title: string, message: string, actionUrl?: string, actionLabel?: string) {
-    return getEmailTemplate({ title, content: `<p>${message}</p>`, actionUrl, actionLabel })
+function templateSystem(title: string, message: string, actionUrl?: string, actionLabel?: string, brand?: Partial<EmailBranding>) {
+    return getEmailTemplate({ title, content: `<p>${message}</p>`, actionUrl, actionLabel, logoUrl: brand?.logoUrl, primaryColor: brand?.primaryColor, footerText: brand?.footerText })
 }
 
-function templateBilling(title: string, message: string, actionUrl?: string) {
-    return getEmailTemplate({ title: `💰 ${title}`, content: `<p>${message}</p>`, actionUrl, actionLabel: 'Ver Detalhes', primaryColor: '#10b981' })
+function templateBilling(title: string, message: string, actionUrl?: string, brand?: Partial<EmailBranding>) {
+    return getEmailTemplate({ title: `💰 ${title}`, content: `<p>${message}</p>`, actionUrl, actionLabel: 'Ver Detalhes', primaryColor: brand?.primaryColor || '#10b981', logoUrl: brand?.logoUrl, footerText: brand?.footerText })
 }
 
-function templateAlert(title: string, message: string, actionUrl?: string) {
-    return getEmailTemplate({ title: `⚠️ ${title}`, content: `<p>${message}</p>`, actionUrl, actionLabel: 'Ver Agora', primaryColor: '#f59e0b' })
+function templateAlert(title: string, message: string, actionUrl?: string, brand?: Partial<EmailBranding>) {
+    return getEmailTemplate({ title: `⚠️ ${title}`, content: `<p>${message}</p>`, actionUrl, actionLabel: 'Ver Agora', primaryColor: brand?.primaryColor || '#f59e0b', logoUrl: brand?.logoUrl, footerText: brand?.footerText })
 }
 
-function templateSecurity(title: string, message: string) {
-    return getEmailTemplate({ title: `🔒 ${title}`, content: `<p>${message}</p>`, primaryColor: '#ef4444' })
+function templateSecurity(title: string, message: string, brand?: Partial<EmailBranding>) {
+    return getEmailTemplate({ title: `🔒 ${title}`, content: `<p>${message}</p>`, primaryColor: brand?.primaryColor || '#ef4444', logoUrl: brand?.logoUrl, footerText: brand?.footerText })
 }
 
 // =============================================
@@ -183,6 +186,15 @@ interface TenantSettings {
     custom_smtp_from_name?: string | null
     custom_smtp_reply_to?: string | null
     smtp_verified?: boolean | null
+    email_layout_logo_url?: string | null
+    email_layout_primary_color?: string | null
+    email_layout_footer_text?: string | null
+}
+
+interface EmailBranding {
+    logoUrl: string
+    primaryColor: string
+    footerText: string
 }
 
 // =============================================
@@ -276,42 +288,74 @@ function tenantSmtpReady(t: TenantSettings | null): boolean {
     return !!(t && t.smtp_verified && t.custom_smtp_host && t.custom_smtp_user && t.custom_smtp_password)
 }
 
+async function resolveEmailBranding(
+    supabase: any,
+    companyId: string,
+    tenant: TenantSettings | null,
+): Promise<EmailBranding> {
+    const { data: company } = await supabase
+        .from('companies')
+        .select('name, logo_url, primary_color')
+        .eq('id', companyId)
+        .maybeSingle()
+
+    const companyName = company?.name || 'Sua empresa'
+    return {
+        logoUrl: tenant?.email_layout_logo_url || company?.logo_url || DEFAULT_LOGO,
+        primaryColor: tenant?.email_layout_primary_color || company?.primary_color || DEFAULT_PRIMARY,
+        footerText: tenant?.email_layout_footer_text || `${companyName} — Notificações automáticas.`,
+    }
+}
+
+function buildHtmlFromPayload(payload: NotificationPayload, branding: EmailBranding): string {
+    const template = payload.template || 'system'
+    const data = payload.data || {}
+    const brand = {
+        logoUrl: data.logo_url || branding.logoUrl,
+        primaryColor: data.primary_color || branding.primaryColor,
+        footerText: branding.footerText,
+    }
+
+    switch (template) {
+        case 'welcome':
+            return templateWelcome(data.name || 'Usuário', data.action_url, brand)
+        case 'billing':
+            return templateBilling(payload.subject || 'Atualização de Pagamento', payload.message, data.action_url, brand)
+        case 'alert':
+            return templateAlert(payload.subject || 'Alerta', payload.message, data.action_url, brand)
+        case 'security':
+            return templateSecurity(payload.subject || 'Segurança', payload.message, brand)
+        case 'custom':
+            return getEmailTemplate({
+                title: payload.subject || 'Notificação',
+                content: payload.message,
+                actionUrl: data.action_url,
+                actionLabel: data.action_label || 'Acessar',
+                ...brand,
+            })
+        default:
+            return templateSystem(
+                payload.subject || 'Notificação do Sistema',
+                payload.message,
+                data.action_url,
+                data.action_label,
+                brand,
+            )
+    }
+}
+
 // =============================================
 // Email — SMTP próprio do tenant OU MailGrid (sistema)
 // retorna o provider usado ('tenant_smtp' | 'mailgrid')
 // =============================================
 async function sendEmail(supabase: any, payload: NotificationPayload, tenant: TenantSettings | null): Promise<string> {
-    // Monta o HTML (template) uma única vez
+    const branding = payload.company_id
+        ? await resolveEmailBranding(supabase, payload.company_id, tenant)
+        : { logoUrl: DEFAULT_LOGO, primaryColor: DEFAULT_PRIMARY, footerText: DEFAULT_FOOTER }
+
     let htmlContent = payload.html
     if (!htmlContent) {
-        const template = payload.template || 'system'
-        const data = payload.data || {}
-        switch (template) {
-            case 'welcome':
-                htmlContent = templateWelcome(data.name || 'Usuário', data.action_url)
-                break
-            case 'billing':
-                htmlContent = templateBilling(payload.subject || 'Atualização de Pagamento', payload.message, data.action_url)
-                break
-            case 'alert':
-                htmlContent = templateAlert(payload.subject || 'Alerta', payload.message, data.action_url)
-                break
-            case 'security':
-                htmlContent = templateSecurity(payload.subject || 'Segurança', payload.message)
-                break
-            case 'custom':
-                htmlContent = getEmailTemplate({
-                    title: payload.subject || 'Notificação',
-                    content: payload.message,
-                    actionUrl: data.action_url,
-                    actionLabel: data.action_label || 'Acessar',
-                    primaryColor: data.primary_color,
-                    logoUrl: data.logo_url,
-                })
-                break
-            default:
-                htmlContent = templateSystem(payload.subject || 'Notificação do Sistema', payload.message, data.action_url, data.action_label)
-        }
+        htmlContent = buildHtmlFromPayload(payload, branding)
     }
 
     // ── 1) SMTP próprio do tenant (sem metering) ──

@@ -26,6 +26,15 @@ export interface CompanyEmailSettings {
     smtp_verified: boolean;
     smtp_verified_at: string | null;
     smtp_last_error: string | null;
+    email_layout_logo_url: string | null;
+    email_layout_primary_color: string | null;
+    email_layout_footer_text: string | null;
+}
+
+export interface SaveEmailLayoutInput {
+    logoUrl?: string;
+    primaryColor: string;
+    footerText?: string;
 }
 
 export interface SaveSmtpInput {
@@ -79,6 +88,23 @@ export async function saveCompanySmtp(companyId: string, input: SaveSmtpInput): 
         .from('notification_settings')
         .upsert(payload, { onConflict: 'company_id' });
 
+    if (error) throw new Error(error.message);
+}
+
+/** Salva logo/cor/rodapé do layout de e-mails (não altera SMTP nem smtp_verified). */
+export async function saveCompanyEmailLayout(companyId: string, input: SaveEmailLayoutInput): Promise<void> {
+    const { error } = await supabase
+        .from('notification_settings')
+        .upsert(
+            {
+                company_id: companyId,
+                email_layout_logo_url: input.logoUrl?.trim() || null,
+                email_layout_primary_color: input.primaryColor?.trim() || '#0047CC',
+                email_layout_footer_text: input.footerText?.trim() || null,
+                updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'company_id' }
+        );
     if (error) throw new Error(error.message);
 }
 

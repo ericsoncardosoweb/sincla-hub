@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Container,
@@ -24,10 +24,11 @@ import {
     NumberInput,
     Badge,
     Loader,
+    Paper,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected, IconShield, IconMail, IconSend, IconServer } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected, IconShield, IconMail, IconSend, IconServer, IconLayout } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
@@ -36,10 +37,12 @@ import { ConnectedAccountsBlock } from './components/ConnectedAccountsBlock';
 import {
     getCompanyEmailSettings,
     saveCompanySmtp,
+    saveCompanyEmailLayout,
     disableCompanySmtp,
     testCompanySmtp,
     type CompanyEmailSettings,
 } from '../../shared/services/emailSettingsService';
+import { buildEmailLayoutPreview, DEFAULT_EMAIL_PRIMARY } from '../../shared/lib/emailLayoutTemplate';
 
 export function CompanySettings() {
     const navigate = useNavigate();
@@ -88,6 +91,21 @@ export function CompanySettings() {
     const [savingSmtp, setSavingSmtp] = useState(false);
     const [testingSmtp, setTestingSmtp] = useState(false);
     const [testTo, setTestTo] = useState('');
+    const [savingLayout, setSavingLayout] = useState(false);
+    const [emailLogoFile, setEmailLogoFile] = useState<File | null>(null);
+    const [emailLogoPreview, setEmailLogoPreview] = useState<string | null>(null);
+    const [uploadingEmailLogo, setUploadingEmailLogo] = useState(false);
+
+    const layoutForm = useForm({
+        initialValues: {
+            logoUrl: '',
+            primaryColor: DEFAULT_EMAIL_PRIMARY,
+            footerText: '',
+        },
+        validate: {
+            primaryColor: (v) => (/^#[0-9A-Fa-f]{6}$/.test(v) ? null : 'Cor inválida (use #RRGGBB)'),
+        },
+    });
 
     const smtpForm = useForm({
         initialValues: {
@@ -112,6 +130,17 @@ export function CompanySettings() {
         try {
             const s = await getCompanyEmailSettings(companyId);
             setEmailSettings(s);
+            const companyLogo = (currentCompany as any)?.logo_url as string | undefined;
+            const companyColor = currentCompany?.primary_color || DEFAULT_EMAIL_PRIMARY;
+            const companyName = currentCompany?.name || 'Sua empresa';
+
+            layoutForm.setValues({
+                logoUrl: s?.email_layout_logo_url || companyLogo || '',
+                primaryColor: s?.email_layout_primary_color || companyColor,
+                footerText: s?.email_layout_footer_text || `${companyName} — Notificações automáticas.`,
+            });
+            setEmailLogoPreview(s?.email_layout_logo_url || companyLogo || null);
+
             smtpForm.setValues({
                 host: s?.custom_smtp_host || '',
                 port: s?.custom_smtp_port || 587,
@@ -195,6 +224,69 @@ export function CompanySettings() {
             setSavingSmtp(false);
         }
     };
+
+    const handleUseCompanyBranding = () => {
+        if (!currentCompany) return;
+        const logo = (currentCompany as any).logo_url as string | undefined;
+        layoutForm.setValues({
+            logoUrl: logo || '',
+            primaryColor: currentCompany.primary_color || DEFAULT_EMAIL_PRIMARY,
+            footerText: `${currentCompany.name} — Notificações automáticas.`,
+        });
+        setEmailLogoPreview(logo || null);
+        setEmailLogoFile(null);
+    };
+
+    const handleEmailLogoUpload = async (file: File | null) => {
+        if (!file || !currentCompany) return;
+        setEmailLogoFile(file);
+        setEmailLogoPreview(URL.createObjectURL(file));
+        setUploadingEmailLogo(true);
+        try {
+            const result = await uploadEmpresaAsset(currentCompany.slug, 'email-logo', file);
+            if (result.success && result.url) {
+                layoutForm.setFieldValue('logoUrl', result.url);
+                setEmailLogoPreview(result.url);
+                notifications.show({ title: 'Logo enviado', message: 'Salve o layout para aplicar nos e-mails.', color: 'green' });
+            } else {
+                throw new Error(result.error || 'Falha no upload');
+            }
+        } catch (err: any) {
+            notifications.show({ title: 'Erro no upload', message: err.message, color: 'red' });
+        } finally {
+            setUploadingEmailLogo(false);
+        }
+    };
+
+    const handleSaveLayout = async () => {
+        if (!currentCompany?.id) return;
+        const validation = layoutForm.validate();
+        if (validation.hasErrors) return;
+        setSavingLayout(true);
+        try {
+            await saveCompanyEmailLayout(currentCompany.id, {
+                logoUrl: layoutForm.values.logoUrl,
+                primaryColor: layoutForm.values.primaryColor,
+                footerText: layoutForm.values.footerText,
+            });
+            notifications.show({ title: 'Layout salvo', message: 'Aparência dos e-mails atualizada.', color: 'green' });
+            await loadEmailSettings(currentCompany.id);
+        } catch (err: any) {
+            notifications.show({ title: 'Erro ao salvar', message: err.message, color: 'red' });
+        } finally {
+            setSavingLayout(false);
+        }
+    };
+
+    const emailPreviewHtml = useMemo(() => {
+        if (!currentCompany) return '';
+        return buildEmailLayoutPreview({
+            companyName: currentCompany.name,
+            logoUrl: emailLogoPreview || layoutForm.values.logoUrl || undefined,
+            primaryColor: layoutForm.values.primaryColor,
+            footerText: layoutForm.values.footerText,
+        });
+    }, [currentCompany, emailLogoPreview, layoutForm.values.logoUrl, layoutForm.values.primaryColor, layoutForm.values.footerText]);
 
     useEffect(() => {
         if (currentCompany) {
@@ -568,7 +660,7 @@ export function CompanySettings() {
                             <li>Aba Geral: nome, CNPJ, contato e endereço</li>
                             <li>Aba Branding: logo e cores da marca</li>
                             <li>Aba Domínio: link da empresa e domínio personalizado</li>
-                            <li>Aba Notificações: preferências de comunicação</li>
+                            <li>Aba Notificações: layout dos e-mails e servidor SMTP</li>
                         </Text>
                     </>
                 }
@@ -915,12 +1007,100 @@ export function CompanySettings() {
                         </Card>
                     </Tabs.Panel>
 
-                    {/* Notifications Settings — Servidor de E-mail (SMTP) */}
+                    {/* Notifications — Layout + SMTP */}
                     <Tabs.Panel value="notifications">
-                        <Card shadow="sm" padding="lg" radius="md">
-                            {emailLoading ? (
-                                <Group justify="center" py="xl"><Loader /></Group>
-                            ) : (
+                        {emailLoading ? (
+                            <Group justify="center" py="xl"><Loader /></Group>
+                        ) : (
+                            <Stack gap="lg">
+                                {/* Layout dos e-mails */}
+                                <Card shadow="sm" padding="lg" radius="md">
+                                    <Stack gap="md">
+                                        <Group justify="space-between" align="flex-start">
+                                            <Group gap="xs">
+                                                <IconLayout size={22} />
+                                                <div>
+                                                    <Text fw={600}>Layout dos e-mails</Text>
+                                                    <Text size="xs" c="dimmed">Logo, cor e rodapé aplicados em todas as notificações da empresa.</Text>
+                                                </div>
+                                            </Group>
+                                            {canEdit && (
+                                                <Button variant="light" size="xs" onClick={handleUseCompanyBranding}>
+                                                    Usar identidade da empresa
+                                                </Button>
+                                            )}
+                                        </Group>
+
+                                        <Group align="flex-start" grow preventGrowOverflow={false}>
+                                            <Stack gap="sm" style={{ flex: 1, minWidth: 260 }}>
+                                                <Text size="sm" fw={500}>Logo no e-mail</Text>
+                                                <Group>
+                                                    <Avatar
+                                                        src={emailLogoPreview || layoutForm.values.logoUrl || undefined}
+                                                        size="lg"
+                                                        radius="md"
+                                                    >
+                                                        {currentCompany.name.charAt(0)}
+                                                    </Avatar>
+                                                    <FileInput
+                                                        placeholder="Enviar logo (PNG/JPG)"
+                                                        accept="image/*"
+                                                        leftSection={<IconUpload size={16} />}
+                                                        value={emailLogoFile}
+                                                        onChange={handleEmailLogoUpload}
+                                                        disabled={!canEdit || uploadingEmailLogo}
+                                                        style={{ flex: 1 }}
+                                                    />
+                                                </Group>
+                                                <TextInput
+                                                    label="URL do logo (opcional)"
+                                                    placeholder="https://..."
+                                                    disabled={!canEdit}
+                                                    {...layoutForm.getInputProps('logoUrl')}
+                                                    onChange={(e) => {
+                                                        layoutForm.setFieldValue('logoUrl', e.currentTarget.value);
+                                                        setEmailLogoPreview(e.currentTarget.value || null);
+                                                    }}
+                                                />
+                                                <ColorInput
+                                                    label="Cor principal"
+                                                    format="hex"
+                                                    swatches={['#0047CC', '#0087ff', '#228be6', '#10b981', '#f59e0b', '#ef4444']}
+                                                    disabled={!canEdit}
+                                                    {...layoutForm.getInputProps('primaryColor')}
+                                                />
+                                                <TextInput
+                                                    label="Texto do rodapé"
+                                                    placeholder={`${currentCompany.name} — Notificações automáticas.`}
+                                                    disabled={!canEdit}
+                                                    {...layoutForm.getInputProps('footerText')}
+                                                />
+                                                {canEdit && (
+                                                    <Group justify="flex-end">
+                                                        <Button onClick={handleSaveLayout} loading={savingLayout || uploadingEmailLogo}>
+                                                            Salvar layout
+                                                        </Button>
+                                                    </Group>
+                                                )}
+                                            </Stack>
+
+                                            <Paper withBorder radius="md" p={0} style={{ flex: 1, minWidth: 280, overflow: 'hidden', background: '#f0f2f5' }}>
+                                                <Text size="xs" c="dimmed" ta="center" py="xs" bg="white" style={{ borderBottom: '1px solid #eee' }}>
+                                                    Preview (responsivo)
+                                                </Text>
+                                                <iframe
+                                                    title="Preview do e-mail"
+                                                    srcDoc={emailPreviewHtml}
+                                                    style={{ width: '100%', height: 420, border: 0, display: 'block', background: '#f0f2f5' }}
+                                                    sandbox=""
+                                                />
+                                            </Paper>
+                                        </Group>
+                                    </Stack>
+                                </Card>
+
+                                {/* SMTP */}
+                                <Card shadow="sm" padding="lg" radius="md">
                                 <Stack gap="md">
                                     <Group justify="space-between" align="flex-start">
                                         <Group gap="xs">
@@ -1057,8 +1237,9 @@ export function CompanySettings() {
                                         </>
                                     )}
                                 </Stack>
-                            )}
-                        </Card>
+                                </Card>
+                            </Stack>
+                        )}
                     </Tabs.Panel>
 
                     {/* Privacy & LGPD Settings */}
