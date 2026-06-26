@@ -16,6 +16,10 @@ import {
     type ProductPlanOption,
 } from '../../../shared/services/ecosystemActivationService';
 import type { Company } from '../../../shared/contexts/AuthContext';
+import {
+    resolveCompanyAccountType,
+    companyAccountTypeLabel,
+} from '../../../shared/lib/companyAccountType';
 
 interface ProductMeta {
     id: string;
@@ -53,6 +57,7 @@ export function ToolActivationDrawer({
     onActivated,
 }: Props) {
     const navigate = useNavigate();
+    const companyAccountType = resolveCompanyAccountType(company);
     const [product, setProduct] = useState<ProductMeta | null>(null);
     const [plans, setPlans] = useState<ProductPlanOption[]>([]);
     const [loading, setLoading] = useState(false);
@@ -72,7 +77,7 @@ export function ToolActivationDrawer({
                     supabase.from('products')
                         .select('id, name, description, brand_color, icon, base_url')
                         .eq('id', productId).single(),
-                    loadProductPlans(productId),
+                    loadProductPlans(productId, companyAccountType),
                 ]);
                 if (cancelled) return;
                 setProduct(productRes.data);
@@ -89,7 +94,7 @@ export function ToolActivationDrawer({
         })();
 
         return () => { cancelled = true; };
-    }, [opened, productId]);
+    }, [opened, productId, companyAccountType]);
 
     const selectedPlan = useMemo(
         () => plans.find(p => p.slug === selectedPlanSlug) ?? null,
@@ -183,10 +188,14 @@ export function ToolActivationDrawer({
                         <div>
                             <Text fw={800} size="lg">{product.name}</Text>
                             <Text size="sm" c="dimmed" lineClamp={2}>
-                                {product.description || 'Ative o poder desta ferramenta no ecossistema Sincla.'}
+                                {product.description || 'Escolha um plano e ative esta ferramenta para sua empresa.'}
                             </Text>
                         </div>
                     </Group>
+
+                    <Badge variant="light" color="gray" size="sm" w="fit-content">
+                        Planos para {companyAccountTypeLabel(companyAccountType)}
+                    </Badge>
 
                     {isFullAccess && (
                         <Alert variant="light" color="violet" icon={<IconSparkles size={16} />}>
@@ -312,9 +321,9 @@ export function ToolActivationDrawer({
                         >
                             {selectedPlan?.slug === 'enterprise'
                                 ? 'Falar com consultor'
-                                : canInstantActivate
-                                    ? 'Ativar agora'
-                                    : 'Continuar para pagamento'}
+                                    : canInstantActivate
+                                        ? 'Ativar agora'
+                                        : 'Ir para pagamento'}
                         </Button>
 
                         <Button variant="subtle" fullWidth onClick={onClose}>

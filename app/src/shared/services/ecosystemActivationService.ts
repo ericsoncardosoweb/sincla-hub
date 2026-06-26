@@ -1,4 +1,8 @@
 import { supabase } from '../lib/supabase';
+import {
+    filterPlansForAccountType,
+    type CompanyAccountType,
+} from '../lib/companyAccountType';
 
 export interface ActivateProductResult {
     success: boolean;
@@ -24,6 +28,7 @@ export interface ProductPlanOption {
     discount_yearly_percent: number;
     trial_days: number;
     is_popular: boolean;
+    account_type: string | null;
 }
 
 export async function activateCompanyProduct(
@@ -41,15 +46,18 @@ export async function activateCompanyProduct(
     return (data ?? { success: false, error: 'Resposta vazia' }) as ActivateProductResult;
 }
 
-export async function loadProductPlans(productId: string): Promise<ProductPlanOption[]> {
+export async function loadProductPlans(
+    productId: string,
+    companyAccountType: CompanyAccountType = 'pj',
+): Promise<ProductPlanOption[]> {
     const { data, error } = await supabase
         .from('product_plans')
-        .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, trial_days, is_popular, sort_order')
+        .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, trial_days, is_popular, sort_order, account_type')
         .eq('product_id', productId)
         .eq('is_active', true)
         .eq('plan_kind', 'base')
         .order('sort_order');
 
     if (error) throw new Error(error.message);
-    return (data || []) as ProductPlanOption[];
+    return filterPlansForAccountType((data || []) as ProductPlanOption[], companyAccountType);
 }

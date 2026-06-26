@@ -59,6 +59,7 @@ import {
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { redirectToProduct } from '../../shared/services/cross-auth';
+import { dashboardShortcuts } from '../../shared/constants/dashboardShortcuts';
 import styles from './DashboardLayout.module.css';
 
 // ============================
@@ -90,7 +91,7 @@ const mainNavItems: NavItem[] = [
     { icon: IconAddressBook, label: 'Contatos', path: '/painel/contatos' },
     { icon: IconUsers, label: 'Equipe', path: '/painel/equipe' },
     { icon: IconPlugConnected, label: 'Integrações', path: '/painel/integracoes' },
-    { icon: IconCreditCard, label: 'Meu Ecossistema', path: '/painel/assinaturas' },
+    { icon: IconCreditCard, label: 'Assinaturas', path: '/painel/assinaturas' },
 ];
 
 const iconMap: Record<string, typeof IconUsers> = {
@@ -399,28 +400,6 @@ export function DashboardLayout() {
             {/* Secondary Navigation */}
             <Divider my="sm" />
             <Stack gap={4} className={styles.navList}>
-                {/* Parceiro - conditional */}
-                {(() => {
-                    const partnerItem = isPartner
-                        ? { icon: IconEye, label: 'Visão de Parceiro', path: '/painel/parceiro' }
-                        : { icon: IconHeartHandshake, label: 'Seja um Parceiro', path: '/painel/parceiro' };
-                    const isActive = location.pathname === partnerItem.path;
-                    const btn = (
-                        <UnstyledButton
-                            className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''} ${collapsed && !isMobile ? styles.navLinkCollapsed : ''}`}
-                            onClick={() => handleNavClick(partnerItem.path)}
-                        >
-                            <partnerItem.icon size={20} stroke={1.5} className={styles.navIcon} />
-                            {(!collapsed || isMobile) && (
-                                <Text size="sm" className={styles.navLabel}>{partnerItem.label}</Text>
-                            )}
-                        </UnstyledButton>
-                    );
-                    return collapsed && !isMobile
-                        ? <Tooltip label={partnerItem.label} position="right" withArrow>{btn}</Tooltip>
-                        : btn;
-                })()}
-
                 {/* Configurações */}
                 {(() => {
                     const isActive = location.pathname === '/painel/configuracoes';
@@ -440,44 +419,15 @@ export function DashboardLayout() {
                         : btn;
                 })()}
 
-                {/* External links - only visible when expanded */}
                 {(!collapsed || isMobile) && (
-                    <>
-                        <UnstyledButton
-                            className={styles.navLink}
-                            onClick={() => window.open('https://ead.sincla.com.br/s/sincla', '_blank')}
-                        >
-                            <IconBook size={20} stroke={1.5} className={styles.navIcon} />
-                            <Text size="sm" className={styles.navLabel}>Tutoriais Sincla</Text>
-                        </UnstyledButton>
-
-                        <UnstyledButton
-                            className={styles.navLink}
-                            onClick={() => window.open('https://sincla.com.br/suporte', '_blank')}
-                        >
-                            <IconLifebuoy size={20} stroke={1.5} className={styles.navIcon} />
-                            <Text size="sm" className={styles.navLabel}>Suporte</Text>
-                        </UnstyledButton>
-
-                        <UnstyledButton
-                            className={styles.navLink}
-                            onClick={() => window.open('https://sincla.com.br', '_blank')}
-                        >
-                            <IconWorld size={20} stroke={1.5} className={styles.navIcon} />
-                            <Text size="sm" className={styles.navLabel}>Site Sincla</Text>
-                        </UnstyledButton>
-
-                        <Divider my="xs" />
-
-                        <UnstyledButton
-                            className={styles.navLink}
-                            onClick={handleShareWhatsApp}
-                            style={{ color: '#25D366' }}
-                        >
-                            <IconBrandWhatsapp size={20} stroke={1.5} className={styles.navIcon} />
-                            <Text size="sm" className={styles.navLabel} fw={500}>Indique o Sincla!</Text>
-                        </UnstyledButton>
-                    </>
+                    <UnstyledButton
+                        className={styles.navLink}
+                        onClick={handleShareWhatsApp}
+                        style={{ color: '#25D366' }}
+                    >
+                        <IconBrandWhatsapp size={20} stroke={1.5} className={styles.navIcon} />
+                        <Text size="sm" className={styles.navLabel} fw={500}>Indique o Sincla!</Text>
+                    </UnstyledButton>
                 )}
             </Stack>
 
@@ -636,7 +586,7 @@ export function DashboardLayout() {
                         <Popover
                             opened={toolsOpened}
                             onChange={setToolsOpened}
-                            width={320}
+                            width={360}
                             position="bottom-end"
                             shadow="lg"
                             radius="md"
@@ -678,11 +628,37 @@ export function DashboardLayout() {
                                         Nenhuma ferramenta disponível
                                     </Text>
                                 )}
+                                <Divider my="sm" />
+                                <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb="sm">
+                                    Atalhos
+                                </Text>
+                                <SimpleGrid cols={2} spacing="xs">
+                                    {dashboardShortcuts.map((item) => {
+                                        const ShortcutIcon = item.icon;
+                                        return (
+                                            <UnstyledButton
+                                                key={item.path}
+                                                className={styles.shortcutItem}
+                                                onClick={() => {
+                                                    setToolsOpened(false);
+                                                    navigate(item.path);
+                                                }}
+                                            >
+                                                <ThemeIcon size="sm" radius="sm" variant="light" color="gray">
+                                                    <ShortcutIcon size={14} />
+                                                </ThemeIcon>
+                                                <Text size="xs" fw={500} lineClamp={2} mt={4}>
+                                                    {item.label}
+                                                </Text>
+                                            </UnstyledButton>
+                                        );
+                                    })}
+                                </SimpleGrid>
                             </Popover.Dropdown>
                         </Popover>
 
                         {/* User Menu */}
-                        <Menu shadow="md" width={200}>
+                        <Menu shadow="md" width={220}>
                             <Menu.Target>
                                 <UnstyledButton className={styles.userButton}>
                                     <Group gap="xs">
@@ -736,6 +712,35 @@ export function DashboardLayout() {
                                         </Menu.Item>
                                     </>
                                 )}
+                                <Menu.Divider />
+                                <Menu.Label>Sincla</Menu.Label>
+                                <Menu.Item
+                                    leftSection={isPartner
+                                        ? <IconEye style={{ width: rem(14), height: rem(14) }} />
+                                        : <IconHeartHandshake style={{ width: rem(14), height: rem(14) }} />}
+                                    component={Link}
+                                    to="/painel/parceiro"
+                                >
+                                    {isPartner ? 'Visão de Parceiro' : 'Seja um Parceiro'}
+                                </Menu.Item>
+                                <Menu.Item
+                                    leftSection={<IconBook style={{ width: rem(14), height: rem(14) }} />}
+                                    onClick={() => window.open('https://ead.sincla.com.br/s/sincla', '_blank')}
+                                >
+                                    Tutoriais Sincla
+                                </Menu.Item>
+                                <Menu.Item
+                                    leftSection={<IconLifebuoy style={{ width: rem(14), height: rem(14) }} />}
+                                    onClick={() => window.open('https://sincla.com.br/suporte', '_blank')}
+                                >
+                                    Suporte
+                                </Menu.Item>
+                                <Menu.Item
+                                    leftSection={<IconWorld style={{ width: rem(14), height: rem(14) }} />}
+                                    onClick={() => window.open('https://sincla.com.br', '_blank')}
+                                >
+                                    Site Sincla
+                                </Menu.Item>
                                 <Menu.Divider />
                                 <Menu.Item
                                     color="red"
