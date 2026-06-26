@@ -12,6 +12,7 @@
  */
 
 import { supabase } from '../lib/supabase';
+import { HUB_SUPABASE_ANON_KEY, HUB_SUPABASE_URL } from '../lib/supabaseConfig';
 
 export interface UploadResult {
     success: boolean;
@@ -48,11 +49,11 @@ const uploadViaEdgeFunction = async (
         const { data: { session } } = await supabase.auth.getSession();
 
         const response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-asset`,
+            `${HUB_SUPABASE_URL}/functions/v1/upload-asset`,
             {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                    'Authorization': `Bearer ${session?.access_token || HUB_SUPABASE_ANON_KEY}`,
                 },
                 body: formData,
             }

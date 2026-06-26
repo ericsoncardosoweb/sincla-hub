@@ -27,6 +27,7 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { supabase } from '../../shared/lib/supabase';
+import { HUB_SUPABASE_ANON_KEY, HUB_SUPABASE_URL } from '../../shared/lib/supabaseConfig';
 import { sendNotification } from '../../shared/services/notificationService';
 
 // =============================================
@@ -126,12 +127,12 @@ async function uploadBroadcastImage(file: File): Promise<string | null> {
         formData.append('path', `comunicados/${timestamp}.${ext}`);
 
         const { data: { session } } = await supabase.auth.getSession();
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseUrl = HUB_SUPABASE_URL;
 
         const response = await fetch(`${supabaseUrl}/functions/v1/upload-asset`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                'Authorization': `Bearer ${session?.access_token || HUB_SUPABASE_ANON_KEY}`,
             },
             body: formData,
         });
@@ -498,7 +499,7 @@ export function AdminNotifications() {
         setAiOptimizing(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseUrl = HUB_SUPABASE_URL;
 
             const response = await fetch(`${supabaseUrl}/functions/v1/ai-optimize-text`, {
                 method: 'POST',
