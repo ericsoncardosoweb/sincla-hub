@@ -214,8 +214,8 @@ export function Subscriptions() {
             const [productRes, plansRes] = await Promise.all([
                 supabase.from('products').select('id, name, brand_color, icon, base_url').eq('id', pid).single(),
                 supabase.from('product_plans')
-                    .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days')
-                    .eq('product_id', pid).eq('is_active', true).order('sort_order'),
+                    .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days, plan_kind, account_type')
+                    .eq('product_id', pid).eq('is_active', true).eq('plan_kind', 'base').order('sort_order'),
             ]);
             setProductInfo(productRes.data);
             setPlans(plansRes.data || []);
@@ -235,8 +235,8 @@ export function Subscriptions() {
         try {
             const { data } = await supabase
                 .from('product_plans')
-                .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days')
-                .eq('product_id', sub.product_id).eq('is_active', true).order('sort_order');
+                .select('id, name, slug, description, features, price_monthly, price_yearly, discount_yearly_percent, price_setup, is_popular, trial_days, plan_kind, account_type')
+                .eq('product_id', sub.product_id).eq('is_active', true).eq('plan_kind', 'base').order('sort_order');
             setChangePlans(data || []);
         } catch (err) {
             console.error('Error loading plans for change:', err);
@@ -291,7 +291,9 @@ export function Subscriptions() {
                         subscriber.email,
                         'Confirmação de Cancelamento de Assinatura',
                         `Sua assinatura do plano ${selectedSub.product?.name || 'Contratado'} foi cancelada com sucesso. Fique tranquilo, o seu acesso vigora normalmente até o fechamento do período já pago.`,
-                        'billing'
+                        'billing',
+                        undefined,
+                        currentCompany.id,
                     );
                 }
 

@@ -92,9 +92,10 @@ export function sendEmail(
     subject: string,
     message: string,
     template?: 'welcome' | 'system' | 'billing' | 'alert' | 'security' | 'custom',
-    data?: Record<string, string>
+    data?: Record<string, string>,
+    companyId?: string,
 ) {
-    return sendNotification({ channel: 'email', to, subject, message, template, data });
+    return sendNotification({ channel: 'email', to, subject, message, template, data, companyId });
 }
 
 /**

@@ -307,7 +307,8 @@ export function Team() {
                     'Você foi adicionado a uma nova empresa',
                     `Você foi adicionado à empresa ${currentCompany.name} como ${roleLabels[values.role]}.`,
                     'welcome',
-                    { action_url: `${window.location.origin}/painel` }
+                    { action_url: `${window.location.origin}/painel` },
+                    currentCompany.id,
                 );
 
                 notifications.show({ title: 'Sucesso', message: 'Membro adicionado com sucesso', color: 'green' });
@@ -366,7 +367,8 @@ export function Team() {
                     `Convite para participar da equipe: ${currentCompany.name}`,
                     `Você foi convidado para participar da empresa ${currentCompany.name}. Clique abaixo para criar sua conta e aceitar o convite.`,
                     'welcome',
-                    { action_url: registerUrl, action_label: 'Criar minha Conta' }
+                    { action_url: registerUrl, action_label: 'Criar minha Conta' },
+                    currentCompany.id,
                 );
 
                 notifications.show({
@@ -401,7 +403,8 @@ export function Team() {
                 'Atualização de Permissões',
                 `Suas permissões na empresa ${currentCompany?.name} foram atualizadas.`,
                 'system',
-                { action_url: `${window.location.origin}/painel` }
+                { action_url: `${window.location.origin}/painel` },
+                currentCompany?.id,
             );
 
             notifications.show({ title: 'Sucesso', message: 'Permissões atualizadas', color: 'green' });
@@ -428,7 +431,9 @@ export function Team() {
                     member.user.email,
                     'Acesso Revogado',
                     `Seu acesso à empresa ${currentCompany?.name} foi revogado.`,
-                    'security'
+                    'security',
+                    undefined,
+                    currentCompany?.id,
                 );
             }
 
@@ -466,7 +471,8 @@ export function Team() {
                 `Lembrete: Convite para entrar na equipe ${currentCompany.name}`,
                 `Você tem um convite pendente para participar da empresa ${currentCompany.name}. Clique abaixo para criar sua conta.`,
                 'welcome',
-                { action_url: registerUrl, action_label: 'Criar minha Conta' }
+                { action_url: registerUrl, action_label: 'Criar minha Conta' },
+                currentCompany.id,
             );
 
             notifications.show({ title: 'Convite reenviado!', message: `Email reenviado para ${invite.email}`, color: 'blue' });
