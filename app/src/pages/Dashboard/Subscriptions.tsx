@@ -242,6 +242,19 @@ export function Subscriptions() {
     };
 
     useEffect(() => {
+        if (searchParams.get('modulo') === 'ok') {
+            notifications.show({
+                title: 'Módulo contratado',
+                message: 'O complemento foi ativado. Os recursos já estão disponíveis na ferramenta.',
+                color: 'green',
+            });
+            const next = new URLSearchParams(searchParams);
+            next.delete('modulo');
+            setSearchParams(next, { replace: true });
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
         if (currentCompany) loadData();
     }, [currentCompany]);
 
@@ -890,7 +903,11 @@ export function Subscriptions() {
                                 </Text>
                             </Alert>
                         ) : (
-                            <ConsumptionDashboard companyId={currentCompany.id} billingEnabled={showBilling || checkoutBillingEnabled} />
+                            <ConsumptionDashboard
+                                companyId={currentCompany.id}
+                                billingEnabled={showBilling || checkoutBillingEnabled}
+                                isFullAccess={isFullAccess}
+                            />
                         )}
                     </Tabs.Panel>
                 </Tabs>

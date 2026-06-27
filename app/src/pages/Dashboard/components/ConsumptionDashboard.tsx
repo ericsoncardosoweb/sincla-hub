@@ -20,6 +20,7 @@ import {
 } from '@tabler/icons-react';
 import { supabase } from '../../../shared/lib/supabase';
 import { getCompanyEmailSettings, type CompanyEmailSettings } from '../../../shared/services/emailSettingsService';
+import { AddonModulesPanel } from './AddonModulesPanel';
 
 // ==============================
 // Types
@@ -113,9 +114,10 @@ const progressColor = (pct: number) =>
 interface Props {
     companyId: string;
     billingEnabled?: boolean;
+    isFullAccess?: boolean;
 }
 
-export function ConsumptionDashboard({ companyId, billingEnabled = false }: Props) {
+export function ConsumptionDashboard({ companyId, billingEnabled = false, isFullAccess = false }: Props) {
     const navigate = useNavigate();
     const [credits, setCredits] = useState<CompanyCredits[]>([]);
     const [storage, setStorage] = useState<StorageQuota | null>(null);
@@ -270,6 +272,12 @@ export function ConsumptionDashboard({ companyId, billingEnabled = false }: Prop
 
     return (
         <Stack gap="lg">
+            <AddonModulesPanel
+                companyId={companyId}
+                billingEnabled={billingEnabled}
+                isFullAccess={isFullAccess}
+            />
+
             {/* ═══ Seção: Créditos de Inteligência Artificial ═══ */}
             <Group gap="xs" mb={-4}>
                 <ThemeIcon size="md" radius="md" variant="light" color="violet">

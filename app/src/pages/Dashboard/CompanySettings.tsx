@@ -43,6 +43,7 @@ import {
     type CompanyEmailSettings,
 } from '../../shared/services/emailSettingsService';
 import { buildEmailLayoutPreview, DEFAULT_EMAIL_PRIMARY } from '../../shared/lib/emailLayoutTemplate';
+import { resolveCompanyAccountType, companyAccountTypeLabel } from '../../shared/lib/companyAccountType';
 
 export function CompanySettings() {
     const navigate = useNavigate();
@@ -668,6 +669,8 @@ export function CompanySettings() {
         );
     }
 
+    const companyAccountType = resolveCompanyAccountType(currentCompany);
+
     return (
         <Container size="md" py="md">
             <PageHeader
@@ -713,6 +716,13 @@ export function CompanySettings() {
                     <Tabs.Panel value="general">
                         <Card shadow="sm" padding="lg" radius="md">
                             <Stack gap="md">
+                                <Alert variant="light" color="blue" p="sm">
+                                    <Text size="sm">
+                                        Planos em <strong>Assinaturas</strong> são filtrados para{' '}
+                                        <strong>{companyAccountTypeLabel(companyAccountType)}</strong>.
+                                        Informe CNPJ (14 dígitos) para pessoa jurídica ou CPF (11 dígitos) para pessoa física.
+                                    </Text>
+                                </Alert>
                                 <TextInput
                                     label="Nome da Empresa"
                                     placeholder="Minha Empresa Ltda"
@@ -722,8 +732,8 @@ export function CompanySettings() {
 
                                 <Group grow>
                                     <TextInput
-                                        label="CNPJ"
-                                        placeholder="00.000.000/0000-00"
+                                        label="CNPJ ou CPF"
+                                        placeholder="CNPJ ou CPF da empresa"
                                         disabled={!canEdit}
                                         {...form.getInputProps('cnpj')}
                                     />

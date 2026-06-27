@@ -28,6 +28,7 @@ import {
     formatCurrency,
     type CardBrand,
 } from '../../shared/services/asaasService';
+import { confirmCompanyAddonCheckout } from '../../shared/services/ecosystemActivationService';
 import { getAddressByCep, formatCep } from '../../shared/services/viaCepService';
 import { LegalDocModal } from '../../components/legal/LegalDocModal';
 import {
@@ -135,10 +136,14 @@ export function CheckoutPage() {
     const addonQuantity = parseInt(searchParams.get('quantidade') || searchParams.get('gb') || '0');
     const addonValue = parseFloat(searchParams.get('valor') || '0');
     const addonCycle = (searchParams.get('ciclo') || 'avulso') as 'avulso' | 'recorrente';
-    const isAddon = !!addonType;
+    const isModuleCheckout = searchParams.get('tipo') === 'modulo';
+    const isCreditsAddon = !!addonType;
+    const isAddon = isCreditsAddon;
 
-    const returnTo = isAddon ? '/painel/assinaturas' : `/painel/assinaturas?produto=${productId}`;
-    const successReturnTo = isAddon ? '/painel/assinaturas' : `/painel/assinaturas?produto=${productId}&sucesso=true`;
+    const returnTo = isCreditsAddon || isModuleCheckout ? '/painel/assinaturas?aba=recursos' : `/painel/assinaturas?produto=${productId}`;
+    const successReturnTo = isCreditsAddon || isModuleCheckout
+        ? '/painel/assinaturas?aba=recursos&modulo=ok'
+        : `/painel/assinaturas?produto=${productId}&sucesso=true`;
 
     // Data
     const [product, setProduct] = useState<ProductInfo | null>(null);
@@ -223,8 +228,7 @@ export function CheckoutPage() {
     }, []);
 
     const loadCheckoutData = async () => {
-        // Add-on não precisa buscar plano
-        if (isAddon) {
+        if (isCreditsAddon) {
             setLoadingData(false);
             return;
         }
@@ -233,22 +237,44 @@ export function CheckoutPage() {
             return;
         }
         try {
-            const [prodRes, planRes] = await Promise.all([
+            const [prodRes, planRes, subRes] = await Promise.all([
                 supabase.from('products').select('id, name, brand_color, icon').eq('id', productId).single(),
                 supabase.from('product_plans')
-                    .select('id, name, slug, price_monthly, price_yearly, discount_yearly_percent, features, account_type')
+                    .select('id, name, slug, price_monthly, price_yearly, discount_yearly_percent, features, account_type, plan_kind')
                     .eq('product_id', productId)
                     .eq('slug', planSlug)
                     .single(),
+                currentCompany
+                    ? supabase.from('subscriptions')
+                        .select('id')
+                        .eq('company_id', currentCompany.id)
+                        .eq('product_id', productId)
+                        .in('status', ['active', 'trial'])
+                        .maybeSingle()
+                    : Promise.resolve({ data: null, error: null }),
             ]);
             if (planRes.error || !planRes.data) {
+                navigate('/painel/assinaturas');
+                return;
+            }
+            if (isModuleCheckout) {
+                if (!['addon', 'bundle'].includes(planRes.data.plan_kind)) {
+                    setError('Plano inválido para contratação de módulo.');
+                    navigate('/painel/assinaturas?aba=recursos');
+                    return;
+                }
+                if (!subRes.data) {
+                    setError('Contrate o plano base desta ferramenta antes do módulo.');
+                    navigate('/painel/assinaturas');
+                    return;
+                }
+            } else if (!['base', 'legacy'].includes(planRes.data.plan_kind ?? 'base')) {
                 navigate('/painel/assinaturas');
                 return;
             }
             if (currentCompany) {
                 const accountType = resolveCompanyAccountType(currentCompany);
                 if (!planMatchesAccountType(planRes.data.account_type, accountType)) {
-                    setError('Este plano não está disponível para o tipo de conta da sua empresa (PF/PJ). Escolha outro plano.');
                     navigate('/painel/assinaturas');
                     return;
                 }
@@ -372,7 +398,7 @@ export function CheckoutPage() {
 
     const handleSubmit = async () => {
         if (!validateForm() || !currentCompany) return;
-        if (!isAddon && !plan) return;
+        if (!isCreditsAddon && !plan) return;
 
         setLoading(true);
         setError(null);
@@ -399,8 +425,8 @@ export function CheckoutPage() {
 
             let result;
 
-            if (isAddon) {
-                // Add-on: créditos ou storage
+            if (isCreditsAddon) {
+                // Créditos avulsos ou storage
                 result = await createAddonPayment({
                     companyId: currentCompany.id,
                     billingType: paymentMethod,
@@ -433,7 +459,6 @@ export function CheckoutPage() {
                     });
                 }
             } else {
-                // Plano normal
                 const cycle = selectedCycle === 'annual' ? 'YEARLY' as const : 'MONTHLY' as const;
                 result = await createSubscription({
                     planId: plan!.id,
@@ -447,6 +472,20 @@ export function CheckoutPage() {
                     customerPhone: phone.replace(/\D/g, ''),
                     ...cardData,
                 });
+
+                if (result.success && isModuleCheckout) {
+                    const confirm = await confirmCompanyAddonCheckout(
+                        currentCompany.id,
+                        productId,
+                        plan!.id,
+                        result.subscriptionId,
+                        selectedCycle === 'annual' ? 'yearly' : 'monthly',
+                        plan!.price_monthly,
+                    );
+                    if (!confirm.success) {
+                        throw new Error(confirm.error || 'Pagamento ok, mas falha ao registrar módulo');
+                    }
+                }
             }
 
             if (!result.success) {
@@ -497,7 +536,7 @@ export function CheckoutPage() {
     }
 
     // ===== NOT FOUND =====
-    if (!isAddon && !plan || !isAddon && !product) {
+    if (!isCreditsAddon && (!plan || !product)) {
         return (
             <div className={styles.page}>
                 <div className={styles.loadingFull}>
@@ -519,9 +558,9 @@ export function CheckoutPage() {
                         <IconCheck size={36} />
                     </div>
                     <h2>Pagamento confirmado!</h2>
-                    <p>{isAddon ? 'Seus créditos foram adicionados com sucesso.' : 'Sua assinatura foi processada com sucesso.'}</p>
+                    <p>{isCreditsAddon ? 'Seus créditos foram adicionados com sucesso.' : isModuleCheckout ? 'Seu módulo foi contratado com sucesso.' : 'Sua assinatura foi processada com sucesso.'}</p>
                     <div className={styles.successDetails}>
-                        <span>{isAddon ? addonLabel : plan?.name}</span>
+                        <span>{isCreditsAddon ? addonLabel : plan?.name}</span>
                         <span className={styles.successPrice}>{formatCurrency(price)}</span>
                     </div>
                     <p className={styles.redirectMsg}>Redirecionando...</p>

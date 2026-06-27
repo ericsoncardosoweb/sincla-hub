@@ -31,6 +31,43 @@ export interface ProductPlanOption {
     account_type: string | null;
 }
 
+export async function activateCompanyAddon(
+    companyId: string,
+    productId: string,
+    planSlug: string,
+): Promise<ActivateProductResult> {
+    const { data, error } = await supabase.rpc('activate_company_addon', {
+        p_company_id: companyId,
+        p_product_id: productId,
+        p_plan_slug: planSlug,
+    });
+
+    if (error) throw new Error(error.message);
+    return (data ?? { success: false, error: 'Resposta vazia' }) as ActivateProductResult;
+}
+
+export async function confirmCompanyAddonCheckout(
+    companyId: string,
+    productId: string,
+    planId: string,
+    externalSubscriptionId?: string,
+    billingCycle: 'monthly' | 'yearly' = 'monthly',
+    monthlyAmount?: number,
+): Promise<{ success: boolean; error?: string }> {
+    const { data, error } = await supabase.rpc('confirm_company_addon_checkout', {
+        p_company_id: companyId,
+        p_product_id: productId,
+        p_plan_id: planId,
+        p_external_subscription_id: externalSubscriptionId ?? null,
+        p_billing_cycle: billingCycle,
+        p_monthly_amount: monthlyAmount ?? null,
+    });
+
+    if (error) throw new Error(error.message);
+    const result = (data ?? { success: false }) as { success: boolean; error?: string };
+    return result;
+}
+
 export async function activateCompanyProduct(
     companyId: string,
     productId: string,
