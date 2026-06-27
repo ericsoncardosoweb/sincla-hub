@@ -340,7 +340,7 @@ export function ConsumptionDashboard({ companyId, billingEnabled = false }: Prop
                                 </>
                             ) : (
                                 <>
-                                    <strong>IA integrada ao ecossistema Sincla</strong> — Resumos, classificação e geração de texto
+                                    <strong>IA integrada ao Sincla</strong> — Resumos, classificação e geração de texto
                                     nas ferramentas usam o motor central de IA. O uso do período aparece acima.
                                 </>
                             )}

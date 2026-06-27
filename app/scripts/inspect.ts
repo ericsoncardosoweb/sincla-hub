@@ -1,11 +1,7 @@
-import { Client } from 'pg';
-
-const projectId = 'igwjtvdanulrwntdyfbt';
-const password = 'mMug4QfBXuzXq0vV';
-const connectionString = `postgresql://postgres:${password}@db.${projectId}.supabase.co:5432/postgres`;
+import { createPgClient, SUPABASE_PROJECTS } from './lib/pgClient.js';
 
 async function run() {
-  const client = new Client({ connectionString });
+  const client = createPgClient(SUPABASE_PROJECTS.hub);
   try {
     await client.connect();
     

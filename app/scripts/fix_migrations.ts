@@ -1,6 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import { loadEnv } from './lib/loadEnv.js';
+
+loadEnv();
 
 const basePath = process.argv[2];
 if (!basePath) {
@@ -27,10 +30,13 @@ console.log(`\nAplicando ${repairs.length} repair commands...`);
 try {
     for (const ts of repairs) {
         console.log(`>> npx supabase migration repair ${ts} --status applied`);
-        execSync(`npx supabase migration repair ${ts} --status applied`, { 
-            cwd: basePath, 
+        if (!process.env.SUPABASE_DB_PASSWORD) {
+            throw new Error('Defina SUPABASE_DB_PASSWORD no ambiente antes de executar.');
+        }
+        execSync(`npx supabase migration repair ${ts} --status applied`, {
+            cwd: basePath,
             stdio: 'inherit',
-            env: { ...process.env, SUPABASE_DB_PASSWORD: 'mMug4QfBXuzXq0vV' }
+            env: process.env,
         });
     }
 } catch (e) {

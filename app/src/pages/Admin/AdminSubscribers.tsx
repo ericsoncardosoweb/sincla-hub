@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
     Container, Title, Text, Card, Group, Badge, Stack, Skeleton,
     Table, Avatar, TextInput, SimpleGrid, ThemeIcon, Collapse, Box,
-    Button, Modal, Select, ActionIcon, Tooltip, Divider,
+    Button, Modal, Select, ActionIcon, Tooltip, Divider, PasswordInput,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -10,7 +10,7 @@ import {
     IconSearch, IconUsers, IconBuilding, IconUserPlus,
     IconChevronDown, IconChevronRight, IconPhone,
     IconPlus, IconTrash, IconCheck, IconX, IconEdit, IconDeviceFloppy,
-    IconCrown, IconAlertTriangle,
+    IconCrown, IconAlertTriangle, IconKey, IconMail,
 } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
 
@@ -111,6 +111,8 @@ export function AdminSubscribers() {
     const [newEmail, setNewEmail] = useState('');
     const [newName, setNewName] = useState('');
     const [newCompanyName, setNewCompanyName] = useState('');
+    const [newPartnerId, setNewPartnerId] = useState<string | null>(null);
+    const [partnerOptions, setPartnerOptions] = useState<ProductOption[]>([]);
     const [toolAssignments, setToolAssignments] = useState<ToolAssignment[]>([
         { productId: null, planSlug: null, duration: '0' },
     ]);
@@ -118,6 +120,12 @@ export function AdminSubscribers() {
     // Product & Plan options for the repeater
     const [products, setProducts] = useState<ProductOption[]>([]);
     const [allPlans, setAllPlans] = useState<PlanOption[]>([]);
+
+    // Password management state
+    const [pwTarget, setPwTarget] = useState<SubscriberRow | null>(null);
+    const [pwValue, setPwValue] = useState('');
+    const [pwLoading, setPwLoading] = useState(false);
+    const [sendLinkId, setSendLinkId] = useState<string | null>(null);
 
     const loadData = useCallback(async () => {
         setLoading(true);
@@ -219,6 +227,26 @@ export function AdminSubscribers() {
                 label: p.name,
                 productId: p.product_id,
                 slug: p.slug,
+            })));
+
+            // Afiliados ativos (para vincular a empresa)
+            const { data: partners } = await supabase
+                .from('partners')
+                .select('id, affiliate_code, company_name, user_id, status')
+                .eq('status', 'active');
+            const partnerList = partners || [];
+            const userIds = partnerList.map((p: any) => p.user_id).filter(Boolean);
+            let namesById: Record<string, string> = {};
+            if (userIds.length > 0) {
+                const { data: subs } = await supabase
+                    .from('subscribers')
+                    .select('id, name, email')
+                    .in('id', userIds);
+                namesById = Object.fromEntries((subs || []).map((s: any) => [s.id, s.name || s.email]));
+            }
+            setPartnerOptions(partnerList.map((p: any) => ({
+                value: p.id,
+                label: `${namesById[p.user_id] || p.company_name || 'Afiliado'} (${p.affiliate_code})`,
             })));
         } catch (err) {
             console.error('Erro geral ao carregar produtos/planos:', err);
@@ -357,6 +385,22 @@ export function AdminSubscribers() {
                 throw new Error(error?.message || data?.error || 'Falha desconhecida');
             }
 
+            // Vincula a empresa ao afiliado selecionado (opcional)
+            if (newPartnerId && data?.company_id) {
+                const { error: partnerErr } = await supabase.rpc('admin_set_company_partner', {
+                    p_company_id: data.company_id,
+                    p_partner_id: newPartnerId,
+                });
+                if (partnerErr) {
+                    notifications.show({
+                        title: '⚠️ Afiliado não vinculado',
+                        message: `Empresa criada, mas falha ao vincular afiliado: ${partnerErr.message}`,
+                        color: 'orange',
+                        autoClose: 10000,
+                    });
+                }
+            }
+
             // Check for subscription-specific errors
             if (data?.subscription_errors?.length > 0) {
                 notifications.show({
@@ -380,6 +424,7 @@ export function AdminSubscribers() {
             setNewEmail('');
             setNewName('');
             setNewCompanyName('');
+            setNewPartnerId(null);
             setToolAssignments([{ productId: null, planSlug: null, duration: '0' }]);
             closeCreate();
             loadData();
@@ -394,6 +439,55 @@ export function AdminSubscribers() {
             });
         } finally {
             setCreateLoading(false);
+        }
+    };
+
+    const handleSetPassword = async () => {
+        if (!pwTarget) return;
+        if (!pwValue || pwValue.length < 6) {
+            notifications.show({ title: 'Senha curta', message: 'A senha deve ter no mínimo 6 caracteres.', color: 'red' });
+            return;
+        }
+        setPwLoading(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('admin-set-password', {
+                body: { action: 'set', user_id: pwTarget.id, new_password: pwValue },
+            });
+            if (error || data?.error) throw new Error(error?.message || data?.error || 'Falha desconhecida');
+
+            notifications.show({
+                title: 'Senha definida ✅',
+                message: `Nova senha definida para ${pwTarget.email}.`,
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+            setPwTarget(null);
+            setPwValue('');
+        } catch (err: any) {
+            notifications.show({ title: 'Erro ao definir senha', message: err.message, color: 'red', icon: <IconX size={16} /> });
+        } finally {
+            setPwLoading(false);
+        }
+    };
+
+    const handleSendResetLink = async (sub: SubscriberRow) => {
+        setSendLinkId(sub.id);
+        try {
+            const { data, error } = await supabase.functions.invoke('admin-set-password', {
+                body: { action: 'send_link', user_id: sub.id, email: sub.email },
+            });
+            if (error || data?.error) throw new Error(error?.message || data?.error || 'Falha desconhecida');
+
+            notifications.show({
+                title: 'Link enviado ✅',
+                message: `Email com link de redefinição enviado para ${sub.email}.`,
+                color: 'green',
+                icon: <IconCheck size={16} />,
+            });
+        } catch (err: any) {
+            notifications.show({ title: 'Erro ao enviar link', message: err.message, color: 'red', icon: <IconX size={16} /> });
+        } finally {
+            setSendLinkId(null);
         }
     };
 
@@ -618,6 +712,30 @@ export function AdminSubscribers() {
                                                                 <IconEdit size={14} />
                                                             </ActionIcon>
                                                         </Tooltip>
+                                                        <Tooltip label="Definir nova senha">
+                                                            <ActionIcon
+                                                                size="sm" variant="subtle" color="blue"
+                                                                onClick={(e: React.MouseEvent) => {
+                                                                    e.stopPropagation();
+                                                                    setPwValue('');
+                                                                    setPwTarget(sub);
+                                                                }}
+                                                            >
+                                                                <IconKey size={14} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
+                                                        <Tooltip label="Enviar link de redefinição por email">
+                                                            <ActionIcon
+                                                                size="sm" variant="subtle" color="grape"
+                                                                loading={sendLinkId === sub.id}
+                                                                onClick={(e: React.MouseEvent) => {
+                                                                    e.stopPropagation();
+                                                                    handleSendResetLink(sub);
+                                                                }}
+                                                            >
+                                                                <IconMail size={14} />
+                                                            </ActionIcon>
+                                                        </Tooltip>
                                                         <Tooltip label="Excluir">
                                                             <ActionIcon
                                                                 size="sm" variant="subtle" color="red"
@@ -776,6 +894,20 @@ export function AdminSubscribers() {
                         description="O slug será gerado automaticamente a partir do nome."
                     />
 
+                    <Select
+                        label="Afiliado (opcional)"
+                        placeholder="Vincular a um afiliado ativo..."
+                        data={partnerOptions}
+                        value={newPartnerId}
+                        onChange={setNewPartnerId}
+                        searchable
+                        clearable
+                        disabled={createLoading}
+                        leftSection={<IconCrown size={16} />}
+                        description="A empresa será atribuída a este afiliado para fins de comissão."
+                        comboboxProps={{ zIndex: 1000 }}
+                    />
+
                     <Divider label="Ferramentas & Planos" labelPosition="left" />
 
                     <Stack gap="sm">
@@ -904,6 +1036,47 @@ export function AdminSubscribers() {
                         >
                             Excluir Permanentemente
                         </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
+            {/* Modal: definir nova senha */}
+            <Modal
+                opened={pwTarget !== null}
+                onClose={() => { setPwTarget(null); setPwValue(''); }}
+                title="Definir nova senha"
+                centered
+            >
+                <Stack gap="md">
+                    <Text size="sm" c="dimmed">
+                        Defina uma nova senha para <strong>{pwTarget?.email}</strong>. O usuário poderá entrar imediatamente com ela.
+                    </Text>
+                    <PasswordInput
+                        label="Nova senha"
+                        placeholder="Mínimo 6 caracteres"
+                        value={pwValue}
+                        onChange={(e) => setPwValue(e.currentTarget.value)}
+                        leftSection={<IconKey size={16} />}
+                        data-autofocus
+                    />
+                    <Group justify="space-between" gap="sm">
+                        <Button
+                            variant="subtle"
+                            color="grape"
+                            leftSection={<IconMail size={16} />}
+                            disabled={pwLoading}
+                            onClick={() => { if (pwTarget) { const t = pwTarget; setPwTarget(null); setPwValue(''); handleSendResetLink(t); } }}
+                        >
+                            Enviar link por email
+                        </Button>
+                        <Group gap="sm">
+                            <Button variant="subtle" onClick={() => { setPwTarget(null); setPwValue(''); }} disabled={pwLoading}>
+                                Cancelar
+                            </Button>
+                            <Button onClick={handleSetPassword} loading={pwLoading} leftSection={<IconKey size={16} />}>
+                                Definir senha
+                            </Button>
+                        </Group>
                     </Group>
                 </Stack>
             </Modal>

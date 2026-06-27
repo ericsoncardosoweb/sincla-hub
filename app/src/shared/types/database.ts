@@ -51,6 +51,10 @@ export interface Company {
     status: CompanyStatus;
     settings: Record<string, unknown>;
 
+    // Acesso vitalício (cortesia/parceiro) — sobrepõe planos/add-ons
+    lifetime_access: boolean;
+    lifetime_access_note: string | null;
+
     created_at: string;
     updated_at: string;
 }

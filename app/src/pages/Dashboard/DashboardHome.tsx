@@ -363,18 +363,15 @@ export function DashboardHome() {
                             <div className={styles.emptyState}>
                                 <IconRocket size={32} color="var(--mantine-color-gray-4)" />
                                 <Text size="sm" c="dimmed" ta="center">
-                                    Nenhum produto ativo
+                                    Nenhuma ferramenta contratada
                                 </Text>
                                 <Button
                                     size="xs"
                                     variant="light"
                                     leftSection={<IconPlus size={14} />}
-                                    onClick={() => {
-                                        const el = document.getElementById('tools-carousel');
-                                        el?.scrollIntoView({ behavior: 'smooth' });
-                                    }}
+                                    onClick={() => navigate('/painel/assinaturas')}
                                 >
-                                    Adicione seu primeiro
+                                    Contratar primeira ferramenta
                                 </Button>
                             </div>
                         )}
@@ -609,7 +606,7 @@ export function DashboardHome() {
                                                             style={{ flex: 1, backgroundColor: color }}
                                                             onClick={() => handleActivateProduct(tool)}
                                                         >
-                                                            Ativar
+                                                            Contratar
                                                         </Button>
                                                     )}
                                                 </>

@@ -30,6 +30,10 @@ import {
 } from '../../shared/services/asaasService';
 import { getAddressByCep, formatCep } from '../../shared/services/viaCepService';
 import { LegalDocModal } from '../../components/legal/LegalDocModal';
+import {
+    resolveCompanyAccountType,
+    planMatchesAccountType,
+} from '../../shared/lib/companyAccountType';
 import styles from './CheckoutPage.module.css';
 
 interface PlanInfo {
@@ -232,11 +236,23 @@ export function CheckoutPage() {
             const [prodRes, planRes] = await Promise.all([
                 supabase.from('products').select('id, name, brand_color, icon').eq('id', productId).single(),
                 supabase.from('product_plans')
-                    .select('id, name, slug, price_monthly, price_yearly, discount_yearly_percent, features')
+                    .select('id, name, slug, price_monthly, price_yearly, discount_yearly_percent, features, account_type')
                     .eq('product_id', productId)
                     .eq('slug', planSlug)
                     .single(),
             ]);
+            if (planRes.error || !planRes.data) {
+                navigate('/painel/assinaturas');
+                return;
+            }
+            if (currentCompany) {
+                const accountType = resolveCompanyAccountType(currentCompany);
+                if (!planMatchesAccountType(planRes.data.account_type, accountType)) {
+                    setError('Este plano não está disponível para o tipo de conta da sua empresa (PF/PJ). Escolha outro plano.');
+                    navigate('/painel/assinaturas');
+                    return;
+                }
+            }
             setProduct(prodRes.data);
             setPlan(planRes.data);
         } catch (err) {

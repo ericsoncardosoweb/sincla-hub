@@ -9,7 +9,7 @@ import {
     IconLayoutDashboard, IconPlus, IconEdit, IconTrash, IconDots,
     IconCreditCard, IconTrendingUp, IconCash,
     IconDatabase, IconWorld, IconCloud,
-    IconEye, IconServerCog,
+    IconEye, IconServerCog, IconInfinity, IconUserStar,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { supabase } from '../../shared/lib/supabase';
@@ -47,6 +47,10 @@ interface Company {
     external_mode: boolean;
     external_server_id: string | null;
     external_db_enabled: boolean;
+    lifetime_access: boolean;
+    lifetime_access_note: string | null;
+    partner_id: string | null;
+    partner: { affiliate_code: string } | null;
     subscriber: { name: string | null; email: string } | null;
     created_at: string;
     server_name?: string;
@@ -129,6 +133,12 @@ export function AdminInfrastructure() {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [companySearch, setCompanySearch] = useState('');
     const [loadingCompanies, setLoadingCompanies] = useState(false);
+
+    // Partner (affiliate) assignment
+    const [partnerOptions, setPartnerOptions] = useState<{ value: string; label: string }[]>([]);
+    const [partnerTarget, setPartnerTarget] = useState<Company | null>(null);
+    const [partnerSelected, setPartnerSelected] = useState<string | null>(null);
+    const [partnerLoading, setPartnerLoading] = useState(false);
 
     // Servers
     const [servers, setServers] = useState<ExternalServer[]>([]);
@@ -217,8 +227,9 @@ export function AdminInfrastructure() {
                 .from('companies')
                 .select(`
                     id, name, slug, status, external_mode, external_server_id, 
-                    external_db_enabled, created_at,
-                    subscriber:subscribers!subscriber_id (name, email)
+                    external_db_enabled, lifetime_access, lifetime_access_note, partner_id, created_at,
+                    subscriber:subscribers!subscriber_id (name, email),
+                    partner:partners!partner_id (affiliate_code)
                 `)
                 .order('created_at', { ascending: false })
                 .limit(100);
@@ -229,10 +240,11 @@ export function AdminInfrastructure() {
 
             const { data } = await query;
 
-            // Flatten subscriber from array
+            // Flatten subscriber/partner from array
             const mapped = (data || []).map((c: any) => ({
                 ...c,
                 subscriber: Array.isArray(c.subscriber) ? c.subscriber[0] : c.subscriber,
+                partner: Array.isArray(c.partner) ? c.partner[0] : c.partner,
             }));
 
             setCompanies(mapped);
@@ -399,6 +411,96 @@ export function AdminInfrastructure() {
         }
     };
 
+    const loadPartnerOptions = useCallback(async () => {
+        const { data: partners } = await supabase
+            .from('partners')
+            .select('id, affiliate_code, company_name, user_id, status')
+            .eq('status', 'active');
+        const list = partners || [];
+        const userIds = list.map((p: any) => p.user_id).filter(Boolean);
+        let namesById: Record<string, string> = {};
+        if (userIds.length > 0) {
+            const { data: subs } = await supabase
+                .from('subscribers')
+                .select('id, name, email')
+                .in('id', userIds);
+            namesById = Object.fromEntries((subs || []).map((s: any) => [s.id, s.name || s.email]));
+        }
+        setPartnerOptions(list.map((p: any) => ({
+            value: p.id,
+            label: `${namesById[p.user_id] || p.company_name || 'Afiliado'} (${p.affiliate_code})`,
+        })));
+    }, []);
+
+    const openPartnerModal = (comp: Company) => {
+        setPartnerTarget(comp);
+        setPartnerSelected(comp.partner_id);
+        loadPartnerOptions();
+    };
+
+    const saveCompanyPartner = async () => {
+        if (!partnerTarget) return;
+        setPartnerLoading(true);
+        try {
+            const { error } = await supabase.rpc('admin_set_company_partner', {
+                p_company_id: partnerTarget.id,
+                p_partner_id: partnerSelected,
+            });
+            if (error) throw error;
+            notifications.show({
+                title: 'Sucesso',
+                message: partnerSelected
+                    ? `${partnerTarget.name} vinculada ao afiliado.`
+                    : `Afiliado removido de ${partnerTarget.name}.`,
+                color: 'green',
+            });
+            setPartnerTarget(null);
+            loadCompanies();
+        } catch (error: any) {
+            console.error('Error setting company partner:', error);
+            notifications.show({
+                title: 'Erro',
+                message: error.message || 'Não foi possível vincular o afiliado',
+                color: 'red',
+            });
+        } finally {
+            setPartnerLoading(false);
+        }
+    };
+
+    const toggleLifetimeAccess = async (comp: Company) => {
+        const enabling = !comp.lifetime_access;
+        const confirmed = window.confirm(
+            enabling
+                ? `Conceder acesso VITALÍCIO ilimitado a "${comp.name}"? A empresa terá todas as ferramentas liberadas sem cobrança.`
+                : `Remover o acesso vitalício de "${comp.name}"? Ela voltará a depender dos planos/assinaturas normais.`,
+        );
+        if (!confirmed) return;
+
+        try {
+            const { error } = await supabase.rpc('set_company_lifetime_access', {
+                p_company_id: comp.id,
+                p_enabled: enabling,
+                p_note: enabling ? 'Concedido via Admin Infraestrutura' : null,
+            });
+            if (error) throw error;
+
+            notifications.show({
+                title: 'Sucesso',
+                message: `Acesso vitalício ${enabling ? 'concedido' : 'removido'} para ${comp.name}`,
+                color: enabling ? 'grape' : 'gray',
+            });
+            loadCompanies();
+        } catch (error) {
+            console.error('Error toggling lifetime access:', error);
+            notifications.show({
+                title: 'Erro',
+                message: 'Não foi possível alterar o acesso vitalício',
+                color: 'red',
+            });
+        }
+    };
+
     // ============================
     // Render: Stat Cards
     // ============================
@@ -545,6 +647,8 @@ export function AdminInfrastructure() {
                             <Table.Th>Status</Table.Th>
                             <Table.Th>Servidor</Table.Th>
                             <Table.Th>DB Dedicado</Table.Th>
+                            <Table.Th>Vitalício</Table.Th>
+                            <Table.Th>Afiliado</Table.Th>
                             <Table.Th>Criado em</Table.Th>
                             <Table.Th>Ações</Table.Th>
                         </Table.Tr>
@@ -579,6 +683,24 @@ export function AdminInfrastructure() {
                                         <Text size="sm" c="dimmed">—</Text>
                                     )}
                                 </Table.Td>
+                                <Table.Td>
+                                    {comp.lifetime_access ? (
+                                        <Badge color="grape" variant="light" size="sm" leftSection={<IconInfinity size={10} />}>
+                                            Vitalício
+                                        </Badge>
+                                    ) : (
+                                        <Text size="sm" c="dimmed">—</Text>
+                                    )}
+                                </Table.Td>
+                                <Table.Td>
+                                    {comp.partner?.affiliate_code ? (
+                                        <Badge color="teal" variant="light" size="sm">
+                                            {comp.partner.affiliate_code}
+                                        </Badge>
+                                    ) : (
+                                        <Text size="sm" c="dimmed">—</Text>
+                                    )}
+                                </Table.Td>
                                 <Table.Td>{formatDate(comp.created_at)}</Table.Td>
                                 <Table.Td>
                                     <Menu position="bottom-end" withArrow>
@@ -600,6 +722,20 @@ export function AdminInfrastructure() {
                                                 disabled={!comp.external_mode}
                                             >
                                                 {comp.external_db_enabled ? 'Desativar' : 'Ativar'} DB Dedicado
+                                            </Menu.Item>
+                                            <Menu.Item
+                                                leftSection={<IconInfinity size={14} />}
+                                                color={comp.lifetime_access ? 'gray' : 'grape'}
+                                                onClick={() => toggleLifetimeAccess(comp)}
+                                            >
+                                                {comp.lifetime_access ? 'Remover' : 'Conceder'} acesso vitalício
+                                            </Menu.Item>
+                                            <Menu.Item
+                                                leftSection={<IconUserStar size={14} />}
+                                                color="teal"
+                                                onClick={() => openPartnerModal(comp)}
+                                            >
+                                                {comp.partner_id ? 'Alterar' : 'Vincular'} afiliado
                                             </Menu.Item>
                                             <Menu.Item leftSection={<IconEye size={14} />}>
                                                 Ver Detalhes
@@ -953,6 +1089,38 @@ export function AdminInfrastructure() {
                             disabled={!selectedCompany?.external_mode && !selectedServerId}
                         >
                             {selectedCompany?.external_mode ? 'Desativar Modo Externo' : 'Ativar Modo Externo'}
+                        </Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
+            {/* Modal: vincular afiliado */}
+            <Modal
+                opened={partnerTarget !== null}
+                onClose={() => setPartnerTarget(null)}
+                title={`Afiliado — ${partnerTarget?.name ?? ''}`}
+                size="md"
+            >
+                <Stack gap="md">
+                    <Text size="sm" c="dimmed">
+                        Vincule esta empresa a um afiliado ativo para fins de comissão. Deixe vazio para desvincular.
+                    </Text>
+                    <Select
+                        label="Afiliado"
+                        placeholder="Selecione um afiliado ativo..."
+                        data={partnerOptions}
+                        value={partnerSelected}
+                        onChange={setPartnerSelected}
+                        searchable
+                        clearable
+                        leftSection={<IconUserStar size={16} />}
+                    />
+                    <Group justify="flex-end" gap="sm">
+                        <Button variant="subtle" onClick={() => setPartnerTarget(null)} disabled={partnerLoading}>
+                            Cancelar
+                        </Button>
+                        <Button color="teal" onClick={saveCompanyPartner} loading={partnerLoading}>
+                            Salvar
                         </Button>
                     </Group>
                 </Stack>

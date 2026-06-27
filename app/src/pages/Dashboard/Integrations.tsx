@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Container, Text, Card, Group, Badge, Stack, Skeleton,
-    Table, Switch, ThemeIcon, SimpleGrid,
+    Table, Switch, ThemeIcon, SimpleGrid, Button, Divider,
 } from '@mantine/core';
 import {
     IconPlugConnected, IconRefresh, IconArrowsExchange,
-    IconCheck, IconX,
+    IconCheck, IconX, IconSparkles, IconBolt,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../../shared/contexts';
@@ -49,9 +49,86 @@ export function Integrations() {
     const [syncSettings, setSyncSettings] = useState<SyncSetting[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Motor de IA (gateway ai-generate)
+    const [aiEnabled, setAiEnabled] = useState(true);
+    const [aiSaving, setAiSaving] = useState(false);
+    const [aiTesting, setAiTesting] = useState(false);
+
     useEffect(() => {
-        if (currentCompany) loadData();
+        if (currentCompany) {
+            loadData();
+            loadAiSettings();
+        }
     }, [currentCompany]);
+
+    const loadAiSettings = async () => {
+        if (!currentCompany) return;
+        try {
+            const { data } = await supabase
+                .from('tenant_ai_settings')
+                .select('ai_enabled')
+                .eq('company_id', currentCompany.id)
+                .maybeSingle();
+            // Sem linha => padrão habilitado
+            setAiEnabled(data ? data.ai_enabled !== false : true);
+        } catch {
+            setAiEnabled(true);
+        }
+    };
+
+    const toggleAiEnabled = async (value: boolean) => {
+        if (!currentCompany) return;
+        setAiSaving(true);
+        setAiEnabled(value);
+        try {
+            const { error } = await supabase
+                .from('tenant_ai_settings')
+                .upsert(
+                    { company_id: currentCompany.id, ai_enabled: value, provider: 'sincla' },
+                    { onConflict: 'company_id' },
+                );
+            if (error) throw error;
+            notifications.show({ title: 'Salvo', message: 'Preferência de IA atualizada', color: 'green' });
+        } catch (error) {
+            console.error('Error saving AI settings:', error);
+            setAiEnabled(!value);
+            notifications.show({ title: 'Erro', message: 'Falha ao salvar preferência de IA', color: 'red' });
+        } finally {
+            setAiSaving(false);
+        }
+    };
+
+    const testAiConnection = async () => {
+        if (!currentCompany) return;
+        setAiTesting(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('ai-generate', {
+                body: {
+                    company_id: currentCompany.id,
+                    prompt: 'Responda apenas com a palavra: ok',
+                    max_tokens: 5,
+                    temperature: 0,
+                    tier: 'light',
+                },
+            });
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+            notifications.show({
+                title: 'Conexão OK',
+                message: `Motor de IA respondeu (${data?.model || 'openai'}).`,
+                color: 'green',
+            });
+        } catch (error: any) {
+            console.error('AI test error:', error);
+            notifications.show({
+                title: 'Falha no teste',
+                message: error?.message || 'Não foi possível conectar ao motor de IA.',
+                color: 'red',
+            });
+        } finally {
+            setAiTesting(false);
+        }
+    };
 
     const loadData = async () => {
         if (!currentCompany) return;
@@ -253,6 +330,67 @@ export function Integrations() {
                         </Table>
                     </Card>
                 )}
+
+                {/* Motor de IA */}
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                    <Group justify="space-between" align="flex-start" wrap="nowrap">
+                        <Group gap="md" align="flex-start" wrap="nowrap">
+                            <ThemeIcon size={40} radius="md" variant="light" color="violet">
+                                <IconSparkles size={20} />
+                            </ThemeIcon>
+                            <div>
+                                <Group gap="xs">
+                                    <Text fw={600}>Motor de IA</Text>
+                                    <Badge variant="light" color="violet" size="sm" leftSection={<IconBolt size={10} />}>
+                                        Sincla · OpenAI
+                                    </Badge>
+                                </Group>
+                                <Text size="sm" c="dimmed" mt={4}>
+                                    Usado para gerar insights inteligentes sobre seus relatórios.
+                                    Hoje roda no motor da Sincla (OpenAI). Ative ou desative quando quiser.
+                                </Text>
+                            </div>
+                        </Group>
+                        <Switch
+                            checked={aiEnabled}
+                            disabled={aiSaving}
+                            onChange={(e) => toggleAiEnabled(e.currentTarget.checked)}
+                            size="md"
+                        />
+                    </Group>
+
+                    <Group mt="md">
+                        <Button
+                            variant="light"
+                            color="violet"
+                            size="xs"
+                            loading={aiTesting}
+                            disabled={!aiEnabled}
+                            leftSection={<IconBolt size={14} />}
+                            onClick={testAiConnection}
+                        >
+                            Testar conexão
+                        </Button>
+                    </Group>
+
+                    <Divider my="md" />
+
+                    <Group gap="md" align="flex-start" wrap="nowrap">
+                        <ThemeIcon size={40} radius="md" variant="light" color="gray">
+                            <IconSparkles size={20} />
+                        </ThemeIcon>
+                        <div>
+                            <Group gap="xs">
+                                <Text fw={500} c="dimmed">Traga sua própria chave (BYOK)</Text>
+                                <Badge variant="light" color="gray" size="sm">Em breve</Badge>
+                            </Group>
+                            <Text size="sm" c="dimmed" mt={4}>
+                                Em breve você poderá conectar sua própria conta de OpenAI, Google Gemini
+                                ou Anthropic (Claude) para usar o seu próprio motor de IA.
+                            </Text>
+                        </div>
+                    </Group>
+                </Card>
 
                 {/* Coming Soon */}
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
