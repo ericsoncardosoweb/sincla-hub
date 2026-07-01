@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Container, Text, Card, Group, Badge, Stack, Skeleton,
-    Table, Switch, ThemeIcon, SimpleGrid, Button, Divider,
+    Table, Switch, ThemeIcon, SimpleGrid, Button, Divider, SegmentedControl,
 } from '@mantine/core';
 import {
     IconPlugConnected, IconRefresh, IconArrowsExchange,
@@ -28,6 +28,7 @@ interface TalentoRhState {
         auto_promote_rh: boolean;
         sync_cultura_auto: boolean;
         promote_exige_confirmacao: boolean;
+        promote_gatilho: 'manual' | 'etapa_contratado';
     } | null;
 }
 
@@ -180,6 +181,7 @@ export function Integrations() {
         auto_promote_rh: boolean;
         sync_cultura_auto: boolean;
         promote_exige_confirmacao: boolean;
+        promote_gatilho: 'manual' | 'etapa_contratado';
     }>) => {
         if (!currentCompany) return;
         setTalentoRhSaving(true);
@@ -188,6 +190,7 @@ export function Integrations() {
             auto_promote_rh: true,
             sync_cultura_auto: true,
             promote_exige_confirmacao: true,
+            promote_gatilho: 'manual' as const,
         };
         const next = { ...current, ...patch };
         try {
@@ -198,6 +201,7 @@ export function Integrations() {
                     auto_promote_rh: next.auto_promote_rh,
                     sync_cultura_auto: next.sync_cultura_auto,
                     promote_exige_confirmacao: next.promote_exige_confirmacao,
+                    promote_gatilho: next.promote_gatilho,
                 },
             });
             if (error) throw error;
@@ -476,9 +480,24 @@ export function Integrations() {
                             <Switch
                                 label="Exigir confirmação antes de contratar"
                                 checked={talentoRh.config.promote_exige_confirmacao}
-                                disabled={talentoRhSaving}
+                                disabled={talentoRhSaving || talentoRh.config.promote_gatilho === 'etapa_contratado'}
                                 onChange={(e) => saveTalentoRh({ promote_exige_confirmacao: e.currentTarget.checked })}
                             />
+                            <div>
+                                <Text size="sm" fw={500} mb={6}>Quando enviar ao RH</Text>
+                                <SegmentedControl
+                                    fullWidth
+                                    value={talentoRh.config.promote_gatilho ?? 'manual'}
+                                    disabled={talentoRhSaving || !talentoRh.config.auto_promote_rh}
+                                    onChange={(v) => saveTalentoRh({
+                                        promote_gatilho: v as 'manual' | 'etapa_contratado',
+                                    })}
+                                    data={[
+                                        { label: 'Botão / modal', value: 'manual' },
+                                        { label: 'Etapa Contratado', value: 'etapa_contratado' },
+                                    ]}
+                                />
+                            </div>
                         </Stack>
                     ) : (
                         <Text size="sm" c="dimmed">

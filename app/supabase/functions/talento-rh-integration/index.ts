@@ -22,6 +22,7 @@ interface SaveBody {
     auto_promote_rh?: boolean;
     sync_cultura_auto?: boolean;
     promote_exige_confirmacao?: boolean;
+    promote_gatilho?: 'manual' | 'etapa_contratado';
 }
 
 function json(body: unknown, status = 200) {
@@ -86,6 +87,7 @@ async function pushToTalento(
             auto_promote_rh: cfg.auto_promote_rh ?? true,
             sync_cultura_auto: cfg.sync_cultura_auto ?? true,
             promote_exige_confirmacao: cfg.promote_exige_confirmacao ?? true,
+            promote_gatilho: cfg.promote_gatilho ?? 'manual',
             updated_at: new Date().toISOString(),
         }, { onConflict: 'empresa_id' });
 
@@ -154,6 +156,7 @@ Deno.serve(async (req) => {
                     auto_promote_rh: true,
                     sync_cultura_auto: true,
                     promote_exige_confirmacao: true,
+                    promote_gatilho: 'manual',
                 },
             });
         }
@@ -192,6 +195,7 @@ Deno.serve(async (req) => {
             auto_promote_rh: body.auto_promote_rh ?? true,
             sync_cultura_auto: body.sync_cultura_auto ?? true,
             promote_exige_confirmacao: body.promote_exige_confirmacao ?? true,
+            promote_gatilho: body.promote_gatilho ?? 'manual',
             synced_to_talento_at: new Date().toISOString(),
         };
 
