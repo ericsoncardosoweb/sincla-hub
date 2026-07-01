@@ -7,6 +7,7 @@ import {
 import {
     IconPlugConnected, IconRefresh, IconArrowsExchange,
     IconCheck, IconX, IconSparkles, IconBolt,
+    IconBuildingBridge2,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../../shared/contexts';
@@ -16,6 +17,19 @@ import { PageHeader, EmptyState } from '../../components/shared';
 // ============================
 // Types
 // ============================
+
+interface TalentoRhState {
+    eligible: boolean;
+    has_talento: boolean;
+    has_rh: boolean;
+    talento_available: boolean;
+    config: {
+        is_active: boolean;
+        auto_promote_rh: boolean;
+        sync_cultura_auto: boolean;
+        promote_exige_confirmacao: boolean;
+    } | null;
+}
 
 interface SyncSetting {
     id: string;
@@ -54,10 +68,15 @@ export function Integrations() {
     const [aiSaving, setAiSaving] = useState(false);
     const [aiTesting, setAiTesting] = useState(false);
 
+    const [talentoRh, setTalentoRh] = useState<TalentoRhState | null>(null);
+    const [talentoRhLoading, setTalentoRhLoading] = useState(true);
+    const [talentoRhSaving, setTalentoRhSaving] = useState(false);
+
     useEffect(() => {
         if (currentCompany) {
             loadData();
             loadAiSettings();
+            loadTalentoRh();
         }
     }, [currentCompany]);
 
@@ -127,6 +146,72 @@ export function Integrations() {
             });
         } finally {
             setAiTesting(false);
+        }
+    };
+
+    const loadTalentoRh = async () => {
+        if (!currentCompany) return;
+        setTalentoRhLoading(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const base = import.meta.env.VITE_SUPABASE_URL;
+            const res = await fetch(
+                `${base}/functions/v1/talento-rh-integration?company_id=${currentCompany.id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${session?.access_token ?? ''}`,
+                        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
+                    },
+                },
+            );
+            const data = await res.json();
+            if (!res.ok || data?.error) throw new Error(data?.error || 'Falha ao carregar');
+            setTalentoRh(data as TalentoRhState);
+        } catch (err) {
+            console.error('talento-rh load:', err);
+            setTalentoRh(null);
+        } finally {
+            setTalentoRhLoading(false);
+        }
+    };
+
+    const saveTalentoRh = async (patch: Partial<{
+        is_active: boolean;
+        auto_promote_rh: boolean;
+        sync_cultura_auto: boolean;
+        promote_exige_confirmacao: boolean;
+    }>) => {
+        if (!currentCompany) return;
+        setTalentoRhSaving(true);
+        const current = talentoRh?.config ?? {
+            is_active: false,
+            auto_promote_rh: true,
+            sync_cultura_auto: true,
+            promote_exige_confirmacao: true,
+        };
+        const next = { ...current, ...patch };
+        try {
+            const { data, error } = await supabase.functions.invoke('talento-rh-integration', {
+                body: {
+                    company_id: currentCompany.id,
+                    is_active: next.is_active,
+                    auto_promote_rh: next.auto_promote_rh,
+                    sync_cultura_auto: next.sync_cultura_auto,
+                    promote_exige_confirmacao: next.promote_exige_confirmacao,
+                },
+            });
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+            notifications.show({ title: 'Integração Talento ↔ RH', message: 'Configuração salva', color: 'green' });
+            await loadTalentoRh();
+        } catch (err: unknown) {
+            notifications.show({
+                title: 'Erro',
+                message: err instanceof Error ? err.message : 'Falha ao salvar',
+                color: 'red',
+            });
+        } finally {
+            setTalentoRhSaving(false);
         }
     };
 
@@ -331,6 +416,77 @@ export function Integrations() {
                     </Card>
                 )}
 
+                {/* Sincla Talento ↔ Sincla RH */}
+                <Card shadow="sm" padding="lg" radius="md" withBorder>
+                    <Group justify="space-between" align="flex-start" wrap="wrap" mb="md">
+                        <Group gap="md" align="flex-start">
+                            <ThemeIcon size={40} radius="md" variant="light" color="green">
+                                <IconBuildingBridge2 size={20} />
+                            </ThemeIcon>
+                            <div>
+                                <Group gap="xs">
+                                    <Text fw={600}>Sincla Talento ↔ Sincla RH</Text>
+                                    {talentoRh?.config?.is_active && (
+                                        <Badge color="green" variant="light" size="sm">Ativa</Badge>
+                                    )}
+                                </Group>
+                                <Text size="sm" c="dimmed" mt={4}>
+                                    Sincronize cultura, cargos e equipes. Candidatos contratados viram colaboradores no RH.
+                                </Text>
+                            </div>
+                        </Group>
+                        {talentoRhLoading ? (
+                            <Skeleton height={24} width={48} />
+                        ) : talentoRh?.eligible ? (
+                            <Switch
+                                checked={talentoRh.config?.is_active ?? false}
+                                disabled={talentoRhSaving || !talentoRh.talento_available}
+                                onChange={(e) => saveTalentoRh({ is_active: e.currentTarget.checked })}
+                            />
+                        ) : null}
+                    </Group>
+
+                    {talentoRhLoading ? (
+                        <Skeleton height={80} radius="md" />
+                    ) : !talentoRh?.eligible ? (
+                        <Text size="sm" c="dimmed">
+                            Disponível para empresas com assinaturas ativas de{' '}
+                            <strong>Sincla Talento</strong> e <strong>Sincla RH</strong>.
+                            {!talentoRh?.has_talento && ' Falta Talento.'}
+                            {!talentoRh?.has_rh && ' Falta RH.'}
+                        </Text>
+                    ) : !talentoRh.talento_available ? (
+                        <Text size="sm" c="orange">
+                            Bridge não configurada no servidor (secrets TALENTO_SUPABASE_* no Hub).
+                        </Text>
+                    ) : talentoRh.config?.is_active ? (
+                        <Stack gap="sm">
+                            <Switch
+                                label="Criar colaborador no RH ao contratar"
+                                checked={talentoRh.config.auto_promote_rh}
+                                disabled={talentoRhSaving}
+                                onChange={(e) => saveTalentoRh({ auto_promote_rh: e.currentTarget.checked })}
+                            />
+                            <Switch
+                                label="Sincronizar cultura ao ativar"
+                                checked={talentoRh.config.sync_cultura_auto}
+                                disabled={talentoRhSaving}
+                                onChange={(e) => saveTalentoRh({ sync_cultura_auto: e.currentTarget.checked })}
+                            />
+                            <Switch
+                                label="Exigir confirmação antes de contratar"
+                                checked={talentoRh.config.promote_exige_confirmacao}
+                                disabled={talentoRhSaving}
+                                onChange={(e) => saveTalentoRh({ promote_exige_confirmacao: e.currentTarget.checked })}
+                            />
+                        </Stack>
+                    ) : (
+                        <Text size="sm" c="dimmed">
+                            Ative para espelhar dados do RH no Talento e enviar contratações automaticamente.
+                        </Text>
+                    )}
+                </Card>
+
                 {/* Motor de IA */}
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
                     <Group justify="space-between" align="flex-start" wrap="nowrap">
@@ -401,7 +557,7 @@ export function Integrations() {
                         <div>
                             <Text fw={500}>Mais integrações em breve</Text>
                             <Text size="sm" c="dimmed">
-                                Webhooks, API Keys e integrações com ferramentas externas estão sendo desenvolvidas.
+                                Webhooks, API Keys e integrações com ferramentas externas.
                             </Text>
                         </div>
                     </Group>

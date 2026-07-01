@@ -36,6 +36,7 @@ description: Processos de Deploy - Mapeamento de Repositórios e Serviços Easyp
 | `sincla-bolso` | `apps/sincla-bolso` | `/` | — |
 | `sincla-ead` | `apps/sincla-ead` | `/` | — |
 | `sincla-talento` | `apps/sincla-talento` | `/` | — |
+| `sincla-api` | `apps/sincla-api` | `/` | 8000 |
 
 ## Comandos de Deploy
 
@@ -81,6 +82,7 @@ git push origin main   # → sincla-agenda → Easypanel sincla-agenda
 | Agenda | `https://app.sincla.com.br/agenda/` |
 | RH | `https://app.sincla.com.br/rh/` |
 | Talento (app) | `https://app.sincla.com.br/talento/` |
+| API Gateway | `https://api.sincla.com.br` |
 
 ---
 

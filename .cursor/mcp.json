@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "supabase-hub": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=igwjtvdanulrwntdyfbt"
+    },
+    "supabase-rh": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=fclqxinrkibiwhlhqfih"
+    },
+    "supabase-agenda": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=xupyvnyukhxdmfyrrozs"
+    },
+    "supabase-ead": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=gfgrifbpsfjugdmlyvjl"
+    },
+    "supabase-vagas": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=zsnjddocencekcupzxeh"
+    }
+  }
+}

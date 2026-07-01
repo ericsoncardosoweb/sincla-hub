@@ -1,0 +1,32 @@
+---
+description: Site institucional sincla.com.br — marketing e conversão
+globs: site/**
+alwaysApply: false
+---
+
+# Site institucional (`site/`)
+
+Landing e páginas de produto em sincla.com.br. Sem Supabase próprio.
+
+Contexto legado atualizado: `site/.agent/workflows/contextualizacao.md`.
+
+## Stack atual
+
+React 19, TypeScript, Vite 7, **CSS Modules** (design system em `site/src/design-system/`), blocos em `site/src/blocks/`, conversão em `site/src/conversion/`.
+
+## Design
+
+- Dark mode premium; tokens em `site/src/design-system/tokens.css`
+- CSS Modules por componente — evitar estilos globais soltos
+- Mobile first; revisar responsivo antes de finalizar
+- SEO: meta description, OG, headings h1→h2→h3
+
+## Conteúdo e copy
+
+Docs de seções: `docs/hero-section.md`, `docs/how-it-works.md`, `docs/cta-flow.md`, `docs/visual-system.md`
+
+Produtos: `site/src/content/products.ts`, `site/src/content/site.ts`
+
+## Deploy
+
+Push do monorepo para remote `site` → Easypanel site-sincla. Ver rule `02-no-auto-deploy`.

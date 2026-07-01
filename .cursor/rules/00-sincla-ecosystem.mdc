@@ -1,0 +1,38 @@
+---
+description: Estrutura do monorepo Sincla e onde cada projeto vive
+alwaysApply: true
+---
+
+# Ecossistema Sincla
+
+Monorepo local em `C:\www\sincla` com projetos independentes no mesmo universo SaaS multi-tenant.
+
+## Projetos
+
+| Pasta | Produto | URL produção | Git |
+|-------|---------|--------------|-----|
+| `site/` | Site institucional | sincla.com.br | remote `site` → sincla-site |
+| `app/` | Hub (identidade, billing, SSO) | app.sincla.com.br | remote `origin` → sincla-hub |
+| `tools/agenda/` | Sincla Agenda | app.sincla.com.br/agenda/ | repo próprio |
+| `tools/rh/` | Sincla RH | app.sincla.com.br/rh/ | repo próprio |
+| `tools/bolso/` | Sincla Bolso | app.sincla.com.br/bolso/ | repo próprio |
+| `tools/ead/` | Sincla EAD | app.sincla.com.br/ead/ | repo próprio |
+| `tools/lead/` | Sincla Leads | — | repo próprio |
+| `tools/crm/` | Sincla CRM | — | repo próprio |
+| `packages/` | @sincla/ui, auth, shared | — | monorepo |
+
+`tools/` é ignorado pelo git raiz — cada ferramenta tem `.git` próprio.
+
+## Documentação
+
+Consultar `/docs` antes de implementar. Índice principal: `docs/00-OVERVIEW.md`.
+
+Arquitetura crítica: `docs/03-ARQUITETURA.md`, `docs/ESTRUTURA-PROJETO.md`, `docs/HIERARQUIA-USUARIOS.md`, `docs/SATELLITE_INTEGRATION_GUIDE.md`.
+
+Workflows legados Antigravity/Gemini: `.gemini/workflows/` e `{app,site}/.agent/workflows/` — preferir estas rules do Cursor.
+
+## Antes de codar
+
+1. Buscar no codebase se já existe solução similar
+2. Conferir migrations Supabase para nomes de campos/tabelas
+3. Não duplicar entidades (Hub é source of truth de identidade)

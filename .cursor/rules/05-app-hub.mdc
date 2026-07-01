@@ -1,0 +1,32 @@
+---
+description: Sincla Hub — app autenticado, billing e SSO
+globs: app/**
+alwaysApply: false
+---
+
+# Sincla Hub (`app/`)
+
+Orquestrador central: identidade, billing (Asaas), SSO para satélites.
+
+Contexto legado: `app/.agent/workflows/contextualizacao.md`
+
+## Stack
+
+React 19, TypeScript, Vite 7, Mantine **8.3.x** (não subir major sem avaliar peer deps), Context API (AuthContext, CompanyContext).
+
+## Estrutura
+
+- `app/src/pages/Dashboard/` — painel do assinante
+- `app/src/pages/Admin/` — super-admin
+- `app/src/shared/contexts/` — AuthContext, CompanyContext
+- `app/src/shared/services/` — asaasService, cross-auth, storage
+- `app/supabase/migrations/` e `app/supabase/functions/`
+
+## Regras de negócio
+
+- Hub é **single source of truth** — não duplicar user/company
+- Tokens SSO: validade ~5 min — não cachear
+- Joins Supabase com FK ambígua: usar hint explícito
+- Hierarquia: Subscriber → Companies → Members → Product Access
+
+Docs: `docs/HIERARQUIA-USUARIOS.md`, `docs/UNIFIED_IDENTITY_IMPLEMENTATION.md`, `docs/CONTATOS-CENTRALIZADOS.md`

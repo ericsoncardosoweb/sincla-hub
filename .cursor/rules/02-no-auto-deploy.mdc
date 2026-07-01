@@ -1,0 +1,22 @@
+---
+description: Nunca fazer deploy ou push sem autorização explícita
+alwaysApply: true
+---
+
+# Sem deploy automático
+
+**Nunca** executar deploy ou push sem autorização explícita do usuário.
+
+Proibido sem confirmação:
+- `git push` (qualquer remote)
+- Deploy no Easypanel ou CI
+- `supabase functions deploy` / `supabase db push` em produção
+
+Antes de qualquer deploy, informar e aguardar:
+1. Qual repo (sincla-hub, sincla-site, sincla-agenda, etc.)
+2. Quais mudanças serão enviadas
+3. Qual serviço Easypanel será afetado
+
+Mesmo com pedido genérico ("deploy de tudo"), confirmar cada item.
+
+Commits locais só quando o usuário pedir explicitamente.

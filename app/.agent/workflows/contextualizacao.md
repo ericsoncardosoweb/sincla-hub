@@ -197,13 +197,14 @@ Migration SQL: pasta `app/supabase/migrations/`
 
 ---
 
-## 🔑 Credenciais CLI
+## Supabase CLI
 
-```
-SUPABASE_ACCESS_TOKEN = sbp_6ed5d53b27c57dabd274055b0dce306c9b2bfc59
-SUPABASE_PROJECT_REF  = igwjtvdanulrwntdyfbt
-SUPABASE_DB_PASSWORD  = TC3VuUEsEJiEhnyD
-```
+| Campo | Valor |
+|-------|-------|
+| **Project ref** | `igwjtvdanulrwntdyfbt` |
+| **URL** | https://igwjtvdanulrwntdyfbt.supabase.co |
+
+Tokens e senha de banco: variáveis locais (`.env`) ou MCP Supabase — **nunca** em docs versionados.
 
 ---
 

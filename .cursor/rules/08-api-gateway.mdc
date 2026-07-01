@@ -1,0 +1,93 @@
+---
+description: API pública e webhooks via gateway central (api.sincla.com.br) — nunca expor Supabase
+alwaysApply: false
+---
+
+# Sincla API — Gateway central
+
+Toda **API pública** e **ingress de webhooks** das ferramentas passa pelo
+gateway `api.sincla.com.br` (projeto `tools/api/`, FastAPI, repo `sincla-api`,
+Easypanel `apps/sincla-api`). **Nunca** expor URLs `*.supabase.co` a
+consumidores/integradores/provedores externos.
+
+## Regras
+
+- URL pública de API ou webhook = sempre domínio Sincla (`api.sincla.com.br`),
+  nunca Edge Function/PostgREST direto do Supabase.
+- Convenção de rotas: `/v1/<ferramenta>/<recurso>` e
+  `/v1/<ferramenta>/webhooks/<canal>/<provedor>`.
+- Frontends das ferramentas usam `VITE_API_BASE` para montar essas URLs
+  (fallback: proxy do próprio nginx enquanto o gateway não estiver no ar).
+- O gateway é **fino**: auth (token por ferramenta), escopo por tenant
+  (`empresa_id`/`tenant_id`), roteamento e normalização. Regra de negócio fica
+  em cada ferramenta (DB/Edge Functions).
+
+## Dois modos por ferramenta
+
+1. **Passthrough** — quando a ferramenta JÁ tem Edge Function de API/webhook
+   própria (com auth/rate-limit). O gateway só encaminha (reverse proxy),
+   sem reimplementar nada. Auth é da própria função. Ver `app/routers/passthrough.py`
+   e `app/core/forward.py`. Usado por **EAD** e **Agenda**.
+2. **Declarativo** — quando NÃO há API própria; o gateway gera o CRUD a partir
+   de `ResourceSpec` (auth/escopo pelo gateway). Ver `app/core/resources.py` +
+   `router_factory.py`. Usado por **RH** e **Vagas**.
+
+Regra prática: se a ferramenta tem `public-api`/`webhook-*` em
+`supabase/functions`, use **passthrough** (não duplique). Senão, **declarativo**.
+
+## Mapa de rotas atual
+
+| Rota no gateway | Encaminha para (Edge Function) | Modo |
+|-----------------|-------------------------------|------|
+| `/v1/ead/<rest>` | EAD `public-api/v1/<rest>` | passthrough |
+| `/v1/ead/webhooks/plataforma/<p>` | EAD `webhook-processor?platform=<p>` | passthrough |
+| `/v1/agenda/<rest>` | Agenda `public-api/<rest>` (sem `/v1`) | passthrough |
+| `/v1/rh/webhooks/assinatura/<provedor>` | RH `documentos-assinatura/webhook/<p>` | passthrough |
+| `/v1/rh/webhooks/entrada/<token>` | RH `webhook-entrada/<token>` | passthrough |
+| `/v1/rh/webhooks/holerite?token=` | RH `webhook-holerite` | passthrough |
+| `/v1/rh/<recurso>` | RH (PostgREST) | declarativo |
+| `/v1/vagas/<recurso>` | Vagas (PostgREST) | declarativo (com token) |
+| `/v1/vagas/public/empresas/<slug>` | Vagas `empresas` (branding) | público (sem auth) |
+| `/v1/vagas/public/vagas?empresa_id\|empresa=` | Vagas `vagas` (ABERTA+EXTERNA) | público (sem auth) |
+| `/v1/talento/hooks/inbound/{slug}` | Talento `webhook-inbound?slug=` | passthrough (HMAC) |
+| `/v1/talento/candidate/*` | Talento portal candidato (JWT GoTrue) | gateway (auth candidato) |
+| `/v1/vagas/hooks/inbound/{slug}` | Alias legado Talento inbound | passthrough |
+| `/v1/vagas/public/vagas/<id>` | Vagas `vagas` (detalhe público) | público (sem auth) |
+| `/v1/ai/generate` | Hub `ai-generate` (OpenAI+Groq) | forward (auth do Hub) |
+
+> **IA:** ver regra `09-ia-central` e `docs/IA-CENTRAL.md`. No app, o frontend usa
+> o proxy `ai-insight` da própria ferramenta (não o gateway). O `/v1/ai/generate`
+> é a entrada HTTP para callers não-Supabase. Precisa de `HUB_SUPABASE_URL` no gateway.
+
+> **Vagas — portal de carreiras:** leituras públicas em `vagas_public.py`. **Portal candidato**
+> (`/v1/talento/candidate/*`) usa JWT Supabase (GoTrue); upload, currículo e parse IA passam
+> pelo gateway. Auth signUp/signIn continua direto ao Supabase (GoTrue no browser).
+
+## Onde mexer
+
+- Encaminhar ferramenta com API própria: `tools/api/app/routers/passthrough.py`.
+- Adicionar recurso declarativo: `tools/api/app/core/resources.py` (`ResourceSpec`).
+- Adicionar ferramenta (qualquer modo): `config.py` + `projects.py` (`_TOOL_DEFS`).
+- Frontend: builders de URL preferem `VITE_API_BASE` (`${apiBase}/v1/<tool>/...`),
+  com fallback para a Edge Function direta. EAD usa `.env` commitado; RH/Agenda
+  usam build args (`ARG VITE_API_BASE` no Dockerfile, vindo do Easypanel).
+- Detalhes: `tools/api/README.md` e `tools/api/docs/ARQUITETURA.md`.
+
+## Não-exposições (ficam diretas no Supabase)
+
+Chamadas **internas do app** (não voltadas a integradores) NÃO passam pelo gateway:
+`hubServices` (Hub), `upload-asset`, `send-push`, `send-notification`,
+`sso-login`, `vagas-rh-bridge`. Só migrar o que um terceiro veria
+(docs de API e URLs de webhook configuráveis).
+
+## Projetos por ferramenta (escopo)
+
+| Slug | Projeto | Escopo |
+|------|---------|--------|
+| `rh` | sincla-rh | `empresa_id` |
+| `vagas` | sincla-vagas (RS) | `empresa_id` |
+| `ead` | sincla-ead | `tenant_id` |
+| `agenda` | sincla-agenda | `tenant_id` |
+
+Cada ferramenta só fica ativa no gateway quando suas envs
+`<TOOL>_SUPABASE_URL` + `<TOOL>_SERVICE_ROLE_KEY` estão configuradas no Easypanel.

@@ -1,0 +1,40 @@
+---
+description: Supabase — MCP, project refs e migrations por projeto
+globs: "**/supabase/**,**/migrations/**"
+alwaysApply: false
+---
+
+# Supabase no ecossistema Sincla
+
+## Preferir MCP do Supabase (Cursor)
+
+Servidores configurados em `.cursor/mcp.json`:
+- `supabase-hub` — `igwjtvdanulrwntdyfbt`
+- `supabase-rh` — `fclqxinrkibiwhlhqfih`
+- `supabase-agenda` — `xupyvnyukhxdmfyrrozs`
+- `supabase-ead` — `gfgrifbpsfjugdmlyvjl`
+- `supabase-vagas` — `zsnjddocencekcupzxeh`
+
+Use MCP para consultas, schema, RLS e docs. **CLI local** (`supabase db push`, `functions deploy`) continua com `app/.env`.
+
+Credenciais: `app/.env` ou MCP OAuth — nunca em rules/docs versionados.
+
+## Project refs (identificadores públicos)
+
+| Projeto | Pasta | Project ref |
+|---------|-------|-------------|
+| Hub | `app/` | igwjtvdanulrwntdyfbt |
+| Agenda | `tools/agenda/` | xupyvnyukhxdmfyrrozs |
+| Bolso | `tools/bolso/` | yjyiryqaokmqjeblsqgl |
+| CRM | `tools/crm/` | szpvltsqkmklesdorgly |
+| EAD | `tools/ead/` | gfgrifbpsfjugdmlyvjl |
+| Lead | `tools/lead/` | fnncbpfhuejjebfwyqoq |
+| RH | `tools/rh/` | fclqxinrkibiwhlhqfih |
+| Vagas | `tools/vagas/` | zsnjddocencekcupzxeh |
+
+## Operações
+
+- Migrations: `supabase migration new <nome>` — conferir pasta `supabase/migrations/` do projeto correto
+- Hub: Edge Functions em `app/supabase/functions/` (SSO, billing, permissions)
+- RLS obrigatório em tabelas expostas; Hub é source of truth de users/companies
+- Guia: `docs/SUPABASE_DEPLOY_GUIDE.md`

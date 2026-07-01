@@ -1,0 +1,30 @@
+---
+description: Regra de IA — motor único, OpenAI principal + Groq fallback, sem chave no frontend
+alwaysApply: true
+---
+
+# IA Central
+
+Toda IA do ecossistema passa pelo motor único `ai-generate` (Hub). Detalhes e
+checklist de migração: `docs/IA-CENTRAL.md`.
+
+## Regras
+
+- **Nunca** colocar chave de provedor de IA no frontend
+  (`VITE_GROQ_API_KEY`, `VITE_OPENAI_API_KEY`, `VITE_GEMINI_API_KEY` são proibidas).
+  A chave vive só na Edge Function `ai-generate` do Hub.
+- Provedor **principal: OpenAI**; **fallback automático: Groq**.
+  **Gemini não é usado** (estrutura BYOK fica para o futuro).
+- Modelo por **tier** (configurável por env no Hub, não fixar no código):
+  - `tier: 'standard'` (padrão) → tarefas complexas → `OPENAI_DEFAULT_MODEL` (hoje `gpt-5.4-mini`).
+  - `tier: 'light'` → tarefas simples/curtas → `OPENAI_LIGHT_MODEL` (hoje `gpt-5.4-nano`).
+- Frontend chama IA **somente** via o proxy `ai-insight` da própria ferramenta
+  (`supabase.functions.invoke('ai-insight', { body: { prompt, system, tier } })`),
+  que repassa ao Hub com `x-service-secret`. Para callers não-Supabase, usar o
+  gateway `POST /v1/ai/generate`.
+
+## Ao criar/editar feature de IA
+
+1. Reusar o proxy `ai-insight` (ou criá-lo a partir de `tools/ead/supabase/functions/ai-insight`).
+2. Definir o `tier` certo (complexa = standard; simples = light).
+3. Não introduzir nova chave de IA no `.env` de ferramenta.

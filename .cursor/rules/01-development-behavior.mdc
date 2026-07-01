@@ -1,0 +1,30 @@
+---
+description: Padrões de UI, formulários, estado e qualidade (app + tools Mantine)
+alwaysApply: true
+---
+
+# Desenvolvimento Sincla
+
+## Formulários (app e tools com Mantine)
+
+- Usar componentes globais de formulário do projeto
+- RichText editor em vez de textarea, salvo pedido explícito
+- Mantine form com validação
+
+## UI/UX
+
+- Manter padrão visual das páginas existentes
+- Revisar mobile antes de finalizar
+- Mantine (Card, Group, Stack, etc.) de forma consistente
+- Loading, error e empty states em toda página com dados remotos
+
+## Estado
+
+- TanStack React Query para dados remotos
+- Zustand para estado local complexo
+
+## Código
+
+- Clareza > esperteza; consistência > preferência pessoal
+- Abstrações mínimas; não criar o que já existe
+- Seguir `docs/08-CONTRIBUICAO.md` para nomenclatura e estrutura de componentes
