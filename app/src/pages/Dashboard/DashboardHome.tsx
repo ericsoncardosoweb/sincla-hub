@@ -43,7 +43,7 @@ import {
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
-import { redirectToProduct } from '../../shared/services/cross-auth';
+import { buildProductLoginUrl, redirectToProduct } from '../../shared/services/cross-auth';
 import styles from './Dashboard.module.css';
 
 // ============================
@@ -160,14 +160,10 @@ export function DashboardHome() {
 
     const handleAccessProduct = async (product: ProductWithSubscription) => {
         if (!currentCompany) return;
-        try {
-            await redirectToProduct(
-                { id: product.id, base_url: product.base_url } as any,
-                currentCompany as any
-            );
-        } catch (error) {
-            console.error('Error redirecting:', error);
-        }
+        await redirectToProduct(
+            { id: product.id, name: product.name, base_url: product.base_url },
+            currentCompany,
+        );
     };
 
     const handleActivateProduct = (product: ProductWithSubscription) => {
@@ -184,13 +180,12 @@ export function DashboardHome() {
 
     const firstName = subscriber?.name?.split(' ')[0] || 'Usuário';
 
-    // Build login URL for a tool (custom_domain or default)
     const getToolLoginUrl = (tool: ProductWithSubscription) => {
-        const slug = currentCompany?.slug || '';
-        if (currentCompany?.custom_domain) {
-            return `https://${currentCompany.custom_domain}/${slug}/login`;
-        }
-        return `${window.location.origin}${tool.base_url}/${slug}/login`;
+        if (!currentCompany) return '';
+        return buildProductLoginUrl(
+            { id: tool.id, base_url: tool.base_url },
+            currentCompany,
+        );
     };
 
     const handleCopyToolLink = (tool: ProductWithSubscription) => {
@@ -318,6 +313,7 @@ export function DashboardHome() {
                                         key={product.id}
                                         className={styles.listItem}
                                         wrap="nowrap"
+                                        onClick={() => handleAccessProduct(product)}
                                     >
                                         <ThemeIcon
                                             size={28}

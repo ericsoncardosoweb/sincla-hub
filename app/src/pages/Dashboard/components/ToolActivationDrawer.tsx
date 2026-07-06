@@ -45,6 +45,20 @@ interface Props {
 const fmt = (v: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
 
+function formatActivationError(message: string): string {
+    const lower = message.toLowerCase();
+    if (lower.includes('sem permissão') || lower.includes('permission')) {
+        return 'Apenas administradores da empresa podem ativar ferramentas. Peça a um owner ou admin.';
+    }
+    if (lower.includes('nenhum plano')) {
+        return 'Este produto ainda não possui planos configurados para o seu tipo de conta.';
+    }
+    if (lower.includes('produto indisponível')) {
+        return 'Esta ferramenta não está disponível no momento.';
+    }
+    return message;
+}
+
 export function ToolActivationDrawer({
     opened,
     onClose,
@@ -157,7 +171,7 @@ export function ToolActivationDrawer({
         } catch (err: any) {
             notifications.show({
                 title: 'Falha na ativação',
-                message: err?.message || 'Tente novamente.',
+                message: formatActivationError(err?.message || 'Tente novamente.'),
                 color: 'red',
             });
         } finally {
@@ -170,10 +184,15 @@ export function ToolActivationDrawer({
             opened={opened}
             onClose={onClose}
             position="right"
-            size="md"
-            title={null}
+            size="lg"
+            title={product ? `Contratar ${product.name}` : 'Contratar ferramenta'}
             padding="lg"
-            overlayProps={{ opacity: 0.35 }}
+            lockScroll
+            overlayProps={{ opacity: 0.55, blur: 3 }}
+            styles={{
+                content: { maxWidth: 520 },
+                body: { display: 'flex', flexDirection: 'column', height: 'calc(100% - 60px)' },
+            }}
         >
             {loading ? (
                 <Stack align="center" py="xl"><Loader /><Text c="dimmed" size="sm">Carregando...</Text></Stack>
@@ -219,7 +238,7 @@ export function ToolActivationDrawer({
                                     )}
                                 </Group>
 
-                                <ScrollArea.Autosize mah={showAllPlans ? 420 : 220} type="auto">
+                                <ScrollArea.Autosize mah={showAllPlans ? 480 : 280} type="auto">
                                     <Stack gap="xs">
                                         {(showAllPlans ? plans : plans.slice(0, 3)).map(plan => {
                                             const active = plan.slug === selectedPlanSlug;

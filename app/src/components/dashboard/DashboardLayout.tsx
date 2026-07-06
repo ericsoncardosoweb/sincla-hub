@@ -56,6 +56,7 @@ import {
     IconMessage,
     IconLayoutGrid,
 } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { redirectToProduct } from '../../shared/services/cross-auth';
@@ -119,6 +120,8 @@ export function DashboardLayout() {
     const [mobileOpened, setMobileOpened] = useState(false);
     const [toolsOpened, setToolsOpened] = useState(false);
     const [appsExpanded, setAppsExpanded] = useState(true);
+    const [appsPopoverOpened, setAppsPopoverOpened] = useState(false);
+    const [accessingProductId, setAccessingProductId] = useState<string | null>(null);
     const [toolProducts, setToolProducts] = useState<ToolProduct[]>([]);
 
     // Auto-collapse based on screen size
@@ -219,13 +222,37 @@ export function DashboardLayout() {
 
     const sidebarWidth = collapsed ? 70 : 260;
 
+    const handleProductAccess = async (tool: ToolProduct) => {
+        if (!currentCompany) {
+            notifications.show({
+                title: 'Empresa não selecionada',
+                message: 'Selecione uma empresa antes de abrir a ferramenta.',
+                color: 'orange',
+            });
+            return;
+        }
+
+        setAppsPopoverOpened(false);
+        if (isMobile) setMobileOpened(false);
+        setAccessingProductId(tool.id);
+
+        try {
+            await redirectToProduct(
+                { id: tool.id, name: tool.name, base_url: tool.base_url },
+                currentCompany,
+            );
+        } catch {
+            // redirectToProduct já exibe toast de erro
+        } finally {
+            setAccessingProductId(null);
+        }
+    };
+
     // Check if user is a partner
     const isPartner = (subscriber as any)?.is_partner;
 
-    // Company URL for external link
-    const companyUrl = currentCompany?.slug
-        ? `https://app.sincla.com.br/${currentCompany.slug}`
-        : null;
+    // Company URL for external link — abre o grid de ferramentas (não /{slug}, que não existe)
+    const hasActiveTools = toolProducts.some(t => t.hasSubscription);
 
     const handleShareWhatsApp = () => {
         const text = encodeURIComponent(
@@ -319,16 +346,41 @@ export function DashboardLayout() {
                 const myApps = toolProducts.filter(t => t.hasSubscription);
                 if (myApps.length === 0) return null;
 
+                const renderAppItem = (tool: ToolProduct) => {
+                    const IconComp = iconMap[tool.icon] || IconUsers;
+                    const color = tool.brand_color || '#0087ff';
+                    const toolName = tool.name.replace('Sincla ', '');
+                    const isLoading = accessingProductId === tool.id;
+
+                    return (
+                        <UnstyledButton
+                            key={tool.id}
+                            className={styles.navLink}
+                            disabled={!!accessingProductId}
+                            onClick={() => handleProductAccess(tool)}
+                        >
+                            <IconComp
+                                size={18}
+                                stroke={1.5}
+                                className={styles.navIcon}
+                                style={{ color, opacity: isLoading ? 0.5 : 1 }}
+                            />
+                            <Text size="sm" className={styles.navLabel}>{toolName}</Text>
+                            {isLoading ? (
+                                <Loader size={14} ml="auto" />
+                            ) : (
+                                <Badge size="xs" variant="dot" color="green" ml="auto" />
+                            )}
+                        </UnstyledButton>
+                    );
+                };
+
                 const appsToggle = (
                     <UnstyledButton
                         className={`${styles.navLink} ${collapsed && !isMobile ? styles.navLinkCollapsed : ''}`}
                         onClick={() => {
-                            if (collapsed && !isMobile) {
-                                // Se está colapsado, expandir sidebar e abrir subitens
-                                setAppsExpanded(true);
-                            } else {
-                                setAppsExpanded(prev => !prev);
-                            }
+                            if (collapsed && !isMobile) return;
+                            setAppsExpanded(prev => !prev);
                         }}
                     >
                         <IconLayoutGrid
@@ -349,47 +401,48 @@ export function DashboardLayout() {
                     </UnstyledButton>
                 );
 
+                const collapsedAppsMenu = collapsed && !isMobile ? (
+                    <Popover
+                        opened={appsPopoverOpened}
+                        onChange={setAppsPopoverOpened}
+                        position="right-start"
+                        withArrow
+                        shadow="md"
+                        width={220}
+                    >
+                        <Popover.Target>
+                            <Tooltip label="Meus APPs" position="right" withArrow>
+                                <UnstyledButton
+                                    className={`${styles.navLink} ${styles.navLinkCollapsed}`}
+                                    onClick={() => setAppsPopoverOpened(o => !o)}
+                                >
+                                    <IconLayoutGrid
+                                        size={20}
+                                        stroke={1.5}
+                                        className={styles.navIcon}
+                                        style={{ color: 'var(--sincla-accent)' }}
+                                    />
+                                </UnstyledButton>
+                            </Tooltip>
+                        </Popover.Target>
+                        <Popover.Dropdown p="xs">
+                            <Text size="xs" fw={600} c="dimmed" tt="uppercase" mb={6}>Meus APPs</Text>
+                            <Stack gap={2}>
+                                {myApps.map(renderAppItem)}
+                            </Stack>
+                        </Popover.Dropdown>
+                    </Popover>
+                ) : null;
+
                 return (
                     <>
                         <Divider my="sm" />
-                        {collapsed && !isMobile ? (
-                            <Tooltip label="Meus APPs" position="right" withArrow>
-                                {appsToggle}
-                            </Tooltip>
-                        ) : (
-                            appsToggle
-                        )}
+                        {collapsedAppsMenu || appsToggle}
 
                         {(!collapsed || isMobile) && (
                             <Collapse in={appsExpanded}>
                                 <Stack gap={2} pl="md">
-                                    {myApps.map(tool => {
-                                        const IconComp = iconMap[tool.icon] || IconUsers;
-                                        const color = tool.brand_color || '#0087ff';
-                                        const toolName = tool.name.replace('Sincla ', '');
-
-                                        return (
-                                            <UnstyledButton
-                                                key={tool.id}
-                                                className={styles.navLink}
-                                                onClick={async () => {
-                                                    if (isMobile) setMobileOpened(false);
-                                                    if (currentCompany) {
-                                                        await redirectToProduct(tool as any, currentCompany as any);
-                                                    }
-                                                }}
-                                            >
-                                                <IconComp
-                                                    size={18}
-                                                    stroke={1.5}
-                                                    className={styles.navIcon}
-                                                    style={{ color }}
-                                                />
-                                                <Text size="sm" className={styles.navLabel}>{toolName}</Text>
-                                                <Badge size="xs" variant="dot" color="green" ml="auto" />
-                                            </UnstyledButton>
-                                        );
-                                    })}
+                                    {myApps.map(renderAppItem)}
                                 </Stack>
                             </Collapse>
                         )}
@@ -478,18 +531,12 @@ export function DashboardLayout() {
             <UnstyledButton
                 key={tool.id}
                 className={styles.toolItem}
-                onClick={async () => {
+                onClick={() => {
                     setToolsOpened(false);
                     if (tool.hasSubscription) {
-                        if (currentCompany) {
-                            // Has access: generate SSO token and redirect
-                            await redirectToProduct(tool as any, currentCompany as any);
-                        } else {
-                            window.location.href = tool.base_url;
-                        }
+                        void handleProductAccess(tool);
                     } else {
-                        // No access: go to plans/subscriptions
-                        window.location.href = `/painel/assinaturas?produto=${tool.id}`;
+                        navigate(`/painel/assinaturas?produto=${tool.id}`);
                     }
                 }}
             >
@@ -564,13 +611,13 @@ export function DashboardLayout() {
                                     rightSection={<IconChevronDown size={14} />}
                                     classNames={{ input: styles.selectInput }}
                                 />
-                                {companyUrl && (
-                                    <Tooltip label={`Abrir ${currentCompany?.name} em nova guia`} withArrow>
+                                {hasActiveTools && (
+                                    <Tooltip label="Abrir ferramentas da empresa" withArrow>
                                         <ActionIcon
                                             variant="subtle"
                                             color="gray"
                                             size="lg"
-                                            onClick={() => window.open(companyUrl, '_blank')}
+                                            onClick={() => setToolsOpened(true)}
                                         >
                                             <IconExternalLink size={18} />
                                         </ActionIcon>

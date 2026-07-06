@@ -230,15 +230,10 @@ export function Subscriptions() {
 
     const handleAccessTool = async () => {
         if (!currentCompany || !productInfo) return;
-        try {
-            await redirectToProduct(
-                { id: productInfo.id, base_url: productInfo.base_url } as any,
-                currentCompany as any
-            );
-        } catch (error) {
-            console.error('Error redirecting:', error);
-            window.open('https://app.sincla.com.br', '_blank');
-        }
+        await redirectToProduct(
+            { id: productInfo.id, name: productInfo.name, base_url: productInfo.base_url || '' },
+            currentCompany,
+        );
     };
 
     useEffect(() => {
@@ -619,14 +614,16 @@ export function Subscriptions() {
                                 style={!isAccessBlocked ? { color: subColor } : undefined}
                                 rightSection={<IconExternalLink size={14} />}
                                 disabled={isAccessBlocked}
-                                onClick={async () => {
-                                    if (isAccessBlocked) return;
-                                    try {
-                                        await redirectToProduct(
-                                            { id: sub.product_id, base_url: sub.product?.base_url } as any,
-                                            currentCompany as any
-                                        );
-                                    } catch { /* silent */ }
+                                onClick={() => {
+                                    if (isAccessBlocked || !currentCompany) return;
+                                    void redirectToProduct(
+                                        {
+                                            id: sub.product_id,
+                                            name: sub.product?.name,
+                                            base_url: sub.product?.base_url || '',
+                                        },
+                                        currentCompany,
+                                    );
                                 }}
                             >
                                 {isAccessBlocked ? 'Bloqueada' : 'Acessar'}

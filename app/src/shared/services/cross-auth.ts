@@ -1,12 +1,11 @@
+import { notifications } from '@mantine/notifications';
 import { supabase } from '../lib/supabase';
 import type { Company } from '../contexts/AuthContext';
 
 /**
  * Cross-Auth Service
- * 
+ *
  * Handles SSO between Sincla Hub and satellite products.
- * When a user clicks to access a product (RH, EAD, etc.), 
- * we generate a temporary token that the product can validate.
  */
 
 interface CrossTokenPayload {
@@ -30,18 +29,79 @@ interface CrossTokenPayload {
     iat: number;
 }
 
-interface Product {
+export interface ProductRef {
     id: string;
+    name?: string;
+    description?: string | null;
+    icon?: string;
+    base_url: string;
+    is_active?: boolean;
+}
+
+interface Product extends ProductRef {
     name: string;
     description: string | null;
     icon: string;
-    base_url: string;
     is_active: boolean;
 }
 
-/**
- * Fetches all active products from the catalog
- */
+type CompanySlugRef = Pick<Company, 'slug' | 'custom_domain'>;
+
+function normalizeProductPath(baseUrl: string): string {
+    if (baseUrl.startsWith('http')) {
+        return new URL(baseUrl).pathname.replace(/\/$/, '') || '';
+    }
+    return baseUrl.replace(/\/$/, '');
+}
+
+/** URL pública de login da ferramenta para a empresa (compartilhável). */
+export function buildProductLoginUrl(product: ProductRef, company: CompanySlugRef): string {
+    const slug = company.slug || '';
+    const productPath = normalizeProductPath(product.base_url);
+
+    if (company.custom_domain) {
+        return `https://${company.custom_domain}${productPath}/${slug}/login`;
+    }
+
+    if (product.base_url.startsWith('http')) {
+        return `${product.base_url.replace(/\/$/, '')}/${slug}/login`;
+    }
+
+    return `${window.location.origin}${productPath}/${slug}/login`;
+}
+
+/** URL de callback SSO Hub → satélite. */
+export function buildProductSsoUrl(product: ProductRef, company: Pick<Company, 'slug'>, token: string): string {
+    const baseOrigin = product.base_url.startsWith('http')
+        ? product.base_url
+        : window.location.origin;
+    const path = product.base_url.startsWith('http')
+        ? '/smart-access'
+        : `${normalizeProductPath(product.base_url)}/smart-access`;
+
+    const callbackUrl = new URL(path, baseOrigin);
+    callbackUrl.searchParams.set('key', token);
+    callbackUrl.searchParams.set('empresa', company.slug);
+    return callbackUrl.toString();
+}
+
+function mapTokenError(message: string): string {
+    const lower = message.toLowerCase();
+    if (lower.includes('not a member')) {
+        return 'Você não é membro desta empresa.';
+    }
+    if (lower.includes('active subscription') || lower.includes('subscription')) {
+        return 'Esta empresa não possui assinatura ativa desta ferramenta.';
+    }
+    if (lower.includes('does not have access') || lower.includes('access to this product')) {
+        return 'Você não tem permissão para acessar esta ferramenta. Peça acesso ao administrador.';
+    }
+    if (lower.includes('invalid token') || lower.includes('authorization')) {
+        return 'Sessão expirada. Faça login novamente no Hub.';
+    }
+    return message || 'Não foi possível gerar o acesso à ferramenta.';
+}
+
 export async function getProducts(): Promise<Product[]> {
     const { data, error } = await supabase
         .from('products')
@@ -57,9 +117,6 @@ export async function getProducts(): Promise<Product[]> {
     return data as Product[];
 }
 
-/**
- * Fetches subscriptions for a company
- */
 export async function getCompanySubscriptions(companyId: string) {
     const { data, error } = await supabase
         .from('subscriptions')
@@ -78,12 +135,9 @@ export async function getCompanySubscriptions(companyId: string) {
     return data;
 }
 
-/**
- * Checks if a user has access to a specific product
- */
 export async function hasProductAccess(
     companyMemberId: string,
-    productId: string
+    productId: string,
 ): Promise<boolean> {
     const { data, error } = await supabase
         .from('member_product_access')
@@ -99,73 +153,86 @@ export async function hasProductAccess(
     return true;
 }
 
-/**
- * Generates a cross-token for SSO to a product.
- * This calls a Supabase Edge Function that creates a signed JWT.
- */
 export async function generateCrossToken(
     productId: string,
-    companyId: string
-): Promise<string | null> {
-    try {
-        const { data, error } = await supabase.functions.invoke('generate-cross-token', {
-            body: {
-                product_id: productId,
-                company_id: companyId,
-            },
-        });
+    companyId: string,
+): Promise<string> {
+    const { data, error } = await supabase.functions.invoke('generate-cross-token', {
+        body: {
+            product_id: productId,
+            company_id: companyId,
+        },
+    });
 
-        if (error) {
-            console.error('Error generating cross token:', error);
-            return null;
+    if (error) {
+        const bodyError = typeof data?.error === 'string' ? data.error : error.message;
+        throw new Error(mapTokenError(bodyError));
+    }
+
+    if (!data?.token) {
+        throw new Error(mapTokenError(data?.error || 'Token não retornado'));
+    }
+
+    return data.token as string;
+}
+
+export interface RedirectToProductOptions {
+    /** Abre em nova aba. Padrão: mesma aba (evita bloqueio de popup). */
+    newTab?: boolean;
+    /** Exibe toasts de loading/erro. Padrão: true. */
+    notify?: boolean;
+}
+
+export async function redirectToProduct(
+    product: ProductRef,
+    company: Company,
+    options: RedirectToProductOptions = {},
+): Promise<void> {
+    const { newTab = false, notify = true } = options;
+    const label = product.name || 'ferramenta';
+
+    if (notify) {
+        notifications.show({
+            id: `access-${product.id}`,
+            title: `Abrindo ${label}`,
+            message: 'Preparando acesso seguro...',
+            loading: true,
+            autoClose: false,
+            withCloseButton: false,
+        });
+    }
+
+    try {
+        const token = await generateCrossToken(product.id, company.id);
+        const url = buildProductSsoUrl(product, company, token);
+
+        if (notify) {
+            notifications.hide(`access-${product.id}`);
         }
 
-        return data.token;
+        if (newTab) {
+            const opened = window.open(url, '_blank', 'noopener,noreferrer');
+            if (!opened) {
+                window.location.href = url;
+            }
+        } else {
+            window.location.href = url;
+        }
     } catch (error) {
-        console.error('Error generating cross token:', error);
-        return null;
+        if (notify) {
+            notifications.update({
+                id: `access-${product.id}`,
+                title: 'Não foi possível abrir',
+                message: error instanceof Error ? error.message : 'Erro desconhecido',
+                color: 'red',
+                loading: false,
+                autoClose: 8000,
+            });
+        }
+        throw error;
     }
 }
 
-/**
- * Redirects user to a product with SSO
- */
-export async function redirectToProduct(
-    product: Product,
-    company: Company
-): Promise<void> {
-    // Abrir a janela ANTES da chamada assíncrona para evitar popup blocker
-    const newWindow = window.open('about:blank', '_blank');
-
-    const token = await generateCrossToken(product.id, company.id);
-
-    if (!token) {
-        if (newWindow) newWindow.close();
-        throw new Error('Failed to generate authentication token');
-    }
-
-    // Construct the callback URL
-    // fallback handling if base_url is still an absolute URL, but expected to be '/rh'
-    const baseOrigin = product.base_url.startsWith('http') ? product.base_url : window.location.origin;
-    const path = product.base_url.startsWith('http') ? '/smart-access' : `${product.base_url}/smart-access`;
-
-    const callbackUrl = new URL(path, baseOrigin);
-    callbackUrl.searchParams.set('key', token);
-    callbackUrl.searchParams.set('empresa', company.slug);
-
-    // Redirect the already-opened window
-    if (newWindow) {
-        newWindow.location.href = callbackUrl.toString();
-    } else {
-        // Fallback: se mesmo assim bloqueou, redireciona na mesma aba
-        window.location.href = callbackUrl.toString();
-    }
-}
-
-/**
- * Validates a cross-token received from the Hub.
- * This should be called by satellite products.
- */
 export async function validateCrossToken(token: string): Promise<CrossTokenPayload | null> {
     try {
         const { data, error } = await supabase.functions.invoke('validate-cross-token', {
@@ -184,14 +251,7 @@ export async function validateCrossToken(token: string): Promise<CrossTokenPaylo
     }
 }
 
-/**
- * Creates a local session in a satellite product after SSO
- */
 export async function createLocalSession(payload: CrossTokenPayload): Promise<boolean> {
-    // This function should be implemented in each satellite product
-    // It creates a local session based on the validated token payload
-
-    // Store user info in local storage or session
     sessionStorage.setItem('sincla_user', JSON.stringify({
         id: payload.user_id,
         email: payload.email,

@@ -43,7 +43,15 @@ import {
     type CompanyEmailSettings,
 } from '../../shared/services/emailSettingsService';
 import { buildEmailLayoutPreview, DEFAULT_EMAIL_PRIMARY } from '../../shared/lib/emailLayoutTemplate';
+import { buildProductLoginUrl } from '../../shared/services/cross-auth';
 import { resolveCompanyAccountType, companyAccountTypeLabel } from '../../shared/lib/companyAccountType';
+
+interface CompanyToolLink {
+    id: string;
+    name: string;
+    base_url: string;
+    loginUrl: string;
+}
 
 export function CompanySettings() {
     const navigate = useNavigate();
@@ -67,6 +75,8 @@ export function CompanySettings() {
     const [slugValue, setSlugValue] = useState('');
     const [slugError, setSlugError] = useState('');
     const [slugChecking, setSlugChecking] = useState(false);
+    const [subscribedTools, setSubscribedTools] = useState<Array<{ id: string; name: string; base_url: string }>>([]);
+    const [toolLinksLoading, setToolLinksLoading] = useState(false);
 
     const form = useForm({
         initialValues: {
@@ -164,6 +174,60 @@ export function CompanySettings() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentCompany?.id]);
+
+    useEffect(() => {
+        if (!currentCompany?.id) {
+            setSubscribedTools([]);
+            return;
+        }
+
+        let cancelled = false;
+
+        (async () => {
+            setToolLinksLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('subscriptions')
+                    .select('product:products!product_id (id, name, base_url, is_active)')
+                    .eq('company_id', currentCompany.id)
+                    .in('status', ['active', 'trial']);
+
+                if (cancelled || error) return;
+
+                const tools = (data || [])
+                    .map((row) => {
+                        const product = Array.isArray(row.product) ? row.product[0] : row.product;
+                        if (!product?.base_url || product.is_active === false) return null;
+                        return {
+                            id: product.id as string,
+                            name: product.name as string,
+                            base_url: product.base_url as string,
+                        };
+                    })
+                    .filter(Boolean) as Array<{ id: string; name: string; base_url: string }>;
+
+                setSubscribedTools(tools);
+            } finally {
+                if (!cancelled) setToolLinksLoading(false);
+            }
+        })();
+
+        return () => { cancelled = true; };
+    }, [currentCompany?.id]);
+
+    const previewToolLinks = useMemo((): CompanyToolLink[] => {
+        if (!currentCompany) return [];
+
+        const companyRef = {
+            slug: slugValue || currentCompany.slug,
+            custom_domain: form.values.custom_domain || currentCompany.custom_domain || null,
+        };
+
+        return subscribedTools.map(tool => ({
+            ...tool,
+            loginUrl: buildProductLoginUrl(tool, companyRef),
+        }));
+    }, [subscribedTools, slugValue, form.values.custom_domain, currentCompany]);
 
     const handleSaveSmtp = async () => {
         if (!currentCompany?.id) return;
@@ -956,14 +1020,18 @@ export function CompanySettings() {
                         <Card shadow="sm" padding="lg" radius="md">
                             <Stack gap="lg">
                                 <div>
-                                    <Text size="sm" fw={500} mb="xs">Link da sua Empresa</Text>
-                                    <Text size="xs" c="dimmed" mb="sm">Este é o endereço público da sua empresa na plataforma Sincla. Você pode personalizar o slug.</Text>
+                                    <Text size="sm" fw={500} mb="xs">Identificador da empresa (slug)</Text>
+                                    <Text size="xs" c="dimmed" mb="sm">
+                                        Usado nos links de login das ferramentas — ex.: <strong>app.sincla.com.br/rh/{slugValue || 'sua-empresa'}/login</strong>.
+                                        O slug sozinho (<strong>app.sincla.com.br/{slugValue || 'sua-empresa'}</strong>) não abre nenhuma ferramenta.
+                                    </Text>
 
                                     <Group gap="xs" align="flex-start">
                                         <TextInput
                                             value={slugValue}
                                             onChange={(e) => handleSlugChange(e.target.value)}
                                             onBlur={validateSlugUniqueness}
+                                            label="Slug"
                                             leftSection={<Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>app.sincla.com.br/</Text>}
                                             leftSectionWidth={140}
                                             error={slugError}
@@ -977,33 +1045,57 @@ export function CompanySettings() {
                                                             null
                                             }
                                         />
-                                        <CopyButton value={`https://app.sincla.com.br/${slugValue}`}>
-                                            {({ copied, copy }) => (
-                                                <Tooltip label={copied ? 'Copiado!' : 'Copiar link'} withArrow>
-                                                    <ActionIcon
-                                                        variant={copied ? 'filled' : 'light'}
-                                                        color={copied ? 'green' : 'blue'}
-                                                        size="lg"
-                                                        onClick={copy}
-                                                    >
-                                                        <IconCopy size={16} />
-                                                    </ActionIcon>
-                                                </Tooltip>
-                                            )}
-                                        </CopyButton>
-                                        <Tooltip label="Abrir em nova guia" withArrow>
-                                            <ActionIcon
-                                                variant="light"
-                                                color="blue"
-                                                size="lg"
-                                                onClick={() => window.open(`https://app.sincla.com.br/${slugValue}`, '_blank')}
-                                            >
-                                                <IconWorld size={16} />
-                                            </ActionIcon>
-                                        </Tooltip>
                                     </Group>
                                     {slugValue !== currentCompany.slug && !slugError && (
-                                        <Text size="xs" c="green" mt={4}>Slug alterado. Clique em "Salvar Alterações" para aplicar.</Text>
+                                        <Text size="xs" c="green" mt={4}>Slug alterado. Clique em &quot;Salvar Alterações&quot; para aplicar.</Text>
+                                    )}
+                                </div>
+
+                                <Divider />
+
+                                <div>
+                                    <Text size="sm" fw={500} mb="xs">Links de acesso às ferramentas</Text>
+                                    <Text size="xs" c="dimmed" mb="sm">
+                                        Compartilhe estes endereços com sua equipe. Para entrar com a conta do Hub, use o botão &quot;Acessar&quot; no painel.
+                                    </Text>
+
+                                    {toolLinksLoading ? (
+                                        <Group gap="xs"><Loader size="sm" /><Text size="sm" c="dimmed">Carregando...</Text></Group>
+                                    ) : previewToolLinks.length === 0 ? (
+                                        <Alert variant="light" color="blue">
+                                            Nenhuma ferramenta contratada ainda. Ative uma ferramenta em Assinaturas para gerar os links.
+                                        </Alert>
+                                    ) : (
+                                        <Stack gap="sm">
+                                            {previewToolLinks.map(tool => (
+                                                <Paper key={tool.id} withBorder p="sm" radius="md">
+                                                    <Group justify="space-between" wrap="nowrap" gap="sm">
+                                                        <div style={{ minWidth: 0, flex: 1 }}>
+                                                            <Text size="sm" fw={600}>{tool.name}</Text>
+                                                            <Text size="xs" c="dimmed" style={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                                                                {tool.loginUrl}
+                                                            </Text>
+                                                        </div>
+                                                        <Group gap={4} wrap="nowrap">
+                                                            <CopyButton value={tool.loginUrl}>
+                                                                {({ copied, copy }) => (
+                                                                    <Tooltip label={copied ? 'Copiado!' : 'Copiar link'} withArrow>
+                                                                        <ActionIcon variant="light" color={copied ? 'green' : 'blue'} onClick={copy}>
+                                                                            {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                                                                        </ActionIcon>
+                                                                    </Tooltip>
+                                                                )}
+                                                            </CopyButton>
+                                                            <Tooltip label="Abrir em nova guia" withArrow>
+                                                                <ActionIcon variant="light" color="blue" onClick={() => window.open(tool.loginUrl, '_blank')}>
+                                                                    <IconWorld size={16} />
+                                                                </ActionIcon>
+                                                            </Tooltip>
+                                                        </Group>
+                                                    </Group>
+                                                </Paper>
+                                            ))}
+                                        </Stack>
                                     )}
                                 </div>
 
