@@ -13,9 +13,10 @@ import {
     Box,
     Divider,
     Alert,
+    SegmentedControl,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconMail, IconLock, IconArrowLeft, IconAlertCircle } from '@tabler/icons-react';
+import { IconMail, IconLock, IconArrowLeft, IconAlertCircle, IconId } from '@tabler/icons-react';
 
 const GoogleIcon = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -27,12 +28,16 @@ const GoogleIcon = () => (
 );
 import { SignatureVisual } from '../../components/signature-visual';
 import { useAuth } from '../../shared/contexts';
+import { supabase } from '../../shared/lib/supabase';
+import { formatCpf, validateCpf } from '../../shared/services/asaasService';
 import classes from './Auth.module.css';
 
 export function Login() {
     const navigate = useNavigate();
     const { signInWithPassword, signInWithGoogle } = useAuth();
+    const [loginMode, setLoginMode] = useState<'email' | 'cpf'>('email');
     const [email, setEmail] = useState('');
+    const [cpf, setCpf] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
@@ -71,8 +76,33 @@ export function Login() {
         setLoading(true);
         setError(null);
         try {
+            let loginEmail = email.trim();
+
+            if (loginMode === 'cpf') {
+                const cpfDigits = cpf.replace(/\D/g, '');
+                if (!validateCpf(cpfDigits)) {
+                    const msg = 'CPF inválido. Verifique os dígitos informados.';
+                    setError(msg);
+                    notifications.show({ title: 'Erro', message: msg, color: 'red' });
+                    return;
+                }
+
+                const { data: resolvedEmail, error: rpcError } = await supabase.rpc('resolve_cpf_to_email', {
+                    p_cpf: cpfDigits,
+                });
+
+                if (rpcError || !resolvedEmail) {
+                    const msg = 'CPF não encontrado. Cadastre seu CPF no perfil ou crie uma conta com CPF.';
+                    setError(msg);
+                    notifications.show({ title: 'Erro', message: msg, color: 'red' });
+                    return;
+                }
+
+                loginEmail = resolvedEmail as string;
+            }
+
             if (import.meta.env.DEV) console.log('%c[Login] Chamando signInWithPassword...', 'color: #098eee; font-weight: bold;');
-            const { error: authError } = await signInWithPassword(email, password);
+            const { error: authError } = await signInWithPassword(loginEmail, password);
             if (import.meta.env.DEV) console.log('%c[Login] signInWithPassword retornou', 'color: #098eee; font-weight: bold;', authError ? `Erro: ${authError.message}` : 'OK');
             if (authError) {
                 const msg = authError.message === 'Invalid login credentials'
@@ -149,15 +179,43 @@ export function Login() {
                                     {error}
                                 </Alert>
                             )}
-                            <TextInput
-                                label="Email"
-                                placeholder="seu@email.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                leftSection={<IconMail size={18} />}
-                                required
-                                classNames={{ input: classes.input }}
+                            <SegmentedControl
+                                value={loginMode}
+                                onChange={(v) => {
+                                    setLoginMode(v as 'email' | 'cpf');
+                                    setError(null);
+                                }}
+                                data={[
+                                    { value: 'email', label: 'Email' },
+                                    { value: 'cpf', label: 'CPF' },
+                                ]}
+                                fullWidth
+                                radius="md"
+                                mb="xs"
                             />
+
+                            {loginMode === 'email' ? (
+                                <TextInput
+                                    label="Email"
+                                    placeholder="seu@email.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    leftSection={<IconMail size={18} />}
+                                    required
+                                    classNames={{ input: classes.input }}
+                                />
+                            ) : (
+                                <TextInput
+                                    label="CPF"
+                                    placeholder="000.000.000-00"
+                                    value={cpf}
+                                    onChange={(e) => setCpf(formatCpf(e.target.value))}
+                                    leftSection={<IconId size={18} />}
+                                    required
+                                    maxLength={14}
+                                    classNames={{ input: classes.input }}
+                                />
+                            )}
 
                             <PasswordInput
                                 label="Senha"

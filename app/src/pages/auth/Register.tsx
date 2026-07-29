@@ -21,7 +21,7 @@ import {
     IconMail,
     IconLock,
     IconUser,
-
+    IconId,
     IconCheck,
     IconX,
     IconArrowLeft,
@@ -30,6 +30,7 @@ import { SignatureVisual } from '../../components/signature-visual';
 import { LegalDocModal } from '../../components/legal/LegalDocModal';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
+import { formatCpf, validateCpf } from '../../shared/services/asaasService';
 import classes from './Auth.module.css';
 
 const GoogleIcon = () => (
@@ -105,6 +106,7 @@ export function Register() {
     const { signUp } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [cpf, setCpf] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [acceptTerms, setAcceptTerms] = useState(false);
@@ -152,10 +154,21 @@ export function Register() {
             });
             return;
         }
+
+        const cpfDigits = cpf.replace(/\D/g, '');
+        if (!validateCpf(cpfDigits)) {
+            notifications.show({
+                title: 'CPF inválido',
+                message: 'Informe um CPF válido para habilitar login por email e CPF.',
+                color: 'red',
+            });
+            return;
+        }
+
         setLoading(true);
         try {
             const refCode = getRefCode();
-            const { error } = await signUp(email, password, name, refCode || undefined);
+            const { error } = await signUp(email, password, name, refCode || undefined, cpfDigits);
             if (error) {
                 notifications.show({
                     title: 'Erro ao criar conta',
@@ -256,6 +269,18 @@ export function Register() {
                                 required
                                 classNames={{ input: classes.input }}
                                 disabled={!!searchParams.get('email')}
+                            />
+
+                            <TextInput
+                                label="CPF"
+                                placeholder="000.000.000-00"
+                                description="Obrigatório para login por CPF"
+                                value={cpf}
+                                onChange={(e) => setCpf(formatCpf(e.target.value))}
+                                leftSection={<IconId size={18} />}
+                                required
+                                maxLength={14}
+                                classNames={{ input: classes.input }}
                             />
 
 

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { formatCpf } from '../services/asaasService';
 
 // Dev-mode logger
 const isDev = import.meta.env.DEV;
@@ -86,7 +87,7 @@ interface AuthContextType {
   signInWithMagicLink: (email: string) => Promise<{ error: AuthError | null }>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
-  signUp: (email: string, password: string, name: string, refCode?: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, name: string, refCode?: string, cpf?: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
 
   // Company methods
@@ -141,12 +142,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           || authUser.email?.split('@')[0]
           || 'Usuário';
 
+        const cpfFromMeta = authUser.user_metadata?.cpf_cnpj as string | undefined;
+
         const { data: newSub, error: insertErr } = await supabase
           .from('subscribers')
           .upsert({
             id: userId,
             email: authUser.email,
             name: fallbackName,
+            cpf_cnpj: cpfFromMeta || null,
           }, { onConflict: 'id' })
           .select('*')
           .single();
@@ -399,15 +403,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as AuthError | null };
   };
 
-  const signUp = async (email: string, password: string, name: string, refCode?: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, name: string, refCode?: string, cpf?: string) => {
+    const cpfDigits = cpf?.replace(/\D/g, '') || '';
+    const cpfFormatted = cpfDigits.length === 11 ? formatCpf(cpfDigits) : undefined;
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name, ...(refCode ? { affiliate_ref: refCode } : {}) },
+        data: {
+          name,
+          ...(cpfFormatted ? { cpf_cnpj: cpfFormatted } : {}),
+          ...(refCode ? { affiliate_ref: refCode } : {}),
+        },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
+
+    if (!error && data.user && cpfFormatted) {
+      await supabase.from('subscribers').upsert({
+        id: data.user.id,
+        email,
+        name,
+        cpf_cnpj: cpfFormatted,
+      }, { onConflict: 'id' });
+    }
+
     return { error };
   };
 
