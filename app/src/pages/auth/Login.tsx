@@ -32,6 +32,16 @@ import { supabase } from '../../shared/lib/supabase';
 import { formatCpf, validateCpf } from '../../shared/services/asaasService';
 import classes from './Auth.module.css';
 
+function getLoginErrorMessage(rawMessage: string): string {
+    if (rawMessage === 'Invalid login credentials') {
+        return 'Email ou senha incorretos. Verifique os dados ou peça ao administrador para redefinir sua senha.';
+    }
+    if (rawMessage === 'Email not confirmed') {
+        return 'Confirme seu e-mail antes de entrar ou peça um novo convite ao administrador.';
+    }
+    return rawMessage || 'Não foi possível entrar. Tente novamente.';
+}
+
 export function Login() {
     const navigate = useNavigate();
     const { signInWithPassword, signInWithGoogle } = useAuth();
@@ -105,9 +115,7 @@ export function Login() {
             const { error: authError } = await signInWithPassword(loginEmail, password);
             if (import.meta.env.DEV) console.log('%c[Login] signInWithPassword retornou', 'color: #098eee; font-weight: bold;', authError ? `Erro: ${authError.message}` : 'OK');
             if (authError) {
-                const msg = authError.message === 'Invalid login credentials'
-                    ? 'Email ou senha incorretos'
-                    : authError.message;
+                const msg = getLoginErrorMessage(authError.message);
                 setError(msg);
                 notifications.show({
                     title: 'Erro ao entrar',
@@ -171,10 +179,11 @@ export function Login() {
                                 <Alert
                                     icon={<IconAlertCircle size={16} />}
                                     color="red"
-                                    variant="light"
+                                    variant="outline"
                                     radius="md"
                                     withCloseButton
                                     onClose={() => setError(null)}
+                                    className={classes.errorAlert}
                                 >
                                     {error}
                                 </Alert>

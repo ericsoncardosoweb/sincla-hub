@@ -87,6 +87,9 @@ export function buildProductSsoUrl(product: ProductRef, company: Pick<Company, '
 
 function mapTokenError(message: string): string {
     const lower = message.toLowerCase();
+    if (lower.includes('non-2xx')) {
+        return 'Não foi possível gerar o acesso à ferramenta. Tente novamente.';
+    }
     if (lower.includes('not a member')) {
         return 'Você não é membro desta empresa.';
     }
@@ -165,7 +168,16 @@ export async function generateCrossToken(
     });
 
     if (error) {
-        const bodyError = typeof data?.error === 'string' ? data.error : error.message;
+        let bodyError = typeof data?.error === 'string' ? data.error : error.message;
+        try {
+            const ctx = (error as { context?: Response }).context;
+            if (ctx && typeof ctx.json === 'function') {
+                const parsed = await ctx.json();
+                if (parsed?.error) bodyError = parsed.error;
+            }
+        } catch {
+            // mantém mensagem padrão
+        }
         throw new Error(mapTokenError(bodyError));
     }
 

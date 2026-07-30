@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
         }
 
         let accessLevel = 'admin';
-        if (membership.role !== 'owner') {
+        if (!['owner', 'admin'].includes(membership.role)) {
             const { data: access, error: accessError } = await supabaseClient
                 .from('member_product_access')
                 .select('access_level')
