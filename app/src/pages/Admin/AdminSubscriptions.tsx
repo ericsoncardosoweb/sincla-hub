@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
     Container, Title, Text, Card, Group, Badge, Stack, Skeleton,
     Table, TextInput, SimpleGrid, ThemeIcon, Select, Button, Modal,
-    ActionIcon, Tooltip,
+    ActionIcon, Tooltip, Autocomplete,
 } from '@mantine/core';
 import {
     IconSearch, IconCreditCard, IconTrendingUp,
@@ -68,6 +68,16 @@ const planLabels: Record<string, string> = {
     enterprise: 'Enterprise',
 };
 
+const GRANT_DURATION_OPTIONS = [
+    { value: '0', label: 'Vitalício (ilimitado)' },
+    { value: '30', label: '30 dias' },
+    { value: '60', label: '60 dias' },
+    { value: '90', label: '90 dias' },
+];
+
+/** Dropdowns dentro de Modal precisam portal + z-index alto */
+const MODAL_COMBOBOX_PROPS = { withinPortal: true, zIndex: 10000 } as const;
+
 // ============================
 // Component
 // ============================
@@ -86,7 +96,30 @@ export function AdminSubscriptions() {
     const [companies, setCompanies] = useState<{ value: string; label: string }[]>([]);
     const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+    const [companyQuery, setCompanyQuery] = useState('');
+    const [productQuery, setProductQuery] = useState('');
     const [grantDuration, setGrantDuration] = useState<string>('0');
+
+    const openGrantModal = () => {
+        setSelectedCompany(null);
+        setSelectedProduct(null);
+        setCompanyQuery('');
+        setProductQuery('');
+        setGrantDuration('0');
+        setGrantModalOpened(true);
+    };
+
+    const resolveCompanyFromQuery = (query: string) => {
+        const normalized = query.trim().toLowerCase();
+        if (!normalized) return null;
+        return companies.find(c => c.label.toLowerCase() === normalized)?.value ?? null;
+    };
+
+    const resolveProductFromQuery = (query: string) => {
+        const normalized = query.trim().toLowerCase();
+        if (!normalized) return null;
+        return products.find(p => p.label.toLowerCase() === normalized)?.value ?? null;
+    };
 
     // Cancel / Delete Subscription
     const [cancelTarget, setCancelTarget] = useState<SubscriptionRow | null>(null);
@@ -269,7 +302,7 @@ export function AdminSubscriptions() {
                     <Button
                         leftSection={<IconCrown size={16} />}
                         color="violet"
-                        onClick={() => setGrantModalOpened(true)}
+                        onClick={openGrantModal}
                     >
                         Conceder Acesso Ilimitado
                     </Button>
@@ -482,43 +515,71 @@ export function AdminSubscriptions() {
                     </Group>
                 }
                 centered
+                size="md"
+                styles={{ body: { overflow: 'visible' } }}
             >
                 <Stack gap="md">
                     <Text size="sm" c="dimmed">
                         Conceda acesso com limite máximo de licenças sem a necessidade de passar pelo Checkout (Asaas). A assinatura será registrada como Plano Enterprise com valor R$ 0,00.
                     </Text>
 
-                    <Select
+                    <Autocomplete
                         label="Empresa Recebedora"
-                        placeholder="Selecione a empresa"
-                        searchable
-                        data={companies}
-                        value={selectedCompany}
-                        onChange={setSelectedCompany}
+                        placeholder="Digite o nome da empresa..."
                         required
+                        data={companies.map(c => c.label)}
+                        value={companyQuery}
+                        limit={20}
+                        comboboxProps={MODAL_COMBOBOX_PROPS}
+                        onChange={(value) => {
+                            setCompanyQuery(value);
+                            setSelectedCompany(resolveCompanyFromQuery(value));
+                        }}
+                        onOptionSubmit={(value) => {
+                            setCompanyQuery(value);
+                            setSelectedCompany(companies.find(c => c.label === value)?.value ?? null);
+                        }}
+                        onBlur={() => {
+                            const resolved = resolveCompanyFromQuery(companyQuery);
+                            if (resolved) {
+                                const label = companies.find(c => c.value === resolved)?.label;
+                                if (label) setCompanyQuery(label);
+                                setSelectedCompany(resolved);
+                            }
+                        }}
                     />
 
-                    <Select
+                    <Autocomplete
                         label="Produto"
-                        placeholder="Selecione o produto (ou deixe em branco para TODOS)"
-                        searchable
+                        placeholder="Digite para buscar (vazio = todos)"
+                        data={products.map(p => p.label)}
+                        value={productQuery}
+                        limit={20}
                         clearable
-                        data={products}
-                        value={selectedProduct}
-                        onChange={setSelectedProduct}
+                        comboboxProps={MODAL_COMBOBOX_PROPS}
+                        onChange={(value) => {
+                            setProductQuery(value);
+                            setSelectedProduct(resolveProductFromQuery(value));
+                        }}
+                        onOptionSubmit={(value) => {
+                            setProductQuery(value);
+                            setSelectedProduct(products.find(p => p.label === value)?.value ?? null);
+                        }}
+                        onClear={() => {
+                            setProductQuery('');
+                            setSelectedProduct(null);
+                        }}
                         description="Se você não selecionar um produto, todas as ferramentas do Hub serão concedidas de uma vez."
                     />
 
                     <Select
                         label="Duração do acesso"
-                        data={[
-                            { value: '0', label: 'Vitalício (ilimitado)' },
-                            { value: '30', label: '30 dias' },
-                            { value: '60', label: '60 dias' },
-                            { value: '90', label: '90 dias' },
-                        ]}
+                        data={GRANT_DURATION_OPTIONS}
                         value={grantDuration}
                         onChange={(val) => setGrantDuration(val || '0')}
+                        allowDeselect={false}
+                        comboboxProps={MODAL_COMBOBOX_PROPS}
+                        maxDropdownHeight={220}
                         description="Vitalício concede acesso por tempo indeterminado."
                     />
 
@@ -529,21 +590,33 @@ export function AdminSubscriptions() {
                         <Button
                             color="violet"
                             onClick={async () => {
-                                if (!selectedCompany) return alert('Selecione uma empresa.');
+                                const companyId = selectedCompany ?? resolveCompanyFromQuery(companyQuery);
+                                if (!companyId) {
+                                    notifications.show({
+                                        title: 'Empresa obrigatória',
+                                        message: 'Selecione uma empresa da lista ao digitar o nome.',
+                                        color: 'orange',
+                                    });
+                                    return;
+                                }
+
                                 setGrantLoading(true);
 
                                 try {
-                                    const productsToGrant = selectedProduct
-                                        ? products.filter(p => p.value === selectedProduct)
+                                    const productId = selectedProduct ?? resolveProductFromQuery(productQuery);
+                                    const productsToGrant = productId
+                                        ? products.filter(p => p.value === productId)
                                         : products;
 
                                     if (productsToGrant.length === 0) throw new Error('Nenhum produto encontrado para conceder.');
 
+                                    const durationDays = parseInt(grantDuration, 10) || 0;
+
                                     const { error } = await supabase
                                         .rpc('admin_grant_subscription', {
-                                            p_company_id: selectedCompany,
+                                            p_company_id: companyId,
                                             p_product_ids: productsToGrant.map(p => p.value),
-                                            p_duration_days: parseInt(grantDuration) || 0,
+                                            p_duration_days: durationDays,
                                             p_plan: 'enterprise',
                                         });
 
@@ -552,16 +625,22 @@ export function AdminSubscriptions() {
                                     setGrantModalOpened(false);
                                     setSelectedCompany(null);
                                     setSelectedProduct(null);
+                                    setCompanyQuery('');
+                                    setProductQuery('');
                                     setGrantDuration('0');
                                     loadData();
                                     notifications.show({
                                         title: 'Acesso concedido! ✅',
-                                        message: `Assinatura concedida com sucesso.${parseInt(grantDuration) > 0 ? ` Duração: ${grantDuration} dias.` : ' Acesso vitalício.'}`,
+                                        message: `Assinatura concedida com sucesso.${durationDays > 0 ? ` Duração: ${durationDays} dias.` : ' Acesso vitalício.'}`,
                                         color: 'green',
                                     });
                                 } catch (error: any) {
                                     console.error(error);
-                                    alert('Erro ao conceder assinatura: ' + (error.message || 'Falha desconhecida.'));
+                                    notifications.show({
+                                        title: 'Erro ao conceder assinatura',
+                                        message: error.message || 'Falha desconhecida.',
+                                        color: 'red',
+                                    });
                                 } finally {
                                     setGrantLoading(false);
                                 }
