@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
     Container, Title, Text, Card, Group, Badge, Stack, Skeleton,
     Table, TextInput, SimpleGrid, ThemeIcon, Select, Button, Modal,
-    ActionIcon, Tooltip, Autocomplete,
+    ActionIcon, Tooltip,
 } from '@mantine/core';
 import {
     IconSearch, IconCreditCard, IconTrendingUp,
@@ -96,29 +96,65 @@ export function AdminSubscriptions() {
     const [companies, setCompanies] = useState<{ value: string; label: string }[]>([]);
     const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
-    const [companyQuery, setCompanyQuery] = useState('');
-    const [productQuery, setProductQuery] = useState('');
     const [grantDuration, setGrantDuration] = useState<string>('0');
+    const [loadingGrantOptions, setLoadingGrantOptions] = useState(false);
+
+    const companyOptions = useMemo(() => {
+        const byId = new Map<string, { value: string; label: string }>();
+
+        for (const company of companies) {
+            if (company.value && company.label) {
+                byId.set(company.value, company);
+            }
+        }
+
+        for (const sub of subscriptions) {
+            if (sub.company_id && sub.company?.name && !byId.has(sub.company_id)) {
+                byId.set(sub.company_id, {
+                    value: sub.company_id,
+                    label: sub.company.name,
+                });
+            }
+        }
+
+        return Array.from(byId.values()).sort((a, b) =>
+            a.label.localeCompare(b.label, 'pt-BR', { sensitivity: 'base' }),
+        );
+    }, [companies, subscriptions]);
+
+    const loadCompaniesForGrant = useCallback(async () => {
+        setLoadingGrantOptions(true);
+        try {
+            const { data, error } = await supabase
+                .from('companies')
+                .select('id, name, slug')
+                .order('name')
+                .limit(1000);
+
+            if (error) throw error;
+
+            setCompanies((data || []).map(c => ({
+                value: c.id,
+                label: (c.name || c.slug || 'Sem nome').trim(),
+            })));
+        } catch (error) {
+            console.error('Error loading companies for grant:', error);
+            notifications.show({
+                title: 'Erro ao carregar empresas',
+                message: 'Não foi possível listar as empresas. Tente novamente.',
+                color: 'red',
+            });
+        } finally {
+            setLoadingGrantOptions(false);
+        }
+    }, []);
 
     const openGrantModal = () => {
         setSelectedCompany(null);
         setSelectedProduct(null);
-        setCompanyQuery('');
-        setProductQuery('');
         setGrantDuration('0');
         setGrantModalOpened(true);
-    };
-
-    const resolveCompanyFromQuery = (query: string) => {
-        const normalized = query.trim().toLowerCase();
-        if (!normalized) return null;
-        return companies.find(c => c.label.toLowerCase() === normalized)?.value ?? null;
-    };
-
-    const resolveProductFromQuery = (query: string) => {
-        const normalized = query.trim().toLowerCase();
-        if (!normalized) return null;
-        return products.find(p => p.label.toLowerCase() === normalized)?.value ?? null;
+        void loadCompaniesForGrant();
     };
 
     // Cancel / Delete Subscription
@@ -139,11 +175,18 @@ export function AdminSubscriptions() {
             setProducts((prods || []).map(p => ({ value: p.id, label: p.name })));
 
             // Load companies for the grant modal
-            const { data: comps } = await supabase
+            const { data: comps, error: companiesError } = await supabase
                 .from('companies')
-                .select('id, name')
-                .order('name');
-            setCompanies((comps || []).map(c => ({ value: c.id, label: c.name })));
+                .select('id, name, slug')
+                .order('name')
+                .limit(1000);
+            if (companiesError) {
+                console.error('Error loading companies:', companiesError);
+            }
+            setCompanies((comps || []).map(c => ({
+                value: c.id,
+                label: (c.name || c.slug || 'Sem nome').trim(),
+            })));
 
             // Load subscriptions
             let query = supabase
@@ -523,52 +566,38 @@ export function AdminSubscriptions() {
                         Conceda acesso com limite máximo de licenças sem a necessidade de passar pelo Checkout (Asaas). A assinatura será registrada como Plano Enterprise com valor R$ 0,00.
                     </Text>
 
-                    <Autocomplete
+                    <Select
                         label="Empresa Recebedora"
-                        placeholder="Digite o nome da empresa..."
-                        required
-                        data={companies.map(c => c.label)}
-                        value={companyQuery}
-                        limit={20}
+                        placeholder="Busque ou selecione a empresa"
+                        withAsterisk
+                        searchable
+                        clearable
+                        nothingFoundMessage="Nenhuma empresa encontrada"
+                        data={companyOptions}
+                        value={selectedCompany}
+                        onChange={setSelectedCompany}
                         comboboxProps={MODAL_COMBOBOX_PROPS}
-                        onChange={(value) => {
-                            setCompanyQuery(value);
-                            setSelectedCompany(resolveCompanyFromQuery(value));
-                        }}
-                        onOptionSubmit={(value) => {
-                            setCompanyQuery(value);
-                            setSelectedCompany(companies.find(c => c.label === value)?.value ?? null);
-                        }}
-                        onBlur={() => {
-                            const resolved = resolveCompanyFromQuery(companyQuery);
-                            if (resolved) {
-                                const label = companies.find(c => c.value === resolved)?.label;
-                                if (label) setCompanyQuery(label);
-                                setSelectedCompany(resolved);
-                            }
-                        }}
+                        maxDropdownHeight={280}
+                        disabled={grantLoading || loadingGrantOptions}
+                        description={
+                            loadingGrantOptions
+                                ? 'Carregando empresas...'
+                                : `${companyOptions.length} empresa(s) disponível(is)`
+                        }
                     />
 
-                    <Autocomplete
+                    <Select
                         label="Produto"
-                        placeholder="Digite para buscar (vazio = todos)"
-                        data={products.map(p => p.label)}
-                        value={productQuery}
-                        limit={20}
+                        placeholder="Busque ou selecione (vazio = todos)"
+                        searchable
                         clearable
+                        nothingFoundMessage="Nenhum produto encontrado"
+                        data={products}
+                        value={selectedProduct}
+                        onChange={setSelectedProduct}
                         comboboxProps={MODAL_COMBOBOX_PROPS}
-                        onChange={(value) => {
-                            setProductQuery(value);
-                            setSelectedProduct(resolveProductFromQuery(value));
-                        }}
-                        onOptionSubmit={(value) => {
-                            setProductQuery(value);
-                            setSelectedProduct(products.find(p => p.label === value)?.value ?? null);
-                        }}
-                        onClear={() => {
-                            setProductQuery('');
-                            setSelectedProduct(null);
-                        }}
+                        maxDropdownHeight={220}
+                        disabled={grantLoading}
                         description="Se você não selecionar um produto, todas as ferramentas do Hub serão concedidas de uma vez."
                     />
 
@@ -590,11 +619,10 @@ export function AdminSubscriptions() {
                         <Button
                             color="violet"
                             onClick={async () => {
-                                const companyId = selectedCompany ?? resolveCompanyFromQuery(companyQuery);
-                                if (!companyId) {
+                                if (!selectedCompany) {
                                     notifications.show({
                                         title: 'Empresa obrigatória',
-                                        message: 'Selecione uma empresa da lista ao digitar o nome.',
+                                        message: 'Selecione uma empresa da lista.',
                                         color: 'orange',
                                     });
                                     return;
@@ -603,9 +631,8 @@ export function AdminSubscriptions() {
                                 setGrantLoading(true);
 
                                 try {
-                                    const productId = selectedProduct ?? resolveProductFromQuery(productQuery);
-                                    const productsToGrant = productId
-                                        ? products.filter(p => p.value === productId)
+                                    const productsToGrant = selectedProduct
+                                        ? products.filter(p => p.value === selectedProduct)
                                         : products;
 
                                     if (productsToGrant.length === 0) throw new Error('Nenhum produto encontrado para conceder.');
@@ -614,7 +641,7 @@ export function AdminSubscriptions() {
 
                                     const { error } = await supabase
                                         .rpc('admin_grant_subscription', {
-                                            p_company_id: companyId,
+                                            p_company_id: selectedCompany,
                                             p_product_ids: productsToGrant.map(p => p.value),
                                             p_duration_days: durationDays,
                                             p_plan: 'enterprise',
@@ -625,8 +652,6 @@ export function AdminSubscriptions() {
                                     setGrantModalOpened(false);
                                     setSelectedCompany(null);
                                     setSelectedProduct(null);
-                                    setCompanyQuery('');
-                                    setProductQuery('');
                                     setGrantDuration('0');
                                     loadData();
                                     notifications.show({
