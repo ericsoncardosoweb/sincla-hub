@@ -1,5 +1,6 @@
 import { Container, Title, Text, Stack, Card, Group, Box, Button, SimpleGrid, ThemeIcon, List } from '@mantine/core';
 import { IconBuilding, IconUsers, IconDiscount, IconCheck, IconArrowRight } from '@tabler/icons-react';
+import { SITE } from '../../../content/site';
 import classes from './Enterprise.module.css';
 
 const benefits = [
@@ -119,7 +120,7 @@ export function Enterprise() {
                             </Box>
                             <Button
                                 component="a"
-                                href="https://wa.me/5511999999999?text=Olá! Gostaria de falar com um consultor sobre os planos do ecossistema Sincla."
+                                href={`https://wa.me/${SITE.whatsappNumber}?text=${encodeURIComponent('Olá! Gostaria de falar com um consultor sobre os planos do ecossistema Sincla.')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 size="lg"

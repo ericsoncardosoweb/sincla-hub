@@ -44,7 +44,7 @@ const TEMPLATE_VARIABLES = [
     { key: '{{empresa_nome}}', label: 'Nome da Empresa', example: 'Sincla Tecnologia Ltda' },
     { key: '{{empresa_cnpj}}', label: 'CNPJ', example: '00.000.000/0000-00' },
     { key: '{{empresa_endereco}}', label: 'Endereço', example: 'São Paulo, SP - Brasil' },
-    { key: '{{empresa_whatsapp}}', label: 'WhatsApp', example: '(11) 99999-9999' },
+    { key: '{{empresa_whatsapp}}', label: 'WhatsApp', example: '(11) 97020-7076' },
     { key: '{{empresa_telefone}}', label: 'Telefone', example: '(11) 3333-3333' },
     { key: '{{empresa_email}}', label: 'Email', example: 'contato@sincla.com.br' },
     { key: '{{site_url}}', label: 'URL do Site', example: 'https://sincla.com.br' },

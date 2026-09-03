@@ -6,7 +6,8 @@ export const SITE = {
   signupUrl: 'https://app.sincla.com.br/cadastro',
   loginUrl: 'https://app.sincla.com.br/login',
   hubUrl: 'https://app.sincla.com.br',
-  whatsappNumber: import.meta.env.VITE_WHATSAPP_NUMBER || '5511999999999',
+  whatsappNumber: import.meta.env.VITE_WHATSAPP_NUMBER || '5511970207076',
+  whatsappDisplay: '(11) 97020-7076',
   meetingWebhookUrl: import.meta.env.VITE_MEETING_WEBHOOK_URL || '',
   launchBadge: 'Plataforma em lançamento',
 } as const;

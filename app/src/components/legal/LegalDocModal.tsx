@@ -32,7 +32,7 @@ const DEFAULT_VARS: Record<string, string> = {
     empresa_nome: 'Sincla Tecnologia Ltda',
     empresa_cnpj: '00.000.000/0000-00',
     empresa_endereco: 'São Paulo, SP - Brasil',
-    empresa_whatsapp: '(11) 99999-9999',
+    empresa_whatsapp: '(11) 97020-7076',
     empresa_telefone: '(11) 3333-3333',
     empresa_email: 'contato@sincla.com.br',
     site_url: 'https://sincla.com.br',

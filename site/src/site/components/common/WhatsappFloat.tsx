@@ -1,10 +1,10 @@
 import { IconBrandWhatsapp } from '@tabler/icons-react';
+import { SITE } from '../../../content/site';
 import classes from './WhatsappFloat.module.css';
 
 export function WhatsappFloat() {
-    const phoneNumber = '5511999999999'; // Placeholder configurado para WhatsApp do consultor
     const message = 'Olá! Gostaria de falar com um consultor sobre o ecossistema Sincla.';
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${SITE.whatsappNumber}?text=${encodeURIComponent(message)}`;
 
     return (
         <a

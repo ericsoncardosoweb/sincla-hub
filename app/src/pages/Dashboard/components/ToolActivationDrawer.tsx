@@ -10,6 +10,7 @@ import {
     IconChevronDown, IconChevronUp, IconStar,
 } from '@tabler/icons-react';
 import { supabase } from '../../../shared/lib/supabase';
+import { buildPlatformWhatsAppUrl } from '../../../shared/constants/platformContact';
 import {
     activateCompanyProduct,
     loadProductPlans,
@@ -136,9 +137,11 @@ export function ToolActivationDrawer({
         if (!productId || !selectedPlan) return;
 
         if (selectedPlan.slug === 'enterprise') {
-            const num = platformWhatsapp.replace(/\D/g, '');
             window.open(
-                `https://wa.me/55${num}?text=${encodeURIComponent(`Olá! Gostaria do plano Enterprise do ${product?.name || 'Sincla'}.`)}`,
+                buildPlatformWhatsAppUrl(
+                    `Olá! Gostaria do plano Enterprise do ${product?.name || 'Sincla'}.`,
+                    platformWhatsapp,
+                ),
                 '_blank',
             );
             return;

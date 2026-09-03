@@ -26,7 +26,7 @@ const DEFAULT_VARS: Record<string, string> = {
     empresa_nome: 'Sincla Tecnologia Ltda',
     empresa_cnpj: '00.000.000/0000-00',
     empresa_endereco: 'São Paulo, SP - Brasil',
-    empresa_whatsapp: '(11) 99999-9999',
+    empresa_whatsapp: '(11) 97020-7076',
     empresa_telefone: '(11) 3333-3333',
     empresa_email: 'contato@sincla.com.br',
     site_url: 'https://sincla.com.br',
@@ -246,7 +246,7 @@ const FALLBACK_CONTENT: Record<string, { title: string; content: string }> = {
 <ul>
 <li><strong>E-mail financeiro:</strong> <a href="mailto:financeiro@sincla.com.br">financeiro@sincla.com.br</a></li>
 <li><strong>E-mail geral:</strong> <a href="mailto:contato@sincla.com.br">contato@sincla.com.br</a></li>
-<li><strong>WhatsApp:</strong> (11) 99999-9999</li>
+<li><strong>WhatsApp:</strong> (11) 97020-7076</li>
 <li><strong>Site:</strong> <a href="https://sincla.com.br/suporte">sincla.com.br/suporte</a></li>
 </ul>
 `

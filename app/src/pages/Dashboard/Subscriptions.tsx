@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../../shared/contexts';
 
 import { supabase } from '../../shared/lib/supabase';
+import { buildPlatformWhatsAppUrl, PLATFORM_WHATSAPP_DISPLAY } from '../../shared/constants/platformContact';
 import { PageHeader, EmptyState } from '../../components/shared';
 import { redirectToProduct } from '../../shared/services/cross-auth';
 import { listPaymentsBySubscription, cancelSubscription } from '../../shared/services/asaasService';
@@ -220,7 +221,7 @@ export function Subscriptions() {
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [cancelLoading, setCancelLoading] = useState(false);
 
-    const [platformWhatsapp, setPlatformWhatsapp] = useState('');
+    const [platformWhatsapp, setPlatformWhatsapp] = useState(PLATFORM_WHATSAPP_DISPLAY);
 
     const handleCloseSuccessModal = () => {
         searchParams.delete('sucesso');
@@ -984,7 +985,13 @@ export function Subscriptions() {
                                         )}
                                         {isEnterprise && !isCurrent && (
                                             <Button fullWidth variant="filled" color="green" size="xs" mt="xs" leftSection={<IconBrandWhatsapp size={14} />}
-                                                onClick={(e) => { e.stopPropagation(); const num = platformWhatsapp.replace(/\D/g, ''); window.open(`https://wa.me/55${num}?text=${encodeURIComponent(`Olá! Gostaria do plano Enterprise.`)}`, '_blank'); }}>
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.open(
+                                                        buildPlatformWhatsAppUrl('Olá! Gostaria do plano Enterprise.', platformWhatsapp),
+                                                        '_blank',
+                                                    );
+                                                }}>
                                                 Falar com Consultor
                                             </Button>
                                         )}
