@@ -52,8 +52,10 @@ CREATE POLICY "platform_settings_admin_full" ON platform_settings
 -- ========================================
 
 INSERT INTO platform_settings (key, value, description) VALUES
-  ('empresa_nome', 'Sincla Tecnologia Ltda', 'Nome da empresa'),
-  ('empresa_cnpj', '00.000.000/0000-00', 'CNPJ da empresa'),
+  ('empresa_nome', 'Sincla Tecnologia e Desenvolvimento Ltda', 'Nome da empresa'),
+  ('empresa_cnpj', '69.002.013/0001-04', 'CNPJ da empresa'),
+  ('empresa_nire', '35251054607', 'NIRE — Junta Comercial SP'),
+  ('empresa_tipo_juridico', 'Limitada Unipessoal (M.E.)', 'Tipo jurídico'),
   ('empresa_endereco', 'São Paulo, SP - Brasil', 'Endereço completo'),
   ('empresa_whatsapp', '(11) 99999-9999', 'WhatsApp de contato'),
   ('empresa_telefone', '(11) 3333-3333', 'Telefone comercial'),

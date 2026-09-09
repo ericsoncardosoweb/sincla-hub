@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { Container, Text, Loader, Center, Stack } from '@mantine/core';
 
+import { SITE } from '../../content/site';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import { supabase } from '../../shared/lib/supabase';
@@ -23,14 +24,16 @@ interface PlatformSetting {
 
 // Default variable values (fallback)
 const DEFAULT_VARS: Record<string, string> = {
-    empresa_nome: 'Sincla Tecnologia Ltda',
-    empresa_cnpj: '00.000.000/0000-00',
-    empresa_endereco: 'São Paulo, SP - Brasil',
-    empresa_whatsapp: '(11) 97020-7076',
+    empresa_nome: SITE.companyLegal.razaoSocial,
+    empresa_cnpj: SITE.companyLegal.cnpj,
+    empresa_nire: SITE.companyLegal.nire,
+    empresa_tipo_juridico: SITE.companyLegal.tipoJuridico,
+    empresa_endereco: SITE.companyLegal.endereco,
+    empresa_whatsapp: SITE.whatsappDisplay,
     empresa_telefone: '(11) 3333-3333',
-    empresa_email: 'contato@sincla.com.br',
+    empresa_email: SITE.companyLegal.email,
     site_url: 'https://sincla.com.br',
-    app_url: 'https://app.sincla.com.br',
+    app_url: SITE.hubUrl,
 };
 
 // Map slug aliases to canonical slugs
@@ -60,7 +63,7 @@ const FALLBACK_CONTENT: Record<string, { title: string; content: string }> = {
         content: `
 <h1>Política de Privacidade</h1>
 <p><strong>Última atualização:</strong> Março de 2026</p>
-<p>A Sincla Tecnologia Ltda ("Sincla", "nós", "nosso") valoriza a privacidade dos seus usuários. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações pessoais ao utilizar nossos serviços e plataformas.</p>
+<p>A Sincla Tecnologia e Desenvolvimento Ltda ("Sincla", "nós", "nosso") valoriza a privacidade dos seus usuários. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações pessoais ao utilizar nossos serviços e plataformas.</p>
 
 <h2>1. Informações que Coletamos</h2>
 <p>Coletamos as seguintes categorias de informações:</p>
@@ -126,7 +129,7 @@ const FALLBACK_CONTENT: Record<string, { title: string; content: string }> = {
         content: `
 <h1>Termos de Uso</h1>
 <p><strong>Última atualização:</strong> Março de 2026</p>
-<p>Ao acessar e utilizar os serviços da Sincla Tecnologia Ltda ("Sincla"), você concorda com estes Termos de Uso. Leia atentamente antes de utilizar a plataforma.</p>
+<p>Ao acessar e utilizar os serviços da Sincla Tecnologia e Desenvolvimento Ltda ("Sincla"), você concorda com estes Termos de Uso. Leia atentamente antes de utilizar a plataforma.</p>
 
 <h2>1. Aceitação dos Termos</h2>
 <p>Ao criar uma conta ou utilizar qualquer serviço da Sincla, você declara ter lido, compreendido e aceito estes termos na íntegra. Se você não concordar, não utilize nossos serviços.</p>
@@ -160,7 +163,7 @@ const FALLBACK_CONTENT: Record<string, { title: string; content: string }> = {
 </ul>
 
 <h2>5. Propriedade Intelectual</h2>
-<p>Todo o conteúdo, design, código-fonte, marcas e logotipos da Sincla são de propriedade exclusiva da Sincla Tecnologia Ltda, protegidos por leis de propriedade intelectual. O uso dos serviços não confere nenhum direito de propriedade sobre o conteúdo da plataforma.</p>
+<p>Todo o conteúdo, design, código-fonte, marcas e logotipos da Sincla são de propriedade exclusiva da Sincla Tecnologia e Desenvolvimento Ltda, protegidos por leis de propriedade intelectual. O uso dos serviços não confere nenhum direito de propriedade sobre o conteúdo da plataforma.</p>
 
 <h2>6. Planos e Pagamentos</h2>
 <ul>
@@ -201,7 +204,7 @@ const FALLBACK_CONTENT: Record<string, { title: string; content: string }> = {
         content: `
 <h1>Políticas de Compra e Reembolso</h1>
 <p><strong>Última atualização:</strong> Março de 2026</p>
-<p>A Sincla Tecnologia Ltda ("Sincla") valoriza a transparência em suas relações comerciais. Esta política descreve as condições de compra, assinatura e reembolso dos nossos serviços.</p>
+<p>A Sincla Tecnologia e Desenvolvimento Ltda ("Sincla") valoriza a transparência em suas relações comerciais. Esta política descreve as condições de compra, assinatura e reembolso dos nossos serviços.</p>
 
 <h2>1. Planos e Assinaturas</h2>
 <p>A Sincla oferece planos de assinatura mensal e anual para acesso às suas plataformas. Os valores, recursos e condições de cada plano estão descritos na página de preços e no momento da contratação.</p>

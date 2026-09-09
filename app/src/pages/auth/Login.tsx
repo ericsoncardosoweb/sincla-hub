@@ -27,6 +27,7 @@ const GoogleIcon = () => (
     </svg>
 );
 import { SignatureVisual } from '../../components/signature-visual';
+import { LegalDocModal } from '../../components/legal/LegalDocModal';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { formatCpf, validateCpf } from '../../shared/services/asaasService';
@@ -52,6 +53,7 @@ export function Login() {
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [legalSlug, setLegalSlug] = useState<string | null>(null);
 
     const handleGoogleLogin = async () => {
         setGoogleLoading(true);
@@ -292,15 +294,37 @@ export function Login() {
                 {/* Footer */}
                 <Text c="dimmed" size="xs" ta="center" mt={20}>
                     Ao entrar, você concorda com nossos{' '}
-                    <Anchor href="#" className={classes.footerLink}>
+                    <Anchor
+                        component="button"
+                        type="button"
+                        className={classes.footerLink}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setLegalSlug('termos-de-uso');
+                        }}
+                    >
                         Termos de Uso
                     </Anchor>{' '}
                     e{' '}
-                    <Anchor href="#" className={classes.footerLink}>
+                    <Anchor
+                        component="button"
+                        type="button"
+                        className={classes.footerLink}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setLegalSlug('politica-privacidade');
+                        }}
+                    >
                         Política de Privacidade
                     </Anchor>
                 </Text>
             </Container>
+
+            <LegalDocModal
+                opened={legalSlug !== null}
+                onClose={() => setLegalSlug(null)}
+                slug={legalSlug || ''}
+            />
         </div>
     );
 }

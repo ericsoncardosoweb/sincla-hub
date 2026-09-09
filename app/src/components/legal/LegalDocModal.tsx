@@ -11,6 +11,8 @@ import {
 } from '@mantine/core';
 import { IconCheck, IconFileText } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
+import { LEGAL_PLATFORM_VARS } from '../../shared/constants/companyLegal';
+import { LEGAL_FALLBACKS } from './legalFallbacks';
 import classes from './LegalDocModal.module.css';
 
 interface LegalDocModalProps {
@@ -28,16 +30,7 @@ interface LegalPageRow {
     version: number;
 }
 
-const DEFAULT_VARS: Record<string, string> = {
-    empresa_nome: 'Sincla Tecnologia Ltda',
-    empresa_cnpj: '00.000.000/0000-00',
-    empresa_endereco: 'São Paulo, SP - Brasil',
-    empresa_whatsapp: '(11) 97020-7076',
-    empresa_telefone: '(11) 3333-3333',
-    empresa_email: 'contato@sincla.com.br',
-    site_url: 'https://sincla.com.br',
-    app_url: 'https://app.sincla.com.br',
-};
+const DEFAULT_VARS: Record<string, string> = LEGAL_PLATFORM_VARS;
 
 function resolveVariables(html: string, settings: { key: string; value: string }[]): string {
     const map = new Map(settings.map((s) => [s.key, s.value]));
@@ -72,14 +65,38 @@ export function LegalDocModal({ opened, onClose, slug, onAccept }: LegalDocModal
                 if (cancelled) return;
 
                 if (pageRes.error || !pageRes.data) {
-                    setError(true);
+                    const fallback = LEGAL_FALLBACKS[slug];
+                    if (!fallback) {
+                        setError(true);
+                        return;
+                    }
+                    setDoc({
+                        title: fallback.title,
+                        content: fallback.content,
+                        updated_at: new Date().toISOString(),
+                        version: fallback.version,
+                    });
+                    setHtml(resolveVariables(fallback.content, settingsRes.data || []));
                     return;
                 }
 
                 setDoc(pageRes.data as LegalPageRow);
                 setHtml(resolveVariables((pageRes.data as LegalPageRow).content, settingsRes.data || []));
             } catch {
-                if (!cancelled) setError(true);
+                if (!cancelled) {
+                    const fallback = LEGAL_FALLBACKS[slug];
+                    if (fallback) {
+                        setDoc({
+                            title: fallback.title,
+                            content: fallback.content,
+                            updated_at: new Date().toISOString(),
+                            version: fallback.version,
+                        });
+                        setHtml(resolveVariables(fallback.content, []));
+                    } else {
+                        setError(true);
+                    }
+                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -98,6 +115,8 @@ export function LegalDocModal({ opened, onClose, slug, onAccept }: LegalDocModal
             size="lg"
             centered
             radius="lg"
+            zIndex={500}
+            withinPortal
             scrollAreaComponent={ScrollArea.Autosize}
             title={
                 <Group gap="xs">

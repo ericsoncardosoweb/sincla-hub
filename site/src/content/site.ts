@@ -1,5 +1,18 @@
+/** Dados cadastrais oficiais (JUCESP — Certidão de Inteiro Teor). */
+export const COMPANY_LEGAL = {
+  razaoSocial: 'Sincla Tecnologia e Desenvolvimento Ltda',
+  nomeFantasia: 'Sincla Tecnologia e Desenvolvimento',
+  cnpj: '69.002.013/0001-04',
+  nire: '35251054607',
+  tipoJuridico: 'Limitada Unipessoal (M.E.)',
+  endereco: 'São Paulo, SP - Brasil',
+  email: 'contato@sincla.com.br',
+  privacidadeEmail: 'privacidade@sincla.com.br',
+} as const;
+
 export const SITE = {
   name: 'Sincla',
+  companyLegal: COMPANY_LEGAL,
   tagline: 'RH, vagas e treinamento no mesmo lugar.',
   description:
     'Plataforma integrada de gestão de pessoas, atração de talentos com triagem inteligente e treinamento corporativo — um cadastro, três soluções.',

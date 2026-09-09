@@ -87,7 +87,7 @@ export function Footer() {
 
                 <div className={classes.bottomBar}>
                     <span className={classes.copyright}>
-                        © {new Date().getFullYear()} Sincla. Todos os direitos reservados.
+                        © {new Date().getFullYear()} {SITE.companyLegal.razaoSocial} · CNPJ {SITE.companyLegal.cnpj}
                     </span>
                     <span className={classes.launchBadge}>{SITE.launchBadge}</span>
                 </div>

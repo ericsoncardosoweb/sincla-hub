@@ -341,39 +341,41 @@ export function Register() {
                                 classNames={{ input: classes.input }}
                             />
 
-                            <Checkbox
-                                label={
-                                    <Text size="sm">
-                                        Eu aceito os{' '}
-                                        <Anchor
-                                            component="button"
-                                            type="button"
-                                            className={classes.link}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setLegalSlug('termos-de-uso');
-                                            }}
-                                        >
-                                            Termos de Uso
-                                        </Anchor>{' '}
-                                        e a{' '}
-                                        <Anchor
-                                            component="button"
-                                            type="button"
-                                            className={classes.link}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                setLegalSlug('politica-privacidade');
-                                            }}
-                                        >
-                                            Política de Privacidade
-                                        </Anchor>
-                                    </Text>
-                                }
-                                checked={acceptTerms}
-                                onChange={(e) => setAcceptTerms(e.currentTarget.checked)}
-                                mt="xs"
-                            />
+                            <Stack gap={6} mt="xs">
+                                <Checkbox
+                                    label="Eu li e aceito os Termos de Uso e a Política de Privacidade"
+                                    checked={acceptTerms}
+                                    onChange={(e) => setAcceptTerms(e.currentTarget.checked)}
+                                />
+                                <Text size="sm" c="dimmed" pl={28}>
+                                    Ler{' '}
+                                    <Anchor
+                                        component="button"
+                                        type="button"
+                                        className={classes.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setLegalSlug('termos-de-uso');
+                                        }}
+                                    >
+                                        Termos de Uso
+                                    </Anchor>
+                                    {' '}e{' '}
+                                    <Anchor
+                                        component="button"
+                                        type="button"
+                                        className={classes.link}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setLegalSlug('politica-privacidade');
+                                        }}
+                                    >
+                                        Política de Privacidade
+                                    </Anchor>
+                                </Text>
+                            </Stack>
 
                             <Button
                                 type="submit"
