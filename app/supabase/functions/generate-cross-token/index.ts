@@ -11,7 +11,9 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const JWT_SECRET = Deno.env.get('CROSS_TOKEN_SECRET') ?? 'sincla-hub-secret-key-change-in-production';
+// Segredo HS256 compartilhado com as `sso-login` dos satélites. Sem fallback:
+// um default hardcoded permitiria forjar tokens SSO para qualquer usuário.
+const JWT_SECRET = Deno.env.get('CROSS_TOKEN_SECRET') ?? '';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -26,6 +28,14 @@ Deno.serve(async (req) => {
     }
 
     try {
+        if (!JWT_SECRET) {
+            console.error('[cross-token] CROSS_TOKEN_SECRET não configurado');
+            return new Response(JSON.stringify({ error: 'SSO não configurado' }), {
+                status: 500,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+        }
+
         const authHeader = req.headers.get('Authorization');
         if (!authHeader) {
             return new Response(JSON.stringify({ error: 'No authorization header' }), {

@@ -816,6 +816,47 @@ SINCLA_CACHE_TTL=60
 REDIS_URL=redis://localhost:6379
 ```
 
+### Segredo do SSO (`CROSS_TOKEN_SECRET`) — obrigatório em todo satélite
+
+O token gerado por `generate-cross-token` (Hub) é um JWT **HS256** assinado com
+`CROSS_TOKEN_SECRET`. A `sso-login` de cada satélite **deve** validar a
+assinatura com `jwtVerify(token, secret, { algorithms: ['HS256'] })` e falhar
+fechada se o segredo não estiver configurado. **Nunca** usar `decodeJwt` sem
+verificação: qualquer pessoa conseguiria forjar um token com o e-mail de outro
+usuário e `role: 'owner'` e receber um magic link válido.
+
+- Mesmo valor em: Hub (`igwjtvdanulrwntdyfbt`), RH, Agenda, EAD, Talentos.
+  Registrado em `app/.env` (gitignored).
+- Ao criar um novo satélite: `supabase secrets set CROSS_TOKEN_SECRET=<valor> --project-ref <ref>`
+  antes do primeiro deploy da `sso-login`.
+- Rotação: definir o novo valor primeiro no Hub e em seguida em todos os
+  satélites (tokens têm 5 min de validade; a janela de indisponibilidade é
+  de segundos).
+
+### Isolamento multi-tenant (Auth compartilhado)
+
+Nos satélites o `auth.users` é único para todas as empresas. Regras que toda
+ferramenta deve seguir (implementadas em RH, Agenda, EAD e Talentos):
+
+- **Vínculo por empresa** em tabela M:N (`usuario_empresas` / `tenant_members`),
+  com a role DAQUELA empresa. A linha "do usuário" (`usuarios` / `profiles`)
+  guarda só o **contexto ativo**; nunca é sobrescrita por outra empresa.
+- **RLS escopada** por helpers `SECURITY DEFINER` (`is_tenant_admin(id)`,
+  `is_empresa_admin(id)`, `shares_tenant_with(user)`): nunca
+  `auth.role() = 'authenticated'` ou `user_id = auth.uid()` como única
+  condição de INSERT/UPDATE em tabela de vínculo.
+- **Triggers BEFORE** bloqueiam auto-escalação (o próprio usuário não altera
+  `perfil/role`, `is_owner`, `ativo`) e validam o ponteiro de empresa ativa
+  contra um vínculo real.
+- **Sem oráculo de e-mail**: nada de `select from profiles where email = ...`
+  no cliente. Adicionar usuário já existente em outra empresa é via RPC
+  restrita a admin da empresa (`add_existing_user_to_tenant`, RH:
+  `admin-usuarios`).
+- **Login SSO/cross-auth** define o contexto ativo para a empresa do login;
+  **provisionamento** (`hub-provision-user`) só adota a empresa se o usuário
+  ainda não tiver contexto. Nunca usar "qualquer empresa do usuário" como
+  fallback para conceder vínculo.
+
 ---
 
 ## 📞 Suporte

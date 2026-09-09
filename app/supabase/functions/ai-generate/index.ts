@@ -26,7 +26,8 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const CROSS_TOKEN_SECRET = Deno.env.get('CROSS_TOKEN_SECRET') ?? 'sincla-hub-secret-key-change-in-production';
+// Sem fallback hardcoded: segredo ausente => cross-token sempre rejeitado.
+const CROSS_TOKEN_SECRET = Deno.env.get('CROSS_TOKEN_SECRET') ?? '';
 // Segredo compartilhado para chamadas server-to-server (ex.: proxy ai-insight do EAD)
 const AI_GATEWAY_SECRET = Deno.env.get('AI_GATEWAY_SECRET') ?? '';
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY') ?? '';
@@ -75,9 +76,10 @@ async function resolveCompanyId(req: Request, body: RequestBody): Promise<{ comp
 
     const crossToken = req.headers.get('x-cross-token');
     if (crossToken) {
+        if (!CROSS_TOKEN_SECRET) return { error: 'cross-token não configurado', status: 401 };
         try {
             const secret = new TextEncoder().encode(CROSS_TOKEN_SECRET);
-            const { payload } = await jwtVerify(crossToken, secret);
+            const { payload } = await jwtVerify(crossToken, secret, { algorithms: ['HS256'] });
             const companyId = (payload as Record<string, unknown>).company_id as string | undefined;
             if (!companyId) return { error: 'cross-token sem company_id', status: 401 };
             return { companyId };
