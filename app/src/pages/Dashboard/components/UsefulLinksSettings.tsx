@@ -11,7 +11,7 @@ import {
     getCompanyUsefulLinks,
     saveCompanyUsefulLinks,
     type UsefulLink,
-} from '../../shared/services/usefulLinksService';
+} from '../../../shared/services/usefulLinksService';
 
 interface Props {
     companyId: string;
