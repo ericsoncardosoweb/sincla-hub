@@ -28,12 +28,13 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected, IconShield, IconMail, IconSend, IconServer, IconLayout } from '@tabler/icons-react';
+import { IconSettings, IconPalette, IconBell, IconUpload, IconWorld, IconCopy, IconCheck, IconX, IconTrash, IconPlugConnected, IconShield, IconMail, IconSend, IconServer, IconLayout, IconLink } from '@tabler/icons-react';
 import { useAuth, useCompany } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { uploadEmpresaLogo, uploadEmpresaAsset, deleteFile } from '../../shared/services/storage';
 import { PageHeader, EmptyState } from '../../components/shared';
 import { ConnectedAccountsBlock } from './components/ConnectedAccountsBlock';
+import { UsefulLinksSettings } from './components/UsefulLinksSettings';
 import {
     getCompanyEmailSettings,
     saveCompanySmtp,
@@ -701,6 +702,8 @@ export function CompanySettings() {
         if (aba === 'branding') return 'branding';
         if (aba === 'dominio' || aba === 'domain') return 'domain';
         if (aba === 'integracoes' || aba === 'integrations') return 'integrations';
+        if (aba === 'links' || aba === 'links-uteis') return 'links';
+        if (aba === 'privacy' || aba === 'privacidade') return 'privacy';
         return 'general';
     })();
     const [settingsTab, setSettingsTab] = useState(initialSettingsTab);
@@ -711,6 +714,8 @@ export function CompanySettings() {
         else if (aba === 'branding') setSettingsTab('branding');
         else if (aba === 'dominio' || aba === 'domain') setSettingsTab('domain');
         else if (aba === 'integracoes' || aba === 'integrations') setSettingsTab('integrations');
+        else if (aba === 'links' || aba === 'links-uteis') setSettingsTab('links');
+        else if (aba === 'privacy' || aba === 'privacidade') setSettingsTab('privacy');
         else if (aba === 'general' || aba === 'geral') setSettingsTab('general');
     }, [searchParams]);
 
@@ -747,6 +752,7 @@ export function CompanySettings() {
                             <li>Aba Geral: nome, CNPJ, contato e endereço</li>
                             <li>Aba Branding: logo e cores da marca</li>
                             <li>Aba Domínio: link da empresa e domínio personalizado</li>
+                            <li>Aba Links úteis: links externos no menu lateral das ferramentas</li>
                             <li>Aba Notificações: layout dos e-mails e servidor SMTP</li>
                         </Text>
                     </>
@@ -767,6 +773,9 @@ export function CompanySettings() {
                         </Tabs.Tab>
                         <Tabs.Tab value="integrations" leftSection={<IconPlugConnected size={16} />}>
                             Integrações
+                        </Tabs.Tab>
+                        <Tabs.Tab value="links" leftSection={<IconLink size={16} />}>
+                            Links úteis
                         </Tabs.Tab>
                         <Tabs.Tab value="notifications" leftSection={<IconBell size={16} />}>
                             Notificações
@@ -1434,9 +1443,16 @@ export function CompanySettings() {
                     <Tabs.Panel value="integrations">
                         <ConnectedAccountsBlock />
                     </Tabs.Panel>
+
+                    {/* Links úteis — salvos à parte (não usam o submit do form) */}
+                    <Tabs.Panel value="links">
+                        <Card shadow="sm" padding="lg" radius="md">
+                            <UsefulLinksSettings companyId={currentCompany.id} canEdit={canEdit} />
+                        </Card>
+                    </Tabs.Panel>
                 </Tabs>
 
-                {canEdit && (
+                {canEdit && settingsTab !== 'links' && (
                     <Group justify="flex-end" mt="xl">
                         <Button type="submit" loading={loading}>
                             Salvar Alterações
