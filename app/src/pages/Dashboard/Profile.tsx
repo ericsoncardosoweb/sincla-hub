@@ -1,24 +1,34 @@
 import { useState, useRef, useEffect } from 'react';
 import {
     Container, Text, Card, Group, Stack,
-    TextInput, Button, Avatar, Divider, PasswordInput, Title,
+    TextInput, Button, Avatar, Divider, Title,
     FileButton, ActionIcon, Tooltip, Alert, Modal, Badge,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import {
     IconUser, IconMail, IconPhone, IconId, IconLock, IconCamera,
-    IconAlertCircle, IconShield, IconDownload, IconTrash, IconBuilding
+    IconAlertCircle, IconShield, IconDownload, IconTrash, IconBuilding, IconKey,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { storageService } from '../../shared/services/storage';
 import { PageHeader } from '../../components/shared';
+import {
+    getPasswordFailureMessage,
+    translatePasswordAuthError,
+} from '../../shared/utils/passwordRules';
+import {
+    PasswordStrengthFields,
+    isPasswordFormReady,
+} from '../../components/shared/PasswordStrengthFields';
 
 export function Profile() {
     const { subscriber, user, companies } = useAuth();
     const [saving, setSaving] = useState(false);
     const [changingPassword, setChangingPassword] = useState(false);
+    const [novaSenha, setNovaSenha] = useState('');
+    const [confirmaSenha, setConfirmaSenha] = useState('');
     const [avatarUrl, setAvatarUrl] = useState(subscriber?.avatar_url || null);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [exporting, setExporting] = useState(false);
@@ -127,17 +137,6 @@ export function Profile() {
         },
     });
 
-    const passwordForm = useForm({
-        initialValues: {
-            password: '',
-            confirmPassword: '',
-        },
-        validate: {
-            password: (v) => (v.length < 6 ? 'Mínimo 6 caracteres' : null),
-            confirmPassword: (v, values) => (v !== values.password ? 'Senhas não conferem' : null),
-        },
-    });
-
     const handleAvatarUpload = async (file: File | null) => {
         if (!file || !subscriber) return;
 
@@ -231,16 +230,25 @@ export function Profile() {
         }
     };
 
-    const handleChangePassword = async (values: typeof passwordForm.values) => {
+    const handleChangePassword = async () => {
+        if (!isPasswordFormReady(novaSenha, confirmaSenha)) {
+            notifications.show({
+                title: 'Senha inválida',
+                message: getPasswordFailureMessage(novaSenha) || 'Confirme a senha.',
+                color: 'red',
+            });
+            return;
+        }
         setChangingPassword(true);
         try {
             const { error } = await supabase.auth.updateUser({
-                password: values.password,
+                password: novaSenha,
             });
 
             if (error) throw error;
 
-            passwordForm.reset();
+            setNovaSenha('');
+            setConfirmaSenha('');
             notifications.show({
                 title: 'Sucesso',
                 message: 'Senha alterada com sucesso',
@@ -250,7 +258,7 @@ export function Profile() {
             console.error('Error changing password:', error);
             notifications.show({
                 title: 'Erro',
-                message: error.message || 'Falha ao alterar senha',
+                message: translatePasswordAuthError(error.message || 'Falha ao alterar senha'),
                 color: 'red',
             });
         } finally {
@@ -370,26 +378,24 @@ export function Profile() {
                         </Alert>
                     )}
 
-                    <form onSubmit={passwordForm.onSubmit(handleChangePassword)}>
+                    <form onSubmit={(e) => { e.preventDefault(); void handleChangePassword(); }}>
                         <Stack gap="md">
-                            <PasswordInput
-                                label="Nova Senha"
-                                placeholder="Mínimo 6 caracteres"
-                                leftSection={<IconLock size={16} />}
-                                {...passwordForm.getInputProps('password')}
-                            />
-                            <PasswordInput
-                                label="Confirmar Nova Senha"
-                                placeholder="Repita a nova senha"
-                                leftSection={<IconLock size={16} />}
-                                {...passwordForm.getInputProps('confirmPassword')}
+                            <PasswordStrengthFields
+                                password={novaSenha}
+                                confirmPassword={confirmaSenha}
+                                onPasswordChange={setNovaSenha}
+                                onConfirmChange={setConfirmaSenha}
+                                fieldPrefix="hub-perfil"
+                                disabled={changingPassword}
                             />
                             <Group justify="flex-end">
                                 <Button
                                     type="submit"
                                     variant="outline"
                                     color="orange"
+                                    leftSection={<IconKey size={16} />}
                                     loading={changingPassword}
+                                    disabled={!isPasswordFormReady(novaSenha, confirmaSenha)}
                                 >
                                     Alterar Senha
                                 </Button>
