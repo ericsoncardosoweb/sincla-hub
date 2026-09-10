@@ -38,6 +38,21 @@ const DEFAULT_LOGO = 'https://app.sincla.com.br/logos/logo-sincla.svg'
 const DEFAULT_PRIMARY = '#0047CC'
 const DEFAULT_FOOTER = 'Sincla — Plataforma de gestão inteligente para empresas.'
 
+function escapeHtmlAttr(value: string): string {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+}
+
+function sanitizeHexColor(color: string | undefined, fallback = DEFAULT_PRIMARY): string {
+    const c = String(color || '').trim()
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(c)) return c
+    return fallback
+}
+
 function getEmailTemplate(options: EmailTemplateOptions): string {
     const {
         title,
@@ -50,21 +65,30 @@ function getEmailTemplate(options: EmailTemplateOptions): string {
         preheader = '',
     } = options
 
-    const actionButton = actionUrl ? `
+    const btnColor = sanitizeHexColor(primaryColor)
+    // Botão "bulletproof" (tabela + bgcolor) — Outlook/Office 365 costuma
+    // engolir <a> com gradient/box-shadow e o CTA some visualmente.
+    const actionBlock = actionUrl ? `
         <tr>
-            <td align="center" style="padding: 24px 0 8px;">
-                <a href="${actionUrl}" target="_blank" style="
-                    display: inline-block;
-                    background: linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc);
-                    color: #ffffff;
-                    text-decoration: none;
-                    padding: 14px 36px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    font-size: 15px;
-                    letter-spacing: 0.3px;
-                    box-shadow: 0 4px 12px ${primaryColor}40;
-                ">${actionLabel}</a>
+            <td align="center" style="padding: 8px 40px 8px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                    <tr>
+                        <td align="center" bgcolor="${btnColor}" style="background-color:${btnColor}; border-radius:8px; mso-padding-alt:14px 36px;">
+                            <a href="${escapeHtmlAttr(actionUrl)}" target="_blank"
+                               style="display:inline-block; background-color:${btnColor}; color:#ffffff !important; text-decoration:none; padding:14px 36px; border-radius:8px; font-weight:700; font-size:15px; font-family:Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height:1.2;">
+                                ${actionLabel}
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" style="padding: 4px 40px 24px;">
+                <p style="margin:0; font-size:12px; line-height:1.5; color:#8c8ca1; word-break:break-all;">
+                    Se o botão não aparecer, copie e cole este link no navegador:<br/>
+                    <a href="${escapeHtmlAttr(actionUrl)}" target="_blank" style="color:${btnColor}; text-decoration:underline;">${escapeHtmlAttr(actionUrl)}</a>
+                </p>
             </td>
         </tr>
     ` : ''
@@ -87,15 +111,14 @@ function getEmailTemplate(options: EmailTemplateOptions): string {
                     </td></tr>
                     <tr><td style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                            <tr><td style="height:4px;background:linear-gradient(90deg, ${primaryColor}, #00C2FF);"></td></tr>
+                            <tr><td style="height:4px;background-color:${btnColor};"></td></tr>
                             <tr><td style="padding:32px 40px 16px;">
                                 <h1 style="margin:0;font-size:22px;font-weight:700;color:#1a1a2e;line-height:1.3;">${title}</h1>
                             </td></tr>
-                            <tr><td style="padding:0 40px 24px;">
+                            <tr><td style="padding:0 40px 16px;">
                                 <div style="font-size:15px;line-height:1.7;color:#4a4a68;">${content}</div>
                             </td></tr>
-                            ${actionButton}
-                            <tr><td style="padding:0 0 32px;"></td></tr>
+                            ${actionBlock}
                         </table>
                     </td></tr>
                     <tr><td style="padding:24px 16px;text-align:center;">
@@ -318,41 +341,43 @@ async function resolveEmailBranding(
 function buildHtmlFromPayload(payload: NotificationPayload, branding: EmailBranding): string {
     const template = payload.template || 'system'
     const data = payload.data || {}
+    const actionUrl = data.action_url || payload.action_url || undefined
+    const actionLabel = data.action_label || 'Acessar'
     const brand = {
         logoUrl: data.logo_url || branding.logoUrl,
-        primaryColor: data.primary_color || branding.primaryColor,
+        primaryColor: sanitizeHexColor(data.primary_color || branding.primaryColor),
         footerText: branding.footerText,
     }
 
     switch (template) {
         case 'welcome':
-            return templateWelcome(data.name || 'Usuário', data.action_url, brand)
+            return templateWelcome(data.name || 'Usuário', actionUrl, brand)
         case 'billing':
-            return templateBilling(payload.subject || 'Atualização de Pagamento', payload.message, data.action_url, brand)
+            return templateBilling(payload.subject || 'Atualização de Pagamento', payload.message, actionUrl, brand)
         case 'alert':
-            return templateAlert(payload.subject || 'Alerta', payload.message, data.action_url, brand)
+            return templateAlert(payload.subject || 'Alerta', payload.message, actionUrl, brand)
         case 'security':
             return templateSecurity(
                 payload.subject || 'Segurança',
                 payload.message,
-                data.action_url,
-                data.action_label,
+                actionUrl,
+                data.action_label || 'Redefinir minha senha',
                 brand,
             )
         case 'custom':
             return getEmailTemplate({
                 title: payload.subject || 'Notificação',
                 content: payload.message,
-                actionUrl: data.action_url,
-                actionLabel: data.action_label || 'Acessar',
+                actionUrl,
+                actionLabel,
                 ...brand,
             })
         default:
             return templateSystem(
                 payload.subject || 'Notificação do Sistema',
                 payload.message,
-                data.action_url,
-                data.action_label,
+                actionUrl,
+                data.action_label || actionLabel,
                 brand,
             )
     }
