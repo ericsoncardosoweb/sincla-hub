@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase';
+import { quoteParallelToolPrice } from './billingDiscount';
 
 // =============================================
 // TYPES
@@ -46,6 +47,10 @@ export interface SubscriptionResponse {
     pixCopyPaste?: string;
     pixExpirationDate?: string;
     error?: string;
+    /** Valor cobrado (já com desconto de contratação dupla, se houver) */
+    chargedValue?: number;
+    listValue?: number;
+    discountPercent?: number;
 }
 
 export type CardBrand = 'visa' | 'mastercard' | 'amex' | 'elo' | 'hipercard' | 'diners' | 'discover' | 'unknown';
@@ -290,16 +295,21 @@ export async function createSubscription(data: CreateSubscriptionData): Promise<
 
         if (!plan) throw new Error('Plano não encontrado');
 
-        const value = data.cycle === 'YEARLY' ? (plan.price_yearly || plan.price_monthly * 12) : plan.price_monthly;
+        const listValue = data.cycle === 'YEARLY' ? (plan.price_yearly || plan.price_monthly * 12) : plan.price_monthly;
+        const quote = await quoteParallelToolPrice(data.companyId, data.productId, Number(listValue));
+        const value = quote.finalPrice;
         const cycle = data.cycle === 'YEARLY' ? 'YEARLY' : 'MONTHLY';
 
         // 3. Criar assinatura no Asaas
+        const discountNote = quote.eligible && quote.percent > 0
+            ? ` (${quote.percent}% OFF contratação dupla)`
+            : '';
         const subscriptionPayload: Record<string, unknown> = {
             customer: customer.id,
             billingType: data.billingType,
             value,
             cycle,
-            description: `Sincla Hub - ${plan.name}`,
+            description: `Sincla Hub - ${plan.name}${discountNote}`,
             nextDueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
         };
 
@@ -344,6 +354,9 @@ export async function createSubscription(data: CreateSubscriptionData): Promise<
                     pixQrCode: pixQr?.encodedImage,
                     pixCopyPaste: pixQr?.payload,
                     pixExpirationDate: pixQr?.expirationDate,
+                    chargedValue: value,
+                    listValue: quote.listPrice,
+                    discountPercent: quote.eligible ? quote.percent : 0,
                 };
             }
         }
@@ -351,6 +364,9 @@ export async function createSubscription(data: CreateSubscriptionData): Promise<
         return {
             success: true,
             subscriptionId: result.id,
+            chargedValue: value,
+            listValue: quote.listPrice,
+            discountPercent: quote.eligible ? quote.percent : 0,
         };
     } catch (error: any) {
         return {

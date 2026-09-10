@@ -1,7 +1,7 @@
 # Sincla EAD — Modelo de Precificação e Cobrança
 
 > Documento interno · Hub (sincla-hub) · Produto `ead`  
-> Última atualização: 2026-06-24
+> Última atualização: 2026-09-10
 
 ---
 
@@ -24,33 +24,33 @@ O EAD usa **3 camadas de receita**, sem limite de cursos ou alunos:
 
 Registrados em `product_plans` com `plan_kind = 'base'`.
 
-| Slug | Público | Doc | Mensal | Anual | Storage incl. | Banda incl./mês | Taxa vendas |
-|------|---------|-----|--------|-------|---------------|-----------------|-------------|
-| `ead-pf` | Infoprodutor (CPF) | PF | R$ 97 | R$ 970 | 25 GB | 100 GB | 5,99% |
-| `ead-pj` | Empresa (CNPJ) | PJ | R$ 197 | R$ 1.970 | 100 GB | 500 GB | 3,99% |
+| Slug | Público | Doc | Mensal | Anual | Storage incl.* | Taxa vendas |
+|------|---------|-----|--------|-------|----------------|-------------|
+| `ead-pf` | Infoprodutor Start | PF | **R$ 187** | R$ 1.860 | 25 GB | 5,99% |
+| `ead-pf-pro` | Infoprodutor Pro | PF | **R$ 497** | R$ 4.950 | 50 GB | 4,99% |
+| `ead-pj` | Empresa | PJ | **R$ 597** | R$ 5.940 | 50 GB | 3,99% |
+| `ead-pj-business` | Empresa Business | PJ | **R$ 997** | R$ 9.930 | 100 GB | 3,49% |
 
-> **Banda (entrega de vídeo)** é o maior custo real do CDN. Cada plano inclui uma franquia
-> mensal (`limits.bandwidth_gb`); excedente cobrado por GB (medição via stats do Bunny — em implantação).
+\* Storage/banda **extras** são pay-as-you-go — o plano não é modelado por GB.
 
-### Incluído em ambos (sem limite)
+### Desconto contratação dupla (automático na fatura)
 
-- Cursos, módulos, aulas e alunos **ilimitados**
-- Certificados, checkout, vitrine, personalização básica
-- Player, progresso, comentários em aula
+Se a empresa **já tem** outra assinatura Sincla ativa (ex.: RH) e contrata o EAD (ou qualquer outra ferramenta), aplica-se **15% OFF** no valor do novo plano.
 
-### Diferença PF × PJ
-
-- **PF:** entrada acessível, taxa maior, menos storage
-- **PJ:** posicionamento corporativo, taxa menor, mais storage, multi-admin
+- Regra: `billing_rules.parallel_tool_discount`
+- Helper: `company_has_other_active_product(company_id, exclude_product_id)`
+- Checkout e `createSubscription` cobram o valor já abatido no Asaas
 
 ### Checkout Hub
 
 ```
 /checkout?produto=ead&plano=ead-pf&ciclo=monthly
-/checkout?produto=ead&plano=ead-pj&ciclo=annual
+/checkout?produto=ead&plano=ead-pf-pro&ciclo=monthly
+/checkout?produto=ead&plano=ead-pj&ciclo=monthly
+/checkout?produto=ead&plano=ead-pj-business&ciclo=monthly
 ```
 
-Validação no checkout: CPF só pode contratar `ead-pf`; CNPJ só `ead-pj` (implementar Fase 2).
+Validação no checkout: CPF só pode contratar planos `account_type=pf`; CNPJ só `pj`.
 
 ---
 
@@ -61,7 +61,7 @@ Cobrança em **`subscription_addons`** (paralelo à assinatura base).
 
 | Slug | Tipo | Mensal | Anual | Libera |
 |------|------|--------|-------|--------|
-| `ead-engajamento` | addon | R$ 79 | R$ 790 | Comunidade, gamificação, quizzes avançados |
+| `ead-engajamento` | addon | R$ 79 | R$ 790 | Comunidade e gamificação |
 | `ead-profissional` | addon | R$ 79 | R$ 790 | Domínio, API, webhooks, automações |
 | `ead-completo` | bundle | R$ 139 | R$ 1.390 | Todos os módulos acima |
 
@@ -352,8 +352,10 @@ SELECT sync_storage_quota_from_entitlements('<company_uuid>', 'ead');
 ## 13. Decisões de produto registradas
 
 1. **Sem limite de curso/aluno** — diferencial comercial.
-2. **Dois planos base apenas** — PF R$ 97, PJ R$ 197.
-3. **Dois módulos + bundle** — simplicidade na decisão de compra.
+2. **Quatro planos base** — PF R$ 187 / Pro R$ 497; PJ R$ 597 / Business R$ 997.
+3. **Storage extra à parte** — planos não são modelados por GB.
+4. **15% OFF** automático na fatura ao contratar ferramenta adicional (contratação dupla).
+5. **Dois módulos + bundle** — simplicidade na decisão de compra.
 4. **Storage e IA separados** — cobrança por consumo real.
 5. **Taxa menor no PJ** — incentiva formalização e B2B.
 

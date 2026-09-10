@@ -30,6 +30,7 @@ import {
 } from '../../shared/services/asaasService';
 import { confirmCompanyAddonCheckout } from '../../shared/services/ecosystemActivationService';
 import { getAddressByCep, formatCep } from '../../shared/services/viaCepService';
+import { quoteParallelToolPrice, type ParallelDiscountQuote } from '../../shared/services/billingDiscount';
 import { LegalDocModal } from '../../components/legal/LegalDocModal';
 import {
     resolveCompanyAccountType,
@@ -149,6 +150,7 @@ export function CheckoutPage() {
     const [product, setProduct] = useState<ProductInfo | null>(null);
     const [plan, setPlan] = useState<PlanInfo | null>(null);
     const [loadingData, setLoadingData] = useState(true);
+    const [parallelDiscount, setParallelDiscount] = useState<ParallelDiscountQuote | null>(null);
 
     // Form state
     const [selectedCycle, setSelectedCycle] = useState(initialCycle);
@@ -511,7 +513,26 @@ export function CheckoutPage() {
     };
 
     const price = plan ? (selectedCycle === 'annual' ? (plan.price_yearly || plan.price_monthly * 12) : plan.price_monthly) : addonValue;
+    const displayPrice = (!isAddon && parallelDiscount?.eligible)
+        ? parallelDiscount.finalPrice
+        : price;
     const color = product?.brand_color || (isAddon ? '#7c3aed' : '#228be6');
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            if (isAddon || !plan || !currentCompany?.id || !productId) {
+                if (!cancelled) setParallelDiscount(null);
+                return;
+            }
+            const list = selectedCycle === 'annual'
+                ? (plan.price_yearly || plan.price_monthly * 12)
+                : plan.price_monthly;
+            const quote = await quoteParallelToolPrice(currentCompany.id, productId, Number(list));
+            if (!cancelled) setParallelDiscount(quote);
+        })();
+        return () => { cancelled = true; };
+    }, [isAddon, plan, currentCompany?.id, productId, selectedCycle]);
 
     // Add-on labels
     const addonLabels: Record<string, string> = {
@@ -561,7 +582,7 @@ export function CheckoutPage() {
                     <p>{isCreditsAddon ? 'Seus créditos foram adicionados com sucesso.' : isModuleCheckout ? 'Seu módulo foi contratado com sucesso.' : 'Sua assinatura foi processada com sucesso.'}</p>
                     <div className={styles.successDetails}>
                         <span>{isCreditsAddon ? addonLabel : plan?.name}</span>
-                        <span className={styles.successPrice}>{formatCurrency(price)}</span>
+                        <span className={styles.successPrice}>{formatCurrency(displayPrice)}</span>
                     </div>
                     <p className={styles.redirectMsg}>Redirecionando...</p>
                 </div>
@@ -623,7 +644,17 @@ export function CheckoutPage() {
                     </div>
 
                     <div style={{ marginBottom: 4 }}>
-                        <span className={styles.priceMain}>{formatCurrency(price)}</span>
+                        {parallelDiscount?.eligible && (
+                            <div style={{ marginBottom: 6 }}>
+                                <span style={{ textDecoration: 'line-through', color: '#868e96', fontSize: '0.95rem', marginRight: 8 }}>
+                                    {formatCurrency(parallelDiscount.listPrice)}
+                                </span>
+                                <span className={styles.discountBadge}>
+                                    {parallelDiscount.percent}% OFF contratação dupla
+                                </span>
+                            </div>
+                        )}
+                        <span className={styles.priceMain}>{formatCurrency(displayPrice)}</span>
                         <span className={styles.pricePeriod}>
                             {isAddon
                                 ? (addonCycle === 'recorrente' ? '/mês' : ' (pagamento único)')
@@ -646,9 +677,17 @@ export function CheckoutPage() {
                             </span>
                         </div>
                         <div className={styles.lineItemPrice}>
-                            {formatCurrency(price)}
+                            {formatCurrency(displayPrice)}
                         </div>
                     </div>
+
+                    {parallelDiscount?.eligible && (
+                        <div style={{ marginTop: 10, padding: '8px 12px', background: '#ebfbee', borderRadius: 6, fontSize: '0.8rem', color: '#2b8a3e' }}>
+                            Desconto de <strong>{parallelDiscount.percent}%</strong> aplicado automaticamente
+                            porque você já tem outra ferramenta Sincla ativa
+                            (−{formatCurrency(parallelDiscount.discountAmount)} nesta fatura).
+                        </div>
+                    )}
 
                     {/* Cycle toggle — only for plans */}
                     {!isAddon && plan && plan.price_yearly > 0 && (
