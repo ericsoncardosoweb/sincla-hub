@@ -434,31 +434,58 @@ async function sendEmailViaMailGrid(payload: NotificationPayload, html: string) 
     const host = Deno.env.get('MAILGRID_HOST') || 'server11.mailgrid.com.br'
     const user = Deno.env.get('MAILGRID_USER') || 'smtp@sincla.com.br'
     const password = Deno.env.get('MAILGRID_PASSWORD')
-    const fromEmail = Deno.env.get('MAILGRID_FROM') || 'notificacoes@sincla.com.br'
+    const fromEmail = Deno.env.get('MAILGRID_FROM') || 'naoresponda@sincla.com.br'
     const fromName = Deno.env.get('MAILGRID_FROM_NAME') || 'Sincla'
 
     if (!password) throw new Error('MAILGRID_PASSWORD não configurada')
 
+    // Contrato oficial MailGrid (/sendmail/): host_smtp, usuario_smtp, senha_smtp,
+    // emailRemetente, emailDestino (ARRAY), assunto, mensagem.
+    // Payload antigo (host/usuario/corpo_html) retornava HTTP 200 com
+    // codigo 227 e NÃO enviava — por isso os logs marcavam "sent" sem chegar.
     const mailPayload = {
-        host, usuario: user, senha: password,
-        email_remetente: fromEmail, nome_remetente: fromName,
-        email_destinatario: payload.to,
+        host_smtp: host,
+        usuario_smtp: user,
+        senha_smtp: password,
+        emailRemetente: fromEmail,
+        nomeRemetente: fromName,
+        emailDestino: [payload.to],
         assunto: payload.subject || 'Notificação Sincla',
-        corpo_html: html, corpo_texto: payload.message,
+        mensagem: html,
+        mensagemTipo: 'html',
+        mensagemAlt: payload.message || undefined,
     }
 
-    console.log(`[Notification] Enviando email para ${payload.to} via MailGrid (sistema)`)
+    console.log(`[Notification] Enviando email para ${payload.to} via MailGrid (from=${fromEmail})`)
 
     const response = await fetch('https://api.mailgrid.net.br/sendmail/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify(mailPayload),
     })
 
-    if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`MailGrid error ${response.status}: ${errorText}`)
+    const raw = await response.text()
+    let parsed: unknown = null
+    try {
+        parsed = JSON.parse(raw)
+    } catch {
+        /* resposta não-JSON */
     }
+
+    const items = Array.isArray(parsed) ? parsed : (parsed ? [parsed] : [])
+    const first = (items[0] || {}) as { status?: string; codigo?: string | number; message?: string }
+    const codigo = String(first.codigo ?? '')
+    const statusTxt = String(first.status ?? '')
+    const okApi = response.ok && (codigo === '200' || statusTxt.toUpperCase().includes('ENVIADA'))
+
+    if (!okApi) {
+        console.error(`[Notification] MailGrid recusou: HTTP ${response.status} body=${raw}`)
+        throw new Error(
+            `MailGrid error ${response.status}/${codigo || '—'}: ${statusTxt || raw || 'falha no envio'}`,
+        )
+    }
+
+    console.log(`[Notification] MailGrid OK id=${(first as { id?: string }).id || '—'}`)
 }
 
 // =============================================
