@@ -135,8 +135,16 @@ function templateAlert(title: string, message: string, actionUrl?: string, brand
     return getEmailTemplate({ title: `⚠️ ${title}`, content: `<p>${message}</p>`, actionUrl, actionLabel: 'Ver Agora', primaryColor: brand?.primaryColor || '#f59e0b', logoUrl: brand?.logoUrl, footerText: brand?.footerText })
 }
 
-function templateSecurity(title: string, message: string, brand?: Partial<EmailBranding>) {
-    return getEmailTemplate({ title: `🔒 ${title}`, content: `<p>${message}</p>`, primaryColor: brand?.primaryColor || '#ef4444', logoUrl: brand?.logoUrl, footerText: brand?.footerText })
+function templateSecurity(title: string, message: string, actionUrl?: string, actionLabel?: string, brand?: Partial<EmailBranding>) {
+    return getEmailTemplate({
+        title: `🔒 ${title}`,
+        content: `<p>${message}</p>`,
+        actionUrl,
+        actionLabel: actionLabel || 'Redefinir minha senha',
+        primaryColor: brand?.primaryColor || '#ef4444',
+        logoUrl: brand?.logoUrl,
+        footerText: brand?.footerText,
+    })
 }
 
 // =============================================
@@ -324,7 +332,13 @@ function buildHtmlFromPayload(payload: NotificationPayload, branding: EmailBrand
         case 'alert':
             return templateAlert(payload.subject || 'Alerta', payload.message, data.action_url, brand)
         case 'security':
-            return templateSecurity(payload.subject || 'Segurança', payload.message, brand)
+            return templateSecurity(
+                payload.subject || 'Segurança',
+                payload.message,
+                data.action_url,
+                data.action_label,
+                brand,
+            )
         case 'custom':
             return getEmailTemplate({
                 title: payload.subject || 'Notificação',
