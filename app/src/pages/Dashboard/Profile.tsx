@@ -7,7 +7,7 @@ import {
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import {
-    IconUser, IconMail, IconPhone, IconId, IconLock, IconCamera,
+    IconUser, IconMail, IconPhone, IconId, IconCamera,
     IconAlertCircle, IconShield, IconDownload, IconTrash, IconBuilding, IconKey,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
