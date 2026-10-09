@@ -5,7 +5,7 @@
 // Autenticação por segredo de serviço no header x-people-sync-secret:
 //   PEOPLE_SYNC_SECRET_HUB → cron do Hub (action: drain)
 //   PEOPLE_SYNC_SECRET_RH  → gatilho do banco do RH (action: ingest)
-//   PEOPLE_SYNC_SECRET_EAD → gatilho do banco do EAD (action: ingest)
+//   PEOPLE_SYNC_SECRET_EAD → banco/funções do EAD (actions: ingest, school_ready, rule)
 // Acesso às ferramentas: TOOL_{PRODUTO}_SUPABASE_URL / TOOL_{PRODUTO}_SERVICE_ROLE_KEY
 // =====================================================
 
@@ -382,6 +382,49 @@ Deno.serve(async (req) => {
             EdgeRuntime.waitUntil(drain(hub, 10_000).catch((err) => console.error('[people-sync] drain:', err)))
 
             return json({ ok: true, results })
+        }
+
+        // Escola do EAD ligada a uma empresa do Hub: traz quem já está no RH (se a regra estiver ligada)
+        if (action === 'school_ready') {
+            if (caller !== 'ead') return json({ error: 'Não autorizado' }, 403)
+            if (!body.company_id) return json({ error: 'company_id é obrigatório' }, 400)
+            const { data: queued, error } = await hub.rpc('queue_company_people_sync', {
+                p_company_id: body.company_id, p_source: 'rh', p_target: 'ead',
+            })
+            if (error) throw new Error(`queue_company_people_sync: ${error.message}`)
+            if (queued) EdgeRuntime.waitUntil(drain(hub, 30_000).catch((err) => console.error('[people-sync] drain:', err)))
+            return json({ ok: true, queued: queued ?? 0 })
+        }
+
+        // Consulta/liga/desliga a sincronização RH → EAD a partir do EAD
+        if (action === 'rule') {
+            if (caller !== 'ead') return json({ error: 'Não autorizado' }, 403)
+            if (!body.company_id) return json({ error: 'company_id é obrigatório' }, 400)
+
+            const { data: rule, error } = await hub
+                .from('company_people_sync_rules')
+                .select('id, enabled, revoke_on_inactive')
+                .eq('company_id', body.company_id)
+                .eq('source_product', 'rh')
+                .eq('target_product', 'ead')
+                .maybeSingle()
+            if (error) throw new Error(`company_people_sync_rules: ${error.message}`)
+            if (!rule) return json({ available: false })
+
+            let enabled = rule.enabled
+            if (typeof body.enabled === 'boolean' && body.enabled !== rule.enabled) {
+                const { error: updErr } = await hub
+                    .from('company_people_sync_rules')
+                    .update({ enabled: body.enabled })
+                    .eq('id', rule.id)
+                if (updErr) throw new Error(`company_people_sync_rules update: ${updErr.message}`)
+                enabled = body.enabled
+                if (enabled) {
+                    EdgeRuntime.waitUntil(drain(hub, 30_000).catch((err) => console.error('[people-sync] drain:', err)))
+                }
+            }
+
+            return json({ available: true, enabled, revoke_on_inactive: rule.revoke_on_inactive })
         }
 
         return json({ error: `Ação desconhecida: ${action}` }, 400)
