@@ -121,7 +121,7 @@ Novo:  "500+ empresas | 15.000 usuarios | 99.9% uptime"
 
 **Adicionar ao footer:**
 ```
-Sincla Tecnologia LTDA | CNPJ: XX.XXX.XXX/0001-XX
+Sincla Tecnologia e Desenvolvimento Ltda | CNPJ: 69.002.013/0001-04
 Rua Exemplo, 123 - Sao Paulo, SP
 ```
 
@@ -417,7 +417,7 @@ e Politica de Privacidade. Seus dados estao protegidos.
 
 ### Para Emails Transacionais
 ```
-Este e-mail foi enviado por Sincla Tecnologia LTDA.
+Este e-mail foi enviado por Sincla Tecnologia e Desenvolvimento Ltda (CNPJ 69.002.013/0001-04).
 Seus dados estao protegidos conforme nossa Politica de Privacidade.
 ```
 

@@ -37,6 +37,9 @@ interface Person {
     whatsapp: string | null
     job_title: string | null
     team_name: string | null
+    registration_number: string | null
+    sector: string | null
+    is_manager: boolean
     status: 'active' | 'inactive'
 }
 
@@ -196,7 +199,7 @@ async function deliverEad(person: Person, externalId: string | null, op: OutboxR
 
     const { data: member } = await ead
         .from('tenant_members')
-        .select('id, job_title, team_name, hub_person_id')
+        .select('id, job_title, team_name, registration_number, sector, is_manager, hub_person_id')
         .eq('tenant_id', tenant.id)
         .eq('user_id', userId)
         .maybeSingle()
@@ -204,6 +207,9 @@ async function deliverEad(person: Person, externalId: string | null, op: OutboxR
     const memberFields = {
         job_title: person.job_title,
         team_name: person.team_name,
+        registration_number: person.registration_number,
+        sector: person.sector,
+        is_manager: !!person.is_manager,
         hub_person_id: person.id,
     }
 
@@ -215,6 +221,9 @@ async function deliverEad(person: Person, externalId: string | null, op: OutboxR
     } else if (
         !sameText(member.job_title, person.job_title) ||
         !sameText(member.team_name, person.team_name) ||
+        !sameText(member.registration_number, person.registration_number) ||
+        !sameText(member.sector, person.sector) ||
+        !!member.is_manager !== !!person.is_manager ||
         member.hub_person_id !== person.id
     ) {
         const { error } = await ead.from('tenant_members').update(memberFields).eq('id', member.id)
@@ -286,7 +295,7 @@ async function drain(hub: SupabaseClient, budgetMs = DRAIN_BUDGET_MS) {
 
                 const { data: person } = await hub
                     .from('company_people')
-                    .select('id, company_id, name, email, cpf, whatsapp, job_title, team_name, status')
+                    .select('id, company_id, name, email, cpf, whatsapp, job_title, team_name, registration_number, sector, is_manager, status')
                     .eq('id', row.person_id)
                     .maybeSingle()
                 if (!person) {
