@@ -13,6 +13,7 @@ import { notifications } from '@mantine/notifications';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
 import { PageHeader, EmptyState } from '../../components/shared';
+import { PeopleSyncCard } from './components/PeopleSyncCard';
 
 // ============================
 // Types
@@ -419,6 +420,8 @@ export function Integrations() {
                         </Table>
                     </Card>
                 )}
+
+                <PeopleSyncCard companyId={currentCompany.id} />
 
                 {/* Sincla Talento ↔ Sincla RH */}
                 <Card shadow="sm" padding="lg" radius="md" withBorder>
