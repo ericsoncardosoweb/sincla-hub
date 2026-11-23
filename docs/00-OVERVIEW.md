@@ -14,6 +14,7 @@
 | 04 | [DESIGN-SYSTEM](./04-DESIGN-SYSTEM.md) | Cores, tipografia, espacamentos, grids |
 | 05 | [ANIMACOES](./05-ANIMACOES.md) | Guia de motion design premium |
 | 06 | [SEGURANCA-PERFORMANCE](./06-SEGURANCA-PERFORMANCE.md) | Boas praticas e metricas |
+| — | [SEGURANCA-PROPOSTA-COMERCIAL](./SEGURANCA-PROPOSTA-COMERCIAL.md) | Camadas de seguranca (logs, backup, RLS, API) para propostas |
 | 07 | [ROADMAP](./07-ROADMAP.md) | Plano de evolucao estruturado |
 | 08 | [CONTRIBUICAO](./08-CONTRIBUICAO.md) | Guia para manter o projeto limpo |
 

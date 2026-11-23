@@ -196,6 +196,10 @@ export function AdminPartners() {
 
     const handleSaveCommission = async () => {
         if (!editingPartner) return;
+        if (newCommission === '' || !Number.isFinite(Number(newCommission))) {
+            notifications.show({ title: 'Comissão obrigatória', message: 'Informe o percentual de comissão.', color: 'orange' });
+            return;
+        }
         setSavingCommission(true);
         try {
             const { error } = await supabase
@@ -207,7 +211,7 @@ export function AdminPartners() {
 
             notifications.show({
                 title: 'Comissão atualizada',
-                message: `${editingPartner.subscriber?.name || editingPartner.subscriber?.email} agora tem ${newCommission}% de comissão.`,
+                message: `${editingPartner.subscriber?.name || editingPartner.subscriber?.email || 'Parceiro'} agora tem ${newCommission}% de comissão.`,
                 color: 'green',
             });
 
@@ -435,7 +439,7 @@ export function AdminPartners() {
                                                             leftSection={<IconEdit size={14} />}
                                                             onClick={() => {
                                                                 setEditingPartner(p);
-                                                                setNewCommission(p.commission_percent);
+                                                                setNewCommission(p.commission_percent ?? 10);
                                                             }}
                                                         >
                                                             Editar

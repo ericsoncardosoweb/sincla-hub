@@ -331,6 +331,7 @@ export async function createSubscription(data: CreateSubscriptionData): Promise<
             data: subscriptionPayload,
             userId: data.companyId,
             productId: data.productId,
+            planId: data.planId,
         });
 
         // 4. Se PIX, buscar QR Code

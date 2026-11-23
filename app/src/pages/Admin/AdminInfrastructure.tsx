@@ -258,10 +258,11 @@ export function AdminInfrastructure() {
     const loadServers = useCallback(async () => {
         setLoadingServers(true);
         try {
-            const { data } = await supabase
+            const { data, error: viewError } = await supabase
                 .from('admin_servers_overview')
                 .select('*')
                 .order('created_at', { ascending: false });
+            if (viewError) throw viewError;
 
             setServers(data || []);
         } catch (error) {
@@ -312,10 +313,12 @@ export function AdminInfrastructure() {
             };
 
             if (editingServer) {
-                await supabase.from('external_servers').update(payload).eq('id', editingServer.id);
+                const { error } = await supabase.from('external_servers').update(payload).eq('id', editingServer.id);
+                if (error) throw error;
                 notifications.show({ title: 'Sucesso', message: 'Servidor atualizado', color: 'green' });
             } else {
-                await supabase.from('external_servers').insert(payload);
+                const { error } = await supabase.from('external_servers').insert(payload);
+                if (error) throw error;
                 notifications.show({ title: 'Sucesso', message: 'Servidor cadastrado', color: 'green' });
             }
 
@@ -328,37 +331,48 @@ export function AdminInfrastructure() {
             });
             loadServers();
             loadStats();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving server:', error);
-            notifications.show({ title: 'Erro', message: 'Falha ao salvar servidor', color: 'red' });
+            notifications.show({ title: 'Erro', message: error?.message || 'Falha ao salvar servidor', color: 'red' });
         }
     };
 
     const deleteServer = async (id: string) => {
         if (!confirm('Tem certeza que deseja excluir este servidor?')) return;
         try {
-            await supabase.from('external_servers').delete().eq('id', id);
+            const { error } = await supabase.from('external_servers').delete().eq('id', id);
+            if (error) throw error;
             notifications.show({ title: 'Sucesso', message: 'Servidor excluído', color: 'green' });
             loadServers();
             loadStats();
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error deleting server:', error);
+            notifications.show({ title: 'Erro', message: error?.message || 'Falha ao excluir servidor', color: 'red' });
         }
     };
 
-    const openEditServer = (server: ExternalServer) => {
+    const openEditServer = async (server: ExternalServer) => {
+        // A view admin_servers_overview não traz os dados de banco/notas: busca o registro completo
+        const { data: full } = await supabase
+            .from('external_servers')
+            .select('*')
+            .eq('id', server.id)
+            .maybeSingle();
+        const source = { ...server, ...(full || {}) } as ExternalServer & {
+            db_host?: string | null; db_port?: number | null; db_name?: string | null; notes?: string | null;
+        };
         setEditingServer(server);
         setNewServer({
-            name: server.name,
-            url: server.url,
-            provider: server.provider,
-            region: server.region,
-            max_companies: server.max_companies,
-            has_database: server.has_database,
-            db_host: '',
-            db_port: 5432,
-            db_name: '',
-            notes: server.notes || '',
+            name: source.name ?? '',
+            url: source.url ?? '',
+            provider: source.provider ?? 'easypanel',
+            region: source.region ?? 'br-south',
+            max_companies: source.max_companies ?? 50,
+            has_database: !!source.has_database,
+            db_host: source.db_host ?? '',
+            db_port: source.db_port ?? 5432,
+            db_name: source.db_name ?? '',
+            notes: source.notes ?? '',
         });
         setServerModalOpen(true);
     };
@@ -371,6 +385,7 @@ export function AdminInfrastructure() {
         setSelectedCompany(company);
         setSelectedServerId(company.external_server_id);
         setExternalModalOpen(true);
+        if (servers.length === 0) loadServers();
     };
 
     const toggleExternalMode = async () => {
@@ -1039,7 +1054,7 @@ export function AdminInfrastructure() {
             <Modal
                 opened={externalModalOpen}
                 onClose={() => setExternalModalOpen(false)}
-                title={`Configurar Servidor — ${selectedCompany?.name}`}
+                title={`Configurar Servidor — ${selectedCompany?.name ?? ''}`}
                 size="md"
             >
                 <Stack gap="md">

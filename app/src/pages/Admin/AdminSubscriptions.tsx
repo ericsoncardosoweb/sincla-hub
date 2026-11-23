@@ -8,9 +8,14 @@ import {
     IconSearch, IconCreditCard, IconTrendingUp,
     IconClock, IconX, IconCrown, IconGift,
     IconPlayerStop, IconTrash, IconAlertTriangle, IconCheck,
+    IconUserPlus, IconEdit,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../shared/lib/supabase';
+import { ManualSubscriptionModal } from './components/ManualSubscriptionModal';
+import { SubscriptionInvitesCard, SUBSCRIPTION_INVITES_QUERY_KEY } from './components/SubscriptionInvitesCard';
+import { resolvePlanLabel, type PlanRef } from './utils/planLabel';
 
 // ============================
 // Types
@@ -21,6 +26,8 @@ interface SubscriptionRow {
     company_id: string;
     product_id: string;
     plan: string;
+    plan_id: string | null;
+    invite_id: string | null;
     status: string;
     seats_limit: number;
     seats_used: number;
@@ -61,12 +68,7 @@ const statusColors: Record<string, string> = {
     suspended: 'gray',
 };
 
-const planLabels: Record<string, string> = {
-    starter: 'Starter',
-    pro: 'Pro',
-    business: 'Business',
-    enterprise: 'Enterprise',
-};
+const resolvePlan = resolvePlanLabel;
 
 const GRANT_DURATION_OPTIONS = [
     { value: '0', label: 'Vitalício (ilimitado)' },
@@ -83,8 +85,15 @@ const MODAL_COMBOBOX_PROPS = { withinPortal: true, zIndex: 10000 } as const;
 // ============================
 
 export function AdminSubscriptions() {
+    const queryClient = useQueryClient();
     const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
+    const [plans, setPlans] = useState<PlanRef[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const [manualModalOpened, setManualModalOpened] = useState(false);
+    const [planTarget, setPlanTarget] = useState<SubscriptionRow | null>(null);
+    const [planTargetValue, setPlanTargetValue] = useState<string | null>(null);
+    const [planSaving, setPlanSaving] = useState(false);
     const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState<string | null>(null);
     const [filterProduct, setFilterProduct] = useState<string | null>(null);
@@ -165,6 +174,7 @@ export function AdminSubscriptions() {
 
     const loadData = useCallback(async () => {
         setLoading(true);
+        setLoadError(null);
         try {
             // Load products for filter
             const { data: prods } = await supabase
@@ -173,6 +183,12 @@ export function AdminSubscriptions() {
                 .eq('is_active', true)
                 .order('name');
             setProducts((prods || []).map(p => ({ value: p.id, label: p.name })));
+
+            const { data: planRows } = await supabase
+                .from('product_plans')
+                .select('id, product_id, slug, name')
+                .order('sort_order');
+            setPlans((planRows || []) as PlanRef[]);
 
             // Load companies for the grant modal
             const { data: comps, error: companiesError } = await supabase
@@ -192,7 +208,7 @@ export function AdminSubscriptions() {
             let query = supabase
                 .from('subscriptions')
                 .select(`
-                    id, company_id, product_id, plan, status, seats_limit, seats_used,
+                    id, company_id, product_id, plan, plan_id, invite_id, status, seats_limit, seats_used,
                     billing_cycle, monthly_amount, trial_ends_at, canceled_at,
                     current_period_end, created_at, external_subscription_id,
                     company:companies!company_id (name, slug),
@@ -208,7 +224,8 @@ export function AdminSubscriptions() {
                 query = query.eq('product_id', filterProduct);
             }
 
-            const { data } = await query;
+            const { data, error: subsError } = await query;
+            if (subsError) throw subsError;
             const mapped = (data || []).map((s: any) => ({
                 ...s,
                 company: Array.isArray(s.company) ? s.company[0] : s.company,
@@ -216,8 +233,9 @@ export function AdminSubscriptions() {
             }));
 
             setSubscriptions(mapped);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error loading subscriptions:', error);
+            setLoadError(error?.message || 'Não foi possível carregar as assinaturas.');
         } finally {
             setLoading(false);
         }
@@ -231,7 +249,8 @@ export function AdminSubscriptions() {
         !search.trim() ||
         (s.company?.name || '').toLowerCase().includes(search.toLowerCase()) ||
         (s.company?.slug || '').toLowerCase().includes(search.toLowerCase()) ||
-        (s.product?.name || '').toLowerCase().includes(search.toLowerCase())
+        (s.product?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        resolvePlan(s, plans).label.toLowerCase().includes(search.toLowerCase())
     );
 
     const activeCount = subscriptions.filter(s => s.status === 'active').length;
@@ -241,6 +260,75 @@ export function AdminSubscriptions() {
         .filter(s => s.status === 'active' || s.status === 'trial')
         .reduce((sum, s) => sum + (s.monthly_amount || 0), 0);
 
+    const loadChargeSiblings = async (sub: SubscriptionRow) => {
+        const { data, error } = await supabase
+            .from('subscriptions')
+            .select('id, product_id, billing_cycle, monthly_amount')
+            .eq('external_subscription_id', sub.external_subscription_id!)
+            .neq('id', sub.id)
+            .in('status', ['active', 'trial', 'past_due']);
+        if (error) throw error;
+        return data || [];
+    };
+
+    const remainingChargeValue = async (
+        sub: SubscriptionRow,
+        siblings: { product_id: string; billing_cycle: string | null; monthly_amount: number }[],
+    ) => {
+        if (sub.invite_id) {
+            const { data: invite } = await supabase
+                .from('subscription_invites')
+                .select('items')
+                .eq('id', sub.invite_id)
+                .maybeSingle();
+            const items = (invite?.items || []) as { product_id: string; price: number }[];
+            if (items.length > 0) {
+                return Math.round(items
+                    .filter(i => siblings.some(s => s.product_id === i.product_id))
+                    .reduce((sum, i) => sum + Number(i.price || 0), 0) * 100) / 100;
+            }
+        }
+        return Math.round(siblings.reduce((sum, s) =>
+            sum + Number(s.monthly_amount || 0) * (s.billing_cycle === 'yearly' ? 12 : 1), 0) * 100) / 100;
+    };
+
+    // ============================
+    // Change plan (vincular ao plano cadastrado)
+    // ============================
+    const openPlanModal = (sub: SubscriptionRow) => {
+        const current = resolvePlan(sub, plans);
+        const match = sub.plan_id
+            ? sub.plan_id
+            : plans.find(p => p.product_id === sub.product_id && p.slug === sub.plan)?.id ?? null;
+        setPlanTargetValue(current.kind === 'plan' ? match : null);
+        setPlanTarget(sub);
+    };
+
+    const handleSavePlan = async () => {
+        if (!planTarget || !planTargetValue) return;
+        const plan = plans.find(p => p.id === planTargetValue);
+        if (!plan) return;
+        setPlanSaving(true);
+        try {
+            const { error } = await supabase
+                .from('subscriptions')
+                .update({ plan_id: plan.id, plan: plan.slug })
+                .eq('id', planTarget.id);
+            if (error) throw error;
+            notifications.show({
+                title: 'Plano atualizado',
+                message: `${planTarget.company?.name || 'Empresa'} agora está no plano ${plan.name}. Limites e créditos foram recalculados.`,
+                color: 'green',
+            });
+            setPlanTarget(null);
+            loadData();
+        } catch (error: any) {
+            notifications.show({ title: 'Erro ao alterar o plano', message: error.message || 'Falha desconhecida.', color: 'red' });
+        } finally {
+            setPlanSaving(false);
+        }
+    };
+
     // ============================
     // Cancel Subscription Handler
     // ============================
@@ -248,8 +336,24 @@ export function AdminSubscriptions() {
         if (!cancelTarget) return;
         setCancelLoading(true);
         try {
-            // Se tem assinatura externa no Asaas, cancelar lá primeiro
-            if (cancelTarget.external_subscription_id) {
+            // Cobrança única de convite cobre vários produtos: reduz o valor em vez de cancelar no Asaas
+            const siblings = cancelTarget.external_subscription_id
+                ? await loadChargeSiblings(cancelTarget)
+                : [];
+
+            if (cancelTarget.external_subscription_id && siblings.length > 0) {
+                const remaining = await remainingChargeValue(cancelTarget, siblings);
+                const { data: asaasResult, error: asaasError } = await supabase.functions.invoke('asaas-checkout', {
+                    body: {
+                        endpoint: `/subscriptions/${cancelTarget.external_subscription_id}`,
+                        method: 'PUT',
+                        data: { value: remaining, updatePendingPayments: true },
+                    },
+                });
+                if (asaasError || asaasResult?.error) {
+                    throw new Error(asaasResult?.error || asaasError?.message || 'Falha ao ajustar o valor da cobrança no Asaas.');
+                }
+            } else if (cancelTarget.external_subscription_id) {
                 const { data: asaasResult, error: asaasError } = await supabase.functions.invoke('asaas-checkout', {
                     body: {
                         endpoint: `/subscriptions/${cancelTarget.external_subscription_id}`,
@@ -342,14 +446,34 @@ export function AdminSubscriptions() {
                         <Title order={2}>Assinaturas</Title>
                         <Text c="dimmed">Todas as assinaturas de produtos na plataforma</Text>
                     </div>
-                    <Button
-                        leftSection={<IconCrown size={16} />}
-                        color="violet"
-                        onClick={openGrantModal}
-                    >
-                        Conceder Acesso Ilimitado
-                    </Button>
+                    <Group gap="sm">
+                        <Button
+                            leftSection={<IconCrown size={16} />}
+                            color="violet"
+                            variant="light"
+                            onClick={openGrantModal}
+                        >
+                            Conceder Acesso Ilimitado
+                        </Button>
+                        <Button
+                            leftSection={<IconUserPlus size={16} />}
+                            onClick={() => setManualModalOpened(true)}
+                        >
+                            Nova assinatura
+                        </Button>
+                    </Group>
                 </Group>
+
+                {loadError && (
+                    <Card withBorder padding="md" radius="md" bg="var(--mantine-color-red-light)">
+                        <Group justify="space-between">
+                            <Text size="sm" c="red">{loadError}</Text>
+                            <Button size="xs" variant="light" color="red" onClick={() => loadData()}>Tentar novamente</Button>
+                        </Group>
+                    </Card>
+                )}
+
+                <SubscriptionInvitesCard />
 
                 {/* KPIs */}
                 {loading ? (
@@ -442,6 +566,7 @@ export function AdminSubscriptions() {
                     </Card>
                 ) : (
                     <Card shadow="sm" padding={0} radius="md" withBorder>
+                        <Table.ScrollContainer minWidth={900}>
                         <Table striped highlightOnHover>
                             <Table.Thead>
                                 <Table.Tr>
@@ -453,7 +578,7 @@ export function AdminSubscriptions() {
                                     <Table.Th>Valor/mês</Table.Th>
                                     <Table.Th>Ciclo</Table.Th>
                                     <Table.Th>Desde</Table.Th>
-                                    <Table.Th style={{ width: 70 }}>A\u00e7\u00f5es</Table.Th>
+                                    <Table.Th style={{ width: 90 }}>Ações</Table.Th>
                                 </Table.Tr>
                             </Table.Thead>
                             <Table.Tbody>
@@ -471,9 +596,26 @@ export function AdminSubscriptions() {
                                             </Badge>
                                         </Table.Td>
                                         <Table.Td>
-                                            <Badge variant="dot" size="sm">
-                                                {planLabels[sub.plan] || sub.plan}
-                                            </Badge>
+                                            {(() => {
+                                                const resolved = resolvePlan(sub, plans);
+                                                return (
+                                                    <Group gap={4} wrap="nowrap">
+                                                        <Badge
+                                                            variant="dot"
+                                                            size="sm"
+                                                            color={resolved.kind === 'plan' ? 'blue' : resolved.kind === 'courtesy' ? 'violet' : 'gray'}
+                                                            style={{ textTransform: 'none' }}
+                                                        >
+                                                            {resolved.label}
+                                                        </Badge>
+                                                        {resolved.kind === 'legacy' && (
+                                                            <Tooltip label="Plano antigo, sem cadastro na aba Planos. Use “Alterar plano” para vincular.">
+                                                                <Badge size="xs" color="orange" variant="light">legado</Badge>
+                                                            </Tooltip>
+                                                        )}
+                                                    </Group>
+                                                );
+                                            })()}
                                         </Table.Td>
                                         <Table.Td>
                                             <Badge
@@ -513,7 +655,14 @@ export function AdminSubscriptions() {
                                             )}
                                         </Table.Td>
                                         <Table.Td>
-                                            <Group gap={4}>
+                                            <Group gap={4} wrap="nowrap">
+                                                {sub.status !== 'canceled' && (
+                                                    <Tooltip label="Alterar plano">
+                                                        <ActionIcon size="sm" variant="subtle" onClick={() => openPlanModal(sub)}>
+                                                            <IconEdit size={14} />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                )}
                                                 {sub.status === 'active' || sub.status === 'trial' ? (
                                                     <Tooltip label="Cancelar assinatura">
                                                         <ActionIcon
@@ -540,6 +689,7 @@ export function AdminSubscriptions() {
                                 ))}
                             </Table.Tbody>
                         </Table>
+                        </Table.ScrollContainer>
                     </Card>
                 )}
 
@@ -702,7 +852,8 @@ export function AdminSubscriptions() {
                     {cancelTarget?.external_subscription_id && (
                         <Card withBorder padding="sm" radius="md" bg="var(--mantine-color-orange-light)">
                             <Text size="xs" c="orange" fw={600}>
-                                \u26a0\ufe0f Esta assinatura tem cobran\u00e7a no Asaas. O cancelamento tamb\u00e9m ser\u00e1 enviado para o gateway de pagamento.
+                                ⚠️ Esta assinatura tem cobrança no Asaas. O cancelamento também será enviado para o gateway de pagamento
+                                {cancelTarget.invite_id ? ' (se a cobrança incluir outros produtos, apenas o valor deste produto é removido).' : '.'}
                             </Text>
                             <Text size="xs" c="dimmed" mt={4}>
                                 ID Asaas: {cancelTarget.external_subscription_id}
@@ -747,7 +898,7 @@ export function AdminSubscriptions() {
                         da empresa <strong>{deleteTarget?.company?.name || '—'}</strong>?
                     </Text>
                     <Text size="xs" c="dimmed">
-                        Esta a\u00e7\u00e3o remove apenas o registro do banco de dados. A conta da empresa e do usu\u00e1rio n\u00e3o ser\u00e3o afetadas.
+                        Esta ação remove apenas o registro do banco de dados. A conta da empresa e do usuário não serão afetadas.
                     </Text>
                     <Group justify="flex-end" gap="sm">
                         <Button variant="subtle" onClick={() => setDeleteTarget(null)} disabled={deleteLoading}>
@@ -764,6 +915,53 @@ export function AdminSubscriptions() {
                     </Group>
                 </Stack>
             </Modal>
+
+            <Modal
+                opened={!!planTarget}
+                onClose={() => !planSaving && setPlanTarget(null)}
+                title={<Title order={4}>Alterar plano</Title>}
+                centered
+                size="md"
+            >
+                <Stack gap="md">
+                    <Text size="sm">
+                        <strong>{planTarget?.product?.name || planTarget?.product_id}</strong> da empresa{' '}
+                        <strong>{planTarget?.company?.name || '—'}</strong>
+                    </Text>
+                    {planTarget && (
+                        <Text size="xs" c="dimmed">
+                            Atual: {resolvePlan(planTarget, plans).label}
+                            {resolvePlan(planTarget, plans).kind === 'legacy' ? ' (plano antigo, sem cadastro)' : ''}
+                        </Text>
+                    )}
+                    <Select
+                        label="Plano cadastrado"
+                        placeholder="Selecione o plano"
+                        data={plans
+                            .filter(p => p.product_id === planTarget?.product_id)
+                            .map(p => ({ value: p.id, label: p.name }))}
+                        value={planTargetValue}
+                        onChange={setPlanTargetValue}
+                        comboboxProps={MODAL_COMBOBOX_PROPS}
+                        nothingFoundMessage="Nenhum plano cadastrado para este produto"
+                    />
+                    <Text size="xs" c="dimmed">
+                        Altera apenas o plano usado para limites e créditos. O valor cobrado no Asaas não muda.
+                    </Text>
+                    <Group justify="flex-end" gap="sm">
+                        <Button variant="subtle" onClick={() => setPlanTarget(null)} disabled={planSaving}>Cancelar</Button>
+                        <Button onClick={handleSavePlan} loading={planSaving} disabled={!planTargetValue}>Salvar</Button>
+                    </Group>
+                </Stack>
+            </Modal>
+
+            <ManualSubscriptionModal
+                opened={manualModalOpened}
+                onClose={() => setManualModalOpened(false)}
+                onCreated={() => {
+                    queryClient.invalidateQueries({ queryKey: SUBSCRIPTION_INVITES_QUERY_KEY });
+                }}
+            />
         </Container>
     );
 }

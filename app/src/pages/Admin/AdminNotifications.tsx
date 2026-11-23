@@ -186,7 +186,7 @@ export function AdminNotifications() {
     // =============================================
     const editor = useEditor({
         extensions: [
-            StarterKit,
+            StarterKit.configure({ link: false, underline: false }),
             Underline,
             TLink.configure({ openOnClick: false }),
             Placeholder.configure({ placeholder: 'Escreva o conteúdo do comunicado...' }),
@@ -242,7 +242,15 @@ export function AdminNotifications() {
     // Template Actions
     // =============================================
     const handleEditTemplate = (t: NotificationTemplate) => {
-        setEditTemplate({ ...t });
+        setEditTemplate({
+            ...t,
+            email_subject: t.email_subject ?? '',
+            email_body: t.email_body ?? '',
+            whatsapp_message: t.whatsapp_message ?? '',
+            in_app_title: t.in_app_title ?? '',
+            in_app_message: t.in_app_message ?? '',
+            in_app_color: t.in_app_color ?? '',
+        });
         setEditOpen(true);
     };
 
@@ -293,9 +301,11 @@ export function AdminNotifications() {
         if (broadcast) {
             setEditingBroadcast(broadcast);
             setBroadcastForm({
-                title: broadcast.title,
-                channels: broadcast.channels,
-                target_audience: broadcast.target_audience === 'all' ? [] : broadcast.target_audience.split(','),
+                title: broadcast.title ?? '',
+                channels: broadcast.channels ?? [],
+                target_audience: !broadcast.target_audience || broadcast.target_audience === 'all'
+                    ? []
+                    : broadcast.target_audience.split(','),
                 action_url: broadcast.action_url || '',
                 action_label: broadcast.action_label || '',
             });
@@ -396,20 +406,62 @@ export function AdminNotifications() {
     const randomDelay = (minMs: number, maxMs: number) =>
         new Promise(resolve => setTimeout(resolve, minMs + Math.random() * (maxMs - minMs)));
 
+    /** Destinatários: titulares das empresas com assinatura ativa (por produto) e/ou parceiros ativos. */
+    const resolveRecipients = async (targetAudience: string | null) => {
+        const targets = (targetAudience ?? 'all').split(',').map(t => t.trim()).filter(Boolean);
+        const everyone = targets.length === 0 || targets.includes('all') || targets.includes('all_active');
+        const toolIds = targets.filter(t => t.startsWith('tool:')).map(t => t.slice(5));
+        const userIds = new Set<string>();
+
+        if (everyone || toolIds.length > 0) {
+            let subsQuery = supabase
+                .from('subscriptions')
+                .select('company_id, companies!inner(subscriber_id)')
+                .in('status', ['active', 'trial']);
+            if (!everyone) subsQuery = subsQuery.in('product_id', toolIds);
+            const { data, error } = await subsQuery;
+            if (error) throw error;
+            for (const row of (data || []) as any[]) {
+                const company = Array.isArray(row.companies) ? row.companies[0] : row.companies;
+                if (company?.subscriber_id) userIds.add(company.subscriber_id);
+            }
+        }
+
+        if (everyone || targets.includes('partners')) {
+            const { data, error } = await supabase
+                .from('partners')
+                .select('user_id')
+                .eq('status', 'active');
+            if (error) throw error;
+            for (const p of data || []) if (p.user_id) userIds.add(p.user_id);
+        }
+
+        if (userIds.size === 0) return [];
+        const ids = [...userIds];
+        const recipients: { user_id: string; email: string | null }[] = [];
+        for (let i = 0; i < ids.length; i += 200) {
+            const { data, error } = await supabase
+                .from('subscribers')
+                .select('id, email')
+                .in('id', ids.slice(i, i + 200));
+            if (error) throw error;
+            for (const s of data || []) recipients.push({ user_id: s.id, email: s.email });
+        }
+        return recipients;
+    };
+
     const executeBroadcast = async (broadcastId: string, broadcast: Broadcast) => {
         try {
-            const { data: subscribers } = await supabase
-                .from('subscribers')
-                .select('user_id, email')
-                .eq('status', 'active');
+            const subscribers = await resolveRecipients(broadcast.target_audience);
 
             let sentCount = 0;
             let failedCount = 0;
             let whatsappCount = 0;
 
+            const channels = broadcast.channels ?? [];
             for (const sub of subscribers || []) {
                 try {
-                    if (broadcast.channels.includes('in_app')) {
+                    if (channels.includes('in_app')) {
                         await sendNotification({
                             channel: 'in_app',
                             to: sub.user_id,
@@ -419,7 +471,7 @@ export function AdminNotifications() {
                             actionUrl: broadcast.action_url || undefined,
                         });
                     }
-                    if (broadcast.channels.includes('email') && sub.email) {
+                    if (channels.includes('email') && sub.email) {
                         await sendNotification({
                             channel: 'email',
                             to: sub.email,
@@ -433,7 +485,7 @@ export function AdminNotifications() {
                             },
                         });
                     }
-                    if (broadcast.channels.includes('whatsapp') && sub.email) {
+                    if (channels.includes('whatsapp') && sub.email) {
                         // Rate limiting: max 10 por minuto, delay aleatório 6-12s
                         if (whatsappCount > 0 && whatsappCount % 10 === 0) {
                             await randomDelay(60000, 65000); // pausa de 1min a cada 10
@@ -633,7 +685,7 @@ export function AdminNotifications() {
                                                     {b.message.replace(/<[^>]*>/g, '')}
                                                 </Text>
                                                 <Group gap="xs" mt={4}>
-                                                    {b.channels.map(ch => (
+                                                    {(b.channels ?? []).map(ch => (
                                                         <Badge key={ch} size="xs" variant="dot"
                                                             color={ch === 'email' ? 'blue' : ch === 'whatsapp' ? 'green' : 'violet'}
                                                         >
@@ -1064,7 +1116,7 @@ export function AdminNotifications() {
                                 )}
                                 <Stack gap={2} align="center">
                                     <Group gap={4}>
-                                        {previewBroadcast.channels.map(ch => (
+                                        {(previewBroadcast.channels ?? []).map(ch => (
                                             <Badge key={ch} size="xs" variant="dot"
                                                 color={ch === 'email' ? 'blue' : ch === 'whatsapp' ? 'green' : 'violet'}
                                             >

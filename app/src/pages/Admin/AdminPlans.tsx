@@ -22,6 +22,7 @@ import {
     Select,
     Paper,
     Tooltip,
+    Skeleton,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
@@ -33,14 +34,16 @@ interface ProductOption {
     name: string;
 }
 
+type PlanFeatures = string[] | Record<string, boolean>;
+
 interface Plan {
     id: string;
     product_id: string;
     name: string;
     slug: string;
     description: string | null;
-    features: string[];
-    limits: Record<string, number>;
+    features: PlanFeatures | null;
+    limits: Record<string, unknown> | null;
     price_monthly: number;
     price_yearly: number;
     price_setup: number;
@@ -52,18 +55,42 @@ interface Plan {
     subscriptions_count?: number;
 }
 
+const humanizeKey = (key: string) => {
+    const text = key.replace(/_/g, ' ').trim();
+    return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
+/** Features podem vir como lista de textos ou como objeto { chave: boolean } (ex.: Talento). */
+const featureLabels = (features: PlanFeatures | null | undefined): string[] => {
+    if (Array.isArray(features)) {
+        return features.filter((f): f is string => typeof f === 'string' && f.trim() !== '');
+    }
+    if (features && typeof features === 'object') {
+        return Object.entries(features).filter(([, on]) => on === true).map(([key]) => humanizeKey(key));
+    }
+    return [];
+};
+
+const isBooleanMap = (value: unknown): value is Record<string, boolean> =>
+    !!value && typeof value === 'object' && !Array.isArray(value)
+    && Object.values(value as Record<string, unknown>).every(v => typeof v === 'boolean');
+
 export function AdminPlans() {
     const { productId: paramProductId } = useParams<{ productId: string }>();
     const navigate = useNavigate();
     const [allProducts, setAllProducts] = useState<ProductOption[]>([]);
     const [selectedProductId, setSelectedProductId] = useState<string | null>(paramProductId || null);
     const [plans, setPlans] = useState<Plan[]>([]);
-    const [_loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
     // Visual state for features & limits
     const [featuresList, setFeaturesList] = useState<string[]>(['']);
+    /** Quando o plano guarda features como objeto, editamos como interruptores e salvamos no mesmo formato. */
+    const [featuresMap, setFeaturesMap] = useState<Record<string, boolean> | null>(null);
+    /** Limites não numéricos (objetos, textos, booleanos) usados pelas ferramentas — preservados no salvamento. */
+    const [extraLimits, setExtraLimits] = useState<Record<string, unknown>>({});
     const [limitsList, setLimitsList] = useState<{ key: string; label: string; value: number }[]>([
         { key: 'seats', label: 'Usuários', value: 5 },
         { key: 'storage_gb', label: 'Armazenamento (GB)', value: 5 },
@@ -137,19 +164,17 @@ export function AdminPlans() {
 
             const { data: subs } = await supabase
                 .from('subscriptions')
-                .select('plan')
+                .select('plan, plan_id')
                 .eq('product_id', selectedProductId!)
                 .in('status', ['active', 'trial']);
 
-            const planCounts: Record<string, number> = {};
-            (subs || []).forEach(s => {
-                const slug = s.plan || 'starter';
-                planCounts[slug] = (planCounts[slug] || 0) + 1;
-            });
+            const countFor = (p: Plan) => (subs || []).filter(s =>
+                s.plan_id ? s.plan_id === p.id : s.plan === p.slug,
+            ).length;
 
             setPlans((data || []).map((p: Plan) => ({
                 ...p,
-                subscriptions_count: planCounts[p.slug] || 0,
+                subscriptions_count: countFor(p),
             })));
         } catch (error) {
             console.error('Error loading plans:', error);
@@ -168,6 +193,8 @@ export function AdminPlans() {
         form.reset();
         form.setFieldValue('sort_order', plans.length + 1);
         setFeaturesList(['']);
+        setFeaturesMap(null);
+        setExtraLimits({});
         setLimitsList([
             { key: 'seats', label: 'Usuários', value: 5 },
             { key: 'storage_gb', label: 'Armazenamento (GB)', value: 5 },
@@ -178,30 +205,43 @@ export function AdminPlans() {
     const openEditModal = (plan: Plan) => {
         setEditingPlan(plan);
         form.setValues({
-            name: plan.name,
-            slug: plan.slug,
+            name: plan.name || '',
+            slug: plan.slug || '',
             description: plan.description || '',
-            price_monthly: plan.price_monthly,
-            price_yearly: plan.price_yearly,
-            price_setup: plan.price_setup,
-            discount_yearly_percent: plan.discount_yearly_percent,
-            is_active: plan.is_active,
-            is_popular: plan.is_popular,
-            sort_order: plan.sort_order,
-            trial_days: plan.trial_days,
+            price_monthly: Number(plan.price_monthly) || 0,
+            price_yearly: Number(plan.price_yearly) || 0,
+            price_setup: Number(plan.price_setup) || 0,
+            discount_yearly_percent: Number(plan.discount_yearly_percent) || 0,
+            is_active: !!plan.is_active,
+            is_popular: !!plan.is_popular,
+            sort_order: Number(plan.sort_order) || 0,
+            trial_days: Number(plan.trial_days) || 0,
         });
 
-        // Populate features list
-        const feats = Array.isArray(plan.features) ? plan.features : [];
-        setFeaturesList(feats.length > 0 ? feats : ['']);
+        if (Array.isArray(plan.features)) {
+            const feats = plan.features.filter((f): f is string => typeof f === 'string');
+            setFeaturesList(feats.length > 0 ? feats : ['']);
+            setFeaturesMap(null);
+        } else if (isBooleanMap(plan.features)) {
+            setFeaturesList(['']);
+            setFeaturesMap({ ...plan.features });
+        } else {
+            setFeaturesList(['']);
+            setFeaturesMap(null);
+        }
 
-        // Populate limits list
-        const limitsObj = plan.limits || {};
-        const limitsArr = Object.entries(limitsObj).map(([key, value]) => {
-            const preset = LIMIT_PRESETS.find(p => p.key === key);
-            return { key, label: preset?.label || key, value: value as number };
+        const numeric: { key: string; label: string; value: number }[] = [];
+        const extras: Record<string, unknown> = {};
+        Object.entries(plan.limits || {}).forEach(([key, value]) => {
+            if (typeof value === 'number' && Number.isFinite(value)) {
+                const preset = LIMIT_PRESETS.find(p => p.key === key);
+                numeric.push({ key, label: preset?.label || humanizeKey(key), value });
+            } else {
+                extras[key] = value;
+            }
         });
-        setLimitsList(limitsArr.length > 0 ? limitsArr : []);
+        setLimitsList(numeric);
+        setExtraLimits(extras);
 
         setModalOpen(true);
     };
@@ -209,8 +249,8 @@ export function AdminPlans() {
     const handleSubmit = async (values: typeof form.values) => {
         try {
             // Build features and limits from visual state
-            const features = featuresList.filter(f => f.trim() !== '');
-            const limits: Record<string, number> = {};
+            const features = featuresMap ?? featuresList.filter(f => f.trim() !== '');
+            const limits: Record<string, unknown> = { ...extraLimits };
             limitsList.forEach(l => {
                 if (l.key.trim()) limits[l.key.trim()] = l.value;
             });
@@ -362,6 +402,18 @@ export function AdminPlans() {
                 searchable
             />
 
+            {loading && selectedProductId ? (
+                <Stack gap="sm" mb="xl">
+                    {[1, 2, 3].map(i => <Skeleton key={i} height={60} radius="md" />)}
+                </Stack>
+            ) : plans.length === 0 ? (
+                <Card withBorder padding="xl" radius="md" mb="xl">
+                    <Text ta="center" c="dimmed">
+                        {selectedProductId ? 'Nenhum plano cadastrado para este produto.' : 'Selecione um produto para ver os planos.'}
+                    </Text>
+                </Card>
+            ) : (
+            <>
             {/* Preview Cards */}
             <Title order={4} mb="md">Preview dos Planos</Title>
             <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md" mb="xl">
@@ -424,11 +476,11 @@ export function AdminPlans() {
                         <Divider my="sm" />
 
                         <Stack gap={4}>
-                            {plan.features.slice(0, 4).map((feature, i) => (
+                            {featureLabels(plan.features).slice(0, 4).map((feature, i) => (
                                 <Text key={i} size="xs">✓ {feature}</Text>
                             ))}
-                            {plan.features.length > 4 && (
-                                <Text size="xs" c="dimmed">+{plan.features.length - 4} mais...</Text>
+                            {featureLabels(plan.features).length > 4 && (
+                                <Text size="xs" c="dimmed">+{featureLabels(plan.features).length - 4} mais...</Text>
                             )}
                         </Stack>
 
@@ -442,6 +494,7 @@ export function AdminPlans() {
             {/* Table */}
             <Title order={4} mb="md">Todos os Planos</Title>
 
+            <Table.ScrollContainer minWidth={760}>
             <Table striped highlightOnHover>
                 <Table.Thead>
                     <Table.Tr>
@@ -518,6 +571,9 @@ export function AdminPlans() {
                     ))}
                 </Table.Tbody>
             </Table>
+            </Table.ScrollContainer>
+            </>
+            )}
 
             {/* Modal */}
             <Modal
@@ -629,7 +685,28 @@ export function AdminPlans() {
 
                         <Tabs.Panel value="features">
                             <Stack gap="lg">
+                                {featuresMap && (
+                                    <Paper p="md" radius="md" withBorder>
+                                        <Text size="sm" fw={600}>Funcionalidades incluídas</Text>
+                                        <Text size="xs" c="dimmed" mb="sm">Este plano usa funcionalidades por chave (lidas pela ferramenta)</Text>
+                                        <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+                                            {Object.entries(featuresMap).map(([key, on]) => (
+                                                <Switch
+                                                    key={key}
+                                                    label={humanizeKey(key)}
+                                                    checked={on}
+                                                    onChange={(e) => {
+                                                        const checked = e.currentTarget.checked;
+                                                        setFeaturesMap(prev => ({ ...(prev || {}), [key]: checked }));
+                                                    }}
+                                                />
+                                            ))}
+                                        </SimpleGrid>
+                                    </Paper>
+                                )}
+
                                 {/* Features - Visual List */}
+                                {!featuresMap && (
                                 <Paper p="md" radius="md" withBorder>
                                     <Group justify="space-between" mb="sm">
                                         <div>
@@ -680,6 +757,7 @@ export function AdminPlans() {
                                         ))}
                                     </Stack>
                                 </Paper>
+                                )}
 
                                 {/* Limits - Named Fields */}
                                 <Paper p="md" radius="md" withBorder>
@@ -749,6 +827,73 @@ export function AdminPlans() {
                                         </Text>
                                     )}
                                 </Paper>
+
+                                {Object.keys(extraLimits).length > 0 && (
+                                    <Paper p="md" radius="md" withBorder>
+                                        <Text size="sm" fw={600}>Configurações da ferramenta</Text>
+                                        <Text size="xs" c="dimmed" mb="sm">Valores lidos pela ferramenta (tipo de conta, recursos liberados etc.)</Text>
+                                        <Stack gap="sm">
+                                            {Object.entries(extraLimits).map(([key, value]) => {
+                                                if (typeof value === 'boolean') {
+                                                    return (
+                                                        <Switch
+                                                            key={key}
+                                                            label={humanizeKey(key)}
+                                                            checked={value}
+                                                            onChange={(e) => {
+                                                                const checked = e.currentTarget.checked;
+                                                                setExtraLimits(prev => ({ ...prev, [key]: checked }));
+                                                            }}
+                                                        />
+                                                    );
+                                                }
+                                                if (typeof value === 'string') {
+                                                    return (
+                                                        <TextInput
+                                                            key={key}
+                                                            label={humanizeKey(key)}
+                                                            size="sm"
+                                                            value={value}
+                                                            onChange={(e) => {
+                                                                const text = e.currentTarget.value;
+                                                                setExtraLimits(prev => ({ ...prev, [key]: text }));
+                                                            }}
+                                                        />
+                                                    );
+                                                }
+                                                if (isBooleanMap(value)) {
+                                                    return (
+                                                        <div key={key}>
+                                                            <Text size="sm" fw={500} mb={6}>{humanizeKey(key)}</Text>
+                                                            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xs">
+                                                                {Object.entries(value).map(([subKey, on]) => (
+                                                                    <Switch
+                                                                        key={subKey}
+                                                                        size="sm"
+                                                                        label={humanizeKey(subKey)}
+                                                                        checked={on}
+                                                                        onChange={(e) => {
+                                                                            const checked = e.currentTarget.checked;
+                                                                            setExtraLimits(prev => ({
+                                                                                ...prev,
+                                                                                [key]: { ...(prev[key] as Record<string, boolean>), [subKey]: checked },
+                                                                            }));
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </SimpleGrid>
+                                                        </div>
+                                                    );
+                                                }
+                                                return (
+                                                    <Text key={key} size="xs" c="dimmed">
+                                                        {humanizeKey(key)}: valor avançado preservado
+                                                    </Text>
+                                                );
+                                            })}
+                                        </Stack>
+                                    </Paper>
+                                )}
                             </Stack>
                         </Tabs.Panel>
                     </Tabs>

@@ -280,7 +280,7 @@ INSERT INTO public.product_plans (
     "features": {
       "community": false,
       "gamification": false,
-      "quizzes_advanced": false,
+      "quizzes_advanced": true,
       "custom_domain": false,
       "api": false,
       "webhooks": false,
@@ -312,7 +312,7 @@ INSERT INTO public.product_plans (
     "features": {
       "community": false,
       "gamification": false,
-      "quizzes_advanced": false,
+      "quizzes_advanced": true,
       "custom_domain": false,
       "api": false,
       "webhooks": false,

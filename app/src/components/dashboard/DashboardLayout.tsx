@@ -59,6 +59,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import { useAuth } from '../../shared/contexts';
 import { supabase } from '../../shared/lib/supabase';
+import { RouteErrorBoundary } from '../shared/RouteErrorBoundary';
 import { redirectToProduct } from '../../shared/services/cross-auth';
 import { dashboardShortcuts } from '../../shared/constants/dashboardShortcuts';
 import styles from './DashboardLayout.module.css';
@@ -841,7 +842,9 @@ export function DashboardLayout() {
 
             {/* Main Content */}
             <AppShell.Main>
-                <Outlet />
+                <RouteErrorBoundary>
+                    <Outlet />
+                </RouteErrorBoundary>
             </AppShell.Main>
         </AppShell>
     );

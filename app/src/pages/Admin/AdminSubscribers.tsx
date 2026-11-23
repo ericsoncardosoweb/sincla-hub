@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { Fragment, useEffect, useState, useCallback } from 'react';
 import {
     Container, Title, Text, Card, Group, Badge, Stack, Skeleton,
     Table, Avatar, TextInput, SimpleGrid, ThemeIcon, Collapse, Box,
@@ -13,6 +13,7 @@ import {
     IconCrown, IconAlertTriangle, IconKey, IconMail,
 } from '@tabler/icons-react';
 import { supabase } from '../../shared/lib/supabase';
+import { resolvePlanLabel, type PlanRef } from './utils/planLabel';
 
 // ============================
 // Types
@@ -22,6 +23,7 @@ interface CompanySubscription {
     id: string;
     product_id: string;
     plan: string;
+    plan_id: string | null;
     status: string;
     current_period_end: string | null;
     monthly_amount?: number | null;
@@ -122,6 +124,7 @@ export function AdminSubscribers() {
     const [allPlans, setAllPlans] = useState<PlanOption[]>([]);
 
     // Password management state
+    const [planRefs, setPlanRefs] = useState<PlanRef[]>([]);
     const [pwTarget, setPwTarget] = useState<SubscriberRow | null>(null);
     const [pwValue, setPwValue] = useState('');
     const [pwLoading, setPwLoading] = useState(false);
@@ -130,6 +133,11 @@ export function AdminSubscribers() {
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
+            const { data: planRows } = await supabase
+                .from('product_plans')
+                .select('id, product_id, slug, name');
+            setPlanRefs((planRows || []) as PlanRef[]);
+
             let query = supabase
                 .from('subscribers')
                 .select('id, email, name, phone, cpf_cnpj, avatar_url, created_at')
@@ -159,7 +167,7 @@ export function AdminSubscribers() {
                 if (companyIds.length > 0) {
                     const { data: subscriptions } = await supabase
                         .from('subscriptions')
-                        .select('id, company_id, product_id, plan, status, current_period_end, monthly_amount')
+                        .select('id, company_id, product_id, plan, plan_id, status, current_period_end, monthly_amount')
                         .in('company_id', companyIds);
 
                     (subscriptions || []).forEach((s: any) => {
@@ -365,6 +373,15 @@ export function AdminSubscribers() {
             return;
         }
 
+        if (validTools.some(t => !t.planSlug)) {
+            notifications.show({
+                title: 'Selecione o plano',
+                message: 'Escolha o plano de cada ferramenta adicionada.',
+                color: 'red',
+            });
+            return;
+        }
+
         setCreateLoading(true);
         try {
             // Provisão completa via Edge Function (user + company + subscriptions + email)
@@ -375,7 +392,7 @@ export function AdminSubscribers() {
                     companyName: newCompanyName.trim(),
                     tools: validTools.map(t => ({
                         productId: t.productId,
-                        planSlug: t.planSlug || 'enterprise',
+                        planSlug: t.planSlug,
                         durationDays: parseInt(t.duration) || 0,
                     })),
                 },
@@ -589,9 +606,8 @@ export function AdminSubscribers() {
                             </Table.Thead>
                             <Table.Tbody>
                                 {subscribers.map(sub => (
-                                    <>
+                                    <Fragment key={sub.id}>
                                         <Table.Tr
-                                            key={sub.id}
                                             style={{ cursor: 'pointer' }}
                                             onClick={() => {
                                                 setExpandedId(expandedId === sub.id ? null : sub.id);
@@ -647,8 +663,8 @@ export function AdminSubscribers() {
                                                     const activeSub = allSubs.find(s => s.status === 'active');
                                                     if (!activeSub) return <Text size="sm" c="dimmed">—</Text>;
                                                     return (
-                                                        <Badge variant="light" color="blue" size="sm">
-                                                            {activeSub.plan}
+                                                        <Badge variant="light" color="blue" size="sm" style={{ textTransform: 'none' }}>
+                                                            {resolvePlanLabel(activeSub, planRefs).label}
                                                         </Badge>
                                                     );
                                                 })()}
@@ -702,6 +718,7 @@ export function AdminSubscribers() {
                                                                 onClick={(e: React.MouseEvent) => {
                                                                     e.stopPropagation();
                                                                     setEditingId(sub.id);
+                                                                    setExpandedId(sub.id);
                                                                     setEditForm({
                                                                         name: sub.name || '',
                                                                         phone: sub.phone || '',
@@ -809,7 +826,7 @@ export function AdminSubscribers() {
                                                                                         color={s.status === 'active' ? 'blue' : s.status === 'trial' ? 'teal' : 'gray'}
                                                                                         leftSection={<IconCrown size={10} />}
                                                                                     >
-                                                                                        {s.product_id.toUpperCase()} • {s.plan}
+                                                                                        {s.product_id.toUpperCase()} • {resolvePlanLabel(s, planRefs).label}
                                                                                         {s.monthly_amount ? ` • R$ ${Number(s.monthly_amount).toFixed(2)}` : ''}
                                                                                         {s.current_period_end ? ` • até ${formatDate(s.current_period_end)}` : ''}
                                                                                     </Badge>
@@ -828,7 +845,7 @@ export function AdminSubscribers() {
                                                 </Collapse>
                                             </Table.Td>
                                         </Table.Tr>
-                                    </>
+                                    </Fragment>
                                 ))}
                             </Table.Tbody>
                         </Table>

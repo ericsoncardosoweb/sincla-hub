@@ -13,6 +13,8 @@ import {
     Burger,
     Drawer,
     rem,
+    Center,
+    Loader,
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
@@ -34,6 +36,7 @@ import {
     IconBell,
 } from '@tabler/icons-react';
 import { useAuth } from '../../shared/contexts';
+import { RouteErrorBoundary } from '../../components/shared/RouteErrorBoundary';
 import styles from '../../components/dashboard/DashboardLayout.module.css';
 
 interface NavItem {
@@ -107,7 +110,14 @@ export function AdminLayout() {
     };
 
     // Prevent render while checking admin status
-    if (loading || !isAdmin) {
+    if (loading) {
+        return (
+            <Center h="100vh">
+                <Loader size="lg" color="blue" />
+            </Center>
+        );
+    }
+    if (!isAdmin) {
         return null;
     }
 
@@ -276,7 +286,9 @@ export function AdminLayout() {
 
             {/* Main Content */}
             <AppShell.Main>
-                <Outlet />
+                <RouteErrorBoundary>
+                    <Outlet />
+                </RouteErrorBoundary>
             </AppShell.Main>
         </AppShell>
     );

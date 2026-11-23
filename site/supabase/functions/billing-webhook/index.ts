@@ -313,7 +313,7 @@ function mapAsaasSubscriptionStatus(status: string): string {
     const map: Record<string, string> = {
         'ACTIVE': 'active',
         'INACTIVE': 'canceled',
-        'EXPIRED': 'expired',
+        'EXPIRED': 'canceled',
     }
     return map[status] || status.toLowerCase()
 }
@@ -350,11 +350,36 @@ function verifyStripeSignature(
 
 // ─── Event handlers ──────────────────────────────────────────────────────────
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * O subscription_id do Asaas (sub_...) fica em external_subscription_id;
+ * eventos manuais/Stripe podem mandar o id interno (uuid).
+ * Uma cobrança Asaas pode cobrir várias linhas (um produto por linha).
+ */
+// deno-lint-ignore no-explicit-any
+function bySubscriptionId(query: any, subscriptionId: string) {
+    return UUID_RE.test(subscriptionId)
+        ? query.eq('id', subscriptionId)
+        : query.eq('external_subscription_id', subscriptionId)
+}
+
 async function handleSubscriptionCreated(
     supabase: ReturnType<typeof createClient>,
     data: NormalizedPayload['data']
 ): Promise<{ success: boolean; message: string }> {
-    const { company_id, product_id, plan_id, billing_cycle, amount, current_period_end } = data
+    const { subscription_id, company_id, product_id, plan_id, billing_cycle, amount, current_period_end } = data
+
+    if (subscription_id && !UUID_RE.test(subscription_id)) {
+        const { data: existing } = await supabase
+            .from('subscriptions')
+            .select('id')
+            .eq('external_subscription_id', subscription_id)
+            .limit(1)
+        if (existing && existing.length > 0) {
+            return { success: true, message: 'Subscription already registered' }
+        }
+    }
 
     if (!company_id || !product_id) {
         return { success: false, message: 'Missing company_id or product_id' }
@@ -388,16 +413,28 @@ async function handleSubscriptionUpdated(
         return { success: false, message: 'Missing subscription_id' }
     }
 
+    const { data: matched } = await bySubscriptionId(
+        supabase.from('subscriptions').select('id'),
+        subscription_id,
+    )
+    if (!matched || matched.length === 0) {
+        return { success: true, message: 'Subscription not found, ignored' }
+    }
+
     const updateData: Record<string, unknown> = {}
     if (plan_id) updateData.plan_id = plan_id
     if (status) updateData.status = status
-    if (amount) updateData.monthly_amount = amount
+    // Cobrança única de vários produtos: o valor total não pertence a uma linha só
+    if (amount && matched.length === 1) updateData.monthly_amount = amount
     if (current_period_end) updateData.current_period_end = current_period_end
+    if (Object.keys(updateData).length === 0) {
+        return { success: true, message: 'Nothing to update' }
+    }
 
-    const { error } = await supabase
-        .from('subscriptions')
-        .update(updateData)
-        .eq('id', subscription_id)
+    const { error } = await bySubscriptionId(
+        supabase.from('subscriptions').update(updateData),
+        subscription_id,
+    )
 
     if (error) {
         console.error('Error updating subscription:', error)
@@ -417,13 +454,13 @@ async function handleSubscriptionCanceled(
         return { success: false, message: 'Missing subscription_id' }
     }
 
-    const { error } = await supabase
-        .from('subscriptions')
-        .update({
+    const { error } = await bySubscriptionId(
+        supabase.from('subscriptions').update({
             status: 'canceled',
             canceled_at: canceled_at || new Date().toISOString(),
-        })
-        .eq('id', subscription_id)
+        }),
+        subscription_id,
+    )
 
     if (error) {
         console.error('Error canceling subscription:', error)
@@ -443,14 +480,14 @@ async function handleSubscriptionRenewed(
         return { success: false, message: 'Missing subscription_id' }
     }
 
-    const { error } = await supabase
-        .from('subscriptions')
-        .update({
+    const { error } = await bySubscriptionId(
+        supabase.from('subscriptions').update({
             status: 'active',
             current_period_start,
             current_period_end,
-        })
-        .eq('id', subscription_id)
+        }),
+        subscription_id,
+    )
 
     if (error) {
         console.error('Error renewing subscription:', error)
@@ -468,22 +505,20 @@ async function handlePaymentSucceeded(
 
     if (subscription_id) {
         // Update subscription to active if it was past_due
-        await supabase
-            .from('subscriptions')
-            .update({ status: 'active' })
-            .eq('id', subscription_id)
-            .eq('status', 'past_due')
+        await bySubscriptionId(
+            supabase.from('subscriptions').update({ status: 'active' }).eq('status', 'past_due'),
+            subscription_id,
+        )
 
         // ═══ Recarregar créditos da empresa ═══
         // Resolve company_id: pode vir no payload ou via subscription
-        let resolvedCompanyId = company_id
+        let resolvedCompanyId = company_id && UUID_RE.test(company_id) ? company_id : undefined
         if (!resolvedCompanyId) {
-            const { data: sub } = await supabase
-                .from('subscriptions')
-                .select('company_id')
-                .eq('id', subscription_id)
-                .single()
-            resolvedCompanyId = sub?.company_id
+            const { data: subs } = await bySubscriptionId(
+                supabase.from('subscriptions').select('company_id').limit(1),
+                subscription_id,
+            )
+            resolvedCompanyId = subs?.[0]?.company_id
         }
 
         if (resolvedCompanyId) {
@@ -513,15 +548,14 @@ async function handlePaymentFailed(
 
     if (subscription_id) {
         // Update subscription to past_due
-        await supabase
-            .from('subscriptions')
-            .update({ status: 'past_due' })
-            .eq('id', subscription_id)
+        await bySubscriptionId(
+            supabase.from('subscriptions').update({ status: 'past_due' }),
+            subscription_id,
+        )
 
         // Fetch company and subscriber to send email
-        const { data: subData } = await supabase
-            .from('subscriptions')
-            .select(`
+        const { data: subRows } = await bySubscriptionId(
+            supabase.from('subscriptions').select(`
                 companies (
                     id,
                     name,
@@ -533,13 +567,16 @@ async function handlePaymentFailed(
                 products (
                     name
                 )
-            `)
-            .eq('id', subscription_id)
-            .single();
+            `),
+            subscription_id,
+        )
+        // deno-lint-ignore no-explicit-any
+        const rows = (subRows || []) as any[]
+        const subData = rows[0]
 
         const subscriber = (subData?.companies as any)?.subscribers;
         const companyId = (subData?.companies as any)?.id;
-        const productName = (subData?.products as any)?.name || 'Contratado';
+        const productName = rows.map(r => r?.products?.name).filter(Boolean).join(', ') || 'Contratado';
 
         if (subscriber?.email) {
             await supabase.functions.invoke('send-notification', {

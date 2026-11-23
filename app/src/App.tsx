@@ -18,6 +18,7 @@ import { DashboardHome, Companies, CompanySettings, Team, Subscriptions, Integra
 // Checkout (layout independente)
 import { CheckoutLayout } from './components/checkout/CheckoutLayout';
 import { CheckoutPage } from './pages/Checkout/CheckoutPage';
+import { SubscriptionInvitePage } from './pages/Invite/SubscriptionInvitePage';
 
 // Admin pages
 import { AdminLayout, AdminDashboard, AdminProducts, AdminPlans, AdminPartners, AdminUsers, AdminInfrastructure, AdminSubscribers, AdminSubscriptions, AdminSettings, AdminLegalPages, AdminNotifications } from './pages/Admin';
@@ -49,6 +50,7 @@ export function App() {
                                 <Route path="/esqueci-senha" element={<ForgotPassword />} />
                                 <Route path="/auth/callback" element={<AuthCallback />} />
                                 <Route path="/redefinir-senha" element={<ResetPassword />} />
+                                <Route path="/convite/:token" element={<SubscriptionInvitePage />} />
 
                                 {/* Google OAuth Gateway Centralizado */}
                                 <Route path="/google/callback" element={<Suspense fallback={null}><GoogleOAuthCallbackPage /></Suspense>} />

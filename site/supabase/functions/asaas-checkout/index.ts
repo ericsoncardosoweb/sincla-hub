@@ -20,6 +20,7 @@ interface AsaasRequest {
     data?: Record<string, unknown>
     userId?: string
     productId?: string
+    planId?: string
     sandbox?: boolean
 }
 
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
 
         // Parse request body
         const body: AsaasRequest = await req.json()
-        const { endpoint, method = 'GET', data, userId, productId, sandbox = false } = body
+        const { endpoint, method = 'GET', data, userId, productId, planId, sandbox = false } = body
 
         if (!endpoint) {
             return new Response(
@@ -175,7 +176,7 @@ Deno.serve(async (req) => {
 
         // Atualizar tabelas do Supabase se necessário
         if (userId && responseData) {
-            await syncWithSupabase(userId, productId, endpoint, method, responseData, isSandbox)
+            await syncWithSupabase(userId, productId, endpoint, method, responseData, isSandbox, planId)
         }
 
         // Retornar resposta de sucesso
@@ -206,7 +207,8 @@ async function syncWithSupabase(
     endpoint: string,
     method: string,
     data: unknown,
-    _sandbox: boolean
+    _sandbox: boolean,
+    planId?: string
 ) {
     try {
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -219,9 +221,24 @@ async function syncWithSupabase(
         if (endpoint.includes('/subscriptions') && method === 'POST' && response?.id) {
             console.log(`[Asaas Checkout] Sincronizando assinatura ${response.id} para company ${companyId}`)
 
-            // Extrair slug do plano de múltiplas fontes
             const description = (response.description as string) || ''
-            let planSlugForDb = extractPlanSlug(description)
+            let planSlugForDb: string | null = null
+            let planIdForDb: string | null = null
+
+            // Plano escolhido no checkout (fonte confiável)
+            if (planId) {
+                const { data: chosenPlan } = await supabase
+                    .from('product_plans')
+                    .select('id, slug, product_id')
+                    .eq('id', planId)
+                    .maybeSingle()
+                if (chosenPlan && (!productId || chosenPlan.product_id === productId)) {
+                    planSlugForDb = chosenPlan.slug
+                    planIdForDb = chosenPlan.id
+                }
+            }
+
+            if (!planSlugForDb) planSlugForDb = extractPlanSlug(description)
 
             // Se não extraiu da description, buscar do banco via productId
             if (!planSlugForDb && productId) {
@@ -255,6 +272,7 @@ async function syncWithSupabase(
                 company_id: companyId,
                 product_id: productId || 'rh',
                 plan: planSlugForDb,
+                ...(planIdForDb ? { plan_id: planIdForDb } : {}),
                 status: response.status === 'ACTIVE' ? 'active' : 'pending',
                 billing_cycle: (response.cycle as string || 'MONTHLY').toLowerCase(),
                 monthly_amount: response.value,

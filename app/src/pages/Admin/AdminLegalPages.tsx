@@ -78,7 +78,7 @@ export function AdminLegalPages() {
 
     const editor = useEditor({
         extensions: [
-            StarterKit,
+            StarterKit.configure({ link: false, underline: false }),
             Underline,
             TLink.configure({ openOnClick: false }),
             Placeholder.configure({ placeholder: 'Escreva o conteúdo do documento... Use as variáveis {{...}} para dados da empresa.' }),
@@ -179,7 +179,7 @@ export function AdminLegalPages() {
                         slug: values.slug,
                         content,
                         is_published: values.is_published,
-                        version: editingPage.version + 1,
+                        version: (editingPage.version ?? 1) + 1,
                         updated_at: new Date().toISOString(),
                         published_at: values.is_published ? new Date().toISOString() : editingPage.published_at,
                     })
@@ -289,7 +289,7 @@ export function AdminLegalPages() {
             let html = page.content;
             if (settings) {
                 settings.forEach(s => {
-                    html = html.replace(new RegExp(`\\{\\{${s.key}\\}\\}`, 'g'), s.value);
+                    html = html.replace(new RegExp(`\\{\\{${s.key}\\}\\}`, 'g'), () => s.value ?? '');
                 });
             }
             setPreviewHtml(html);

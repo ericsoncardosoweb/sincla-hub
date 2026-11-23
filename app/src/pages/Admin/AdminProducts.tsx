@@ -643,7 +643,9 @@ export function AdminProducts() {
                 favicon_url: uploadedUrls.favicon_url || values.favicon_url || null,
                 logo_url: uploadedUrls.logo_url || values.logo_url || null,
                 logo_negative_url: uploadedUrls.logo_negative_url || values.logo_negative_url || null,
-                commission_percent: values.commission_percent,
+                commission_percent: Number.isFinite(Number(values.commission_percent)) && String(values.commission_percent) !== ''
+                    ? Number(values.commission_percent)
+                    : 10,
                 is_active: values.is_active,
             };
 
